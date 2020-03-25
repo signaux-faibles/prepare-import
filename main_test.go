@@ -28,7 +28,9 @@ func TestPopulateFilesProperty(t *testing.T){
 
 	filesProperty = PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
 	_, ok = filesProperty["debit"]
-  if (!ok || filesProperty["debit"][0] != "Sigfaibles_debits.csv" || filesProperty["debit"][1] != "Sigfaibles_debits2.csv") {
+	if (!ok ||
+		filesProperty["debit"][0] != "Sigfaibles_debits.csv" ||
+		filesProperty["debit"][1] != "Sigfaibles_debits2.csv") {
     t.Error("PopulateFilesProperty should contain both debits files in \"debit\" property")
 	}
 }
