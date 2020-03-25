@@ -18,8 +18,10 @@ type FileProperty map[string][]string
 func PopulateFilesProperty(filenames []string) FileProperty {
   fileProperty := FileProperty{}
   for _, filename := range filenames {
-    filetype, _ := GetFileType(filename)
-    fileProperty[filetype] = []string{}
+		filetype, _ := GetFileType(filename)
+		if _, exists := fileProperty[filetype]; !exists {
+			fileProperty[filetype] = []string{}
+		}
     fileProperty[filetype] = append(fileProperty[filetype], filename)
   }
   return fileProperty
