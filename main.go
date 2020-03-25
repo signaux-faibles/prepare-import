@@ -13,6 +13,12 @@ func PrepareImport() (string, error) {
 	return "{}", nil
 }
 
+struct FilesProperty {
+	
+}
+
+func PopulateFilesProperty(filenames []string) (){}
+
 func GetFileType(filename string) (string, error) {
 	switch filename {
 	case "Sigfaibles_effectif_siret.csv":
