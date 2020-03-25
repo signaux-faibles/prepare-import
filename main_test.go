@@ -32,6 +32,16 @@ func isEqual(t *testing.T, got, want string) {
 	}
 }
 
+// This function checks that a map's property is a slice of the expected length.
+func hasPropOfLength(t *testing.T, filesProperty FileProperty, propKey string, expectedLength int) {
+	t.Helper()
+	if propValue, propExists := filesProperty[propKey]; !propExists {
+		t.Errorf("filesProperty should have a %q property", propKey)
+	} else if len(propValue) != expectedLength {
+		t.Errorf("filesProperty value has length %v instead of %v", len(propValue), expectedLength)
+	}
+}
+
 func TestPopulateFilesProperty(t *testing.T) {
 
 	/**
@@ -46,25 +56,19 @@ func TestPopulateFilesProperty(t *testing.T) {
 
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_effectif_siret.csv"})
-		if _, ok := filesProperty["effectif"]; !ok {
-			t.Error("PopulateFilesProperty should have a \"effectif\" property")
-		}
+		hasPropOfLength(t, filesProperty, "effectif", 1)
 		isEqual(t, filesProperty["effectif"][0], "Sigfaibles_effectif_siret.csv")
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv"})
-		if _, ok := filesProperty["debit"]; !ok {
-			t.Error("PopulateFilesProperty should have a \"debit\" property")
-		}
+		hasPropOfLength(t, filesProperty, "debit", 1)
 		isEqual(t, filesProperty["debit"][0], "Sigfaibles_debits.csv")
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
-		if _, ok := filesProperty["debit"]; !ok {
-			t.Error("PopulateFilesProperty should have a \"debit\" property")
-		}
+		hasPropOfLength(t, filesProperty, "debit", 2)
 		isEqual(t, filesProperty["debit"][0], "Sigfaibles_debits.csv")
 		isEqual(t, filesProperty["debit"][1], "Sigfaibles_debits2.csv")
 	})
