@@ -2,7 +2,7 @@
 
 package main
 
-import ("testing")
+import ("testing"; "sort")
 
 // Prepare import should return json object.
 func TestPrepareImport(t *testing.T){
@@ -12,12 +12,18 @@ func TestPrepareImport(t *testing.T){
   }
 }
 
+func serializeSlice(strings []string) string {
+  return strings.Join(sort.Strings(strings)[:], ",")
+}
+
 func TestPopulateFilesProperty(t *testing.T){
   var filesProperty FileProperty
   filesProperty = PopulateFilesProperty([]string{"Sigfaibles_effectif_siret.csv"})
   if (filesProperty["effectif"][0] != "Sigfaibles_effectif_siret.csv") {
     t.Error("PopulateFilesProperty should contain effectif file in \"effectif\" property")
 	}
+// strings.Join(reg[:],",")
+// sort.Strings(
 
 
 	filesProperty = PopulateFilesProperty([]string{"Sigfaibles_debits.csv"})
