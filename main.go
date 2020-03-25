@@ -3,6 +3,8 @@
 
 package main
 
+import ("errors")
+
 func main(){
 }
 
@@ -11,16 +13,15 @@ func PrepareImport() (string, error) {
 	return "{}", nil
 }
 
-func GetFileType(filename string) (string) {
+func GetFileType(filename string) (string, error) {
 	switch filename {
-	case "darwin":
-		fmt.Println("OS X.")
-	case "linux":
-		fmt.Println("Linux.")
+	case "Sigfaibles_effectif_siret.csv":
+    return "effectif", nil
+	case "Sigfaibles_debits.csv":
+    return "debit", nil
+	case "Sigfaibles_debits2.csv":
+    return "debit", nil
 	default:
-		// freebsd, openbsd,
-		// plan9, windows...
-		fmt.Printf("%s.\n", os)
+    return "", errors.New("Unrecognized type for " + filename)
 	}
-	return "effectif"
 }
