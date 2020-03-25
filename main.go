@@ -3,9 +3,11 @@
 
 package main
 
-import ("errors")
+import (
+	"errors"
+)
 
-func main(){
+func main() {
 }
 
 func PrepareImport() (string, error) {
@@ -16,26 +18,26 @@ func PrepareImport() (string, error) {
 type FileProperty map[string][]string
 
 func PopulateFilesProperty(filenames []string) FileProperty {
-  fileProperty := FileProperty{}
-  for _, filename := range filenames {
+	fileProperty := FileProperty{}
+	for _, filename := range filenames {
 		filetype, _ := GetFileType(filename)
 		if _, exists := fileProperty[filetype]; !exists {
 			fileProperty[filetype] = []string{}
 		}
-    fileProperty[filetype] = append(fileProperty[filetype], filename)
-  }
-  return fileProperty
+		fileProperty[filetype] = append(fileProperty[filetype], filename)
+	}
+	return fileProperty
 }
 
 func GetFileType(filename string) (string, error) {
 	switch filename {
 	case "Sigfaibles_effectif_siret.csv":
-    return "effectif", nil
+		return "effectif", nil
 	case "Sigfaibles_debits.csv":
-    return "debit", nil
+		return "debit", nil
 	case "Sigfaibles_debits2.csv":
-    return "debit", nil
+		return "debit", nil
 	default:
-    return "", errors.New("Unrecognized type for " + filename)
+		return "", errors.New("Unrecognized type for " + filename)
 	}
 }
