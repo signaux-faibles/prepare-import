@@ -13,11 +13,11 @@ func PrepareImport() (string, error) {
 	return "{}", nil
 }
 
-struct FilesProperty {
-	
-}
+type FileProperty map[string][]string
 
-func PopulateFilesProperty(filenames []string) (){}
+func PopulateFilesProperty(filenames []string) FileProperty {
+
+}
 
 func GetFileType(filename string) (string, error) {
 	switch filename {
