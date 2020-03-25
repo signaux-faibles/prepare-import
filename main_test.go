@@ -4,6 +4,7 @@ package main
 
 import (
 	"sort"
+	"strings"
 	"testing"
 )
 
@@ -15,8 +16,10 @@ func TestPrepareImport(t *testing.T) {
 	}
 }
 
-func serializeSlice(strings []string) string {
-	return strings.Join(sort.Strings(strings)[:], ",")
+func serializeSlice(stringsSlice []string) string {
+	stringsClone := append(stringsSlice[:0:0], stringsSlice...)
+	sort.Strings(stringsClone)
+	return strings.Join(stringsClone, ",")
 }
 
 func TestPopulateFilesProperty(t *testing.T) {
@@ -25,8 +28,6 @@ func TestPopulateFilesProperty(t *testing.T) {
 	if filesProperty["effectif"][0] != "Sigfaibles_effectif_siret.csv" {
 		t.Error("PopulateFilesProperty should contain effectif file in \"effectif\" property")
 	}
-	// strings.Join(reg[:],",")
-	// sort.Strings(
 
 	filesProperty = PopulateFilesProperty([]string{"Sigfaibles_debits.csv"})
 	_, ok := filesProperty["debit"]
