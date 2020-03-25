@@ -6,3 +6,7 @@ package main
 func main(){
 
 }
+
+
+func PrepareImport(){
+}
