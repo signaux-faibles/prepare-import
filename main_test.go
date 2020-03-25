@@ -14,8 +14,8 @@ func TestPrepareImport(t *testing.T){
 
 func TestPopulateFilesProperty(t *testing.T){
   var filesProperty FileProperty
-  filesProperty = PopulateFilesProperty(["Sigfaibles_effectif_siret.csv"])
-  if (filesProperty["effectif"] != []string{"Sigfaibles_effectif_siret.csv"}) {
+  filesProperty = PopulateFilesProperty([]string{"Sigfaibles_effectif_siret.csv"})
+  if (filesProperty["effectif"][0] != "Sigfaibles_effectif_siret.csv") {
     t.Error("PopulateFilesProperty should contain effectif file in \"effectif\" property")
 	}
 }

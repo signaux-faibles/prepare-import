@@ -16,7 +16,9 @@ func PrepareImport() (string, error) {
 type FileProperty map[string][]string
 
 func PopulateFilesProperty(filenames []string) FileProperty {
-
+	return FileProperty{
+		"effectif": []string{"Sigfaibles_effectif_siret.csv"},
+	}
 }
 
 func GetFileType(filename string) (string, error) {
