@@ -19,12 +19,18 @@ func TestPopulateFilesProperty(t *testing.T){
     t.Error("PopulateFilesProperty should contain effectif file in \"effectif\" property")
 	}
 
+
 	filesProperty = PopulateFilesProperty([]string{"Sigfaibles_debits.csv"})
 	_, ok := filesProperty["debit"]
   if (!ok || filesProperty["debit"][0] != "Sigfaibles_debits.csv") {
     t.Error("PopulateFilesProperty should contain debits file in \"debit\" property")
 	}
 
+	filesProperty = PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
+	_, ok := filesProperty["debit"]
+  if (!ok || filesProperty["debit"][0] != "Sigfaibles_debits.csv") {
+    t.Error("PopulateFilesProperty should contain debits file in \"debit\" property")
+	}
 }
 
 func TestGetFileType(t *testing.T){

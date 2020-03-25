@@ -16,12 +16,10 @@ func PrepareImport() (string, error) {
 type FileProperty map[string][]string
 
 func PopulateFilesProperty(filenames []string) FileProperty {
-  fileProperty := FileProperty{
-    "effectif": []string{},
-    "debit": []string{},
-  }
+  fileProperty := FileProperty{}
   for _, filename := range filenames {
     filetype, _ := GetFileType(filename)
+    fileProperty[filetype] = []string{}
     fileProperty[filetype] = append(fileProperty[filetype], filename)
   }
   return fileProperty
