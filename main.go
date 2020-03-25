@@ -18,7 +18,10 @@ func PrepareImport() (string, error) {
 type FileProperty map[string][]string
 
 func PopulateFilesProperty(filenames []string) FileProperty {
-	fileProperty := FileProperty{}
+	fileProperty := FileProperty{
+		// "effectif": []string{"coucou"},
+		// "debit":    []string{},
+	}
 	for _, filename := range filenames {
 		filetype, _ := GetFileType(filename)
 		if _, exists := fileProperty[filetype]; !exists {
