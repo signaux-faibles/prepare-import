@@ -8,5 +8,7 @@ func main(){
 }
 
 
-func PrepareImport(){
+func PrepareImport() (string, error) {
+	// func Valid(data []byte) bool
+	return "{}", nil
 }
