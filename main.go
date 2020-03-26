@@ -10,6 +10,8 @@ import (
 func main() {
 }
 
+func ReadFilenames(path string) []string {}
+
 func PrepareImport(filenames []string) (FileProperty, error) {
 	// func Valid(data []byte) bool
 	fileProperty := PopulateFilesProperty(filenames)

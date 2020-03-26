@@ -8,6 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Test: ReadFilenames should return filenames in a directory
+func TestReadFilenames(t *testing.T) {
+
+}
+
 // Prepare import should return json object.
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
