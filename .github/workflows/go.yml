@@ -38,5 +38,5 @@ jobs:
     
     - name: Release version
       run: |
-        go get github.com/hekike/unchain
-        unchain release
+        # go get github.com/hekike/unchain
+        go run github.com/hekike/unchain release
