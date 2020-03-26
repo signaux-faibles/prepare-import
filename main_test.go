@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert" // go get github.com/stretchr/testify/assert
+	"github.com/stretchr/testify/assert"
 )
 
 // Prepare import should return json object.
@@ -15,7 +15,6 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		res, _ := PrepareImport([]string{"Sigfaibles_debits.csv"})
 		expected := FileProperty{"debit": []string{"Sigfaibles_debits.csv"}}
-		//isEqual(t, res, expected)
 		assert.Equal(t, expected, res)
 		//"{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}"
 	})
@@ -55,17 +54,18 @@ func TestPopulateFilesProperty(t *testing.T) {
 
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_effectif_siret.csv"})
-		isEqualSlice(t, filesProperty["effectif"], []string{"Sigfaibles_effectif_siret.csv"})
+		// isEqualSlice(t, filesProperty["effectif"], []string{"Sigfaibles_effectif_siret.csv"})
+    assert.Equal(t,  []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv"})
-		isEqualSlice(t, filesProperty["debit"], []string{"Sigfaibles_debits.csv"})
+		assert.Equal(t,  []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
-		isEqualSlice(t, filesProperty["debit"], []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
+		assert.Equal(t,  []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
 }
 
