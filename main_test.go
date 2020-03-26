@@ -12,7 +12,13 @@ import (
 )
 
 func TestMain(t *testing.T) {
-  t.Run("Should ")
+	t.Run("Should return a files property from a directory name", func(t *testing.T) {
+		res := main()
+		expected := "{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}"
+		t.Equal(t, expected, res)
+	})
+}
+
 // Test: ReadFilenames should return filenames in a directory
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
@@ -29,10 +35,10 @@ func TestReadFilenames(t *testing.T) {
 		}
 
 		filenames, err := ReadFilenames(dir)
-    if err != nil {
-      t.Fatal(err.Error())
-    }
-    assert.Equal(t, []string{"tmpfile"}, filenames)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		assert.Equal(t, []string{"tmpfile"}, filenames)
 	})
 }
 
@@ -42,7 +48,6 @@ func TestPrepareImport(t *testing.T) {
 		res, _ := PrepareImport([]string{"Sigfaibles_debits.csv"})
 		expected := FileProperty{"debit": []string{"Sigfaibles_debits.csv"}}
 		assert.Equal(t, expected, res)
-		//"{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}"
 	})
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res, _ := PrepareImport([]string{})
