@@ -4,13 +4,27 @@ package main
 
 import (
 	"testing"
+  "os"
+  "io/ioutil"
+  "path/filepath"
 
 	"github.com/stretchr/testify/assert"
 )
 
 // Test: ReadFilenames should return filenames in a directory
 func TestReadFilenames(t *testing.T) {
+  t.Run("Should return filenames in a directory", func(t *testing.T) {
+    dir, err := ioutil.TempDir(os.TempDir(), "example")
+    if err != nil {
+      t.Fatal(err.Error())
+    }
 
+    defer os.RemoveAll(dir) // clean up
+
+    tmpfn := filepath.Join(dir, "tmpfile")
+    if err := ioutil.WriteFile(tmpfn, []byte{}, 0666); err != nil {
+    }
+  })
 }
 
 // Prepare import should return json object.
