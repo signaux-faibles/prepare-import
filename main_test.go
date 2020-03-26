@@ -26,7 +26,11 @@ func TestReadFilenames(t *testing.T) {
 			t.Fatal(err.Error())
 		}
 
-		filenames := ReadFilenames(dir)
+		filenames, err := ReadFilenames(dir)
+    if err != nil {
+      t.Fatal(err.Error())
+    }
+    assert.Equal(t, []string{"tmpfile"}, filenames)
 	})
 }
 
