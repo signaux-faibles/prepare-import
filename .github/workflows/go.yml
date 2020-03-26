@@ -36,7 +36,8 @@ jobs:
     - name: Build
       run: go build -v .
     
-    - name: Release version
-      run: |
-        go get github.com/hekike/unchain
-        go run github.com/hekike/unchain release
+    # - name: Release version
+    #   run: |
+    #     git remote set-url origin https://<GITHUB_USER>:<TOKEN>@github.com/signaux-faibles/prepare-import.git
+    #     go get github.com/hekike/unchain
+    #     go run github.com/hekike/unchain release
