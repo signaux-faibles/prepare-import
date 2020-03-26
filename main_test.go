@@ -6,19 +6,22 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert" // go get github.com/stretchr/testify/assert
 )
 
 // Prepare import should return json object.
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		res, _ := PrepareImport([]string{"Sigfaibles_debits.csv"})
-		isEqual(t, res, "{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}")
+		expected := FileProperty{"debit": []string{"Sigfaibles_debits.csv"}}
+		//isEqual(t, res, expected)
+		assert.Equal(t, expected, res)
+		//"{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}"
 	})
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res, _ := PrepareImport([]string{})
-		if res != "{}" {
-			t.Error("Test failed: invalid json")
-		}
+		assert.Equal(t, FileProperty{}, res)
 	})
 }
 

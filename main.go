@@ -10,9 +10,11 @@ import (
 func main() {
 }
 
-func PrepareImport(filenames []string) (string, error) {
+func PrepareImport(filenames []string) (FileProperty, error) {
 	// func Valid(data []byte) bool
-	return "{}", nil
+	fileProperty := PopulateFilesProperty(filenames)
+
+	return fileProperty, nil
 }
 
 type FileProperty map[string][]string
