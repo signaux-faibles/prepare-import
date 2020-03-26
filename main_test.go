@@ -8,12 +8,22 @@ import (
 	"testing"
 )
 
+
+
 // Prepare import should return json object.
 func TestPrepareImport(t *testing.T) {
-	res, _ := PrepareImport()
-	if res != "{}" {
-		t.Error("Test failed: invalid json")
-	}
+  t.Run("Should return a json with one file", func(t *testing.T){
+
+    res, _ := PrepareImport([]string{"Sigfaibles_debits.csv"})
+    if res != "{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}" {
+    }
+  })
+  t.Run("Should return an empty json when there is no file", func(t *testing.T){
+    res, _ := PrepareImport()
+    if res != "{}" {
+      t.Error("Test failed: invalid json")
+    }
+  })
 }
 
 // To make slices of strings comparable.
