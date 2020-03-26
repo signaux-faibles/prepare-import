@@ -5,14 +5,35 @@ package main
 
 import (
 	"errors"
+	"io/ioutil"
+	// "log"
 )
 
 func main() {
+
 }
 
-func PrepareImport() (string, error) {
+func PrepareImport(filenames []string) (map[string]interface{}, error) {
 	// func Valid(data []byte) bool
-	return "{}", nil
+	// filenames, err := ReadFilenames(path)
+	// if err != nil {
+	//   log.Fatal(err)
+	// }
+	fileProperty := PopulateFilesProperty(filenames)
+
+	return map[string]interface{}{"files": fileProperty}, nil
+}
+
+func ReadFilenames(path string) ([]string, error) {
+	var files []string
+	fileInfo, err := ioutil.ReadDir(path)
+	if err != nil {
+		return files, err
+	}
+	for _, file := range fileInfo {
+		files = append(files, file.Name())
+	}
+	return files, nil
 }
 
 type FileProperty map[string][]string
