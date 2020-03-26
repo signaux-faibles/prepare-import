@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMain(t *testing.T) {
+  t.Run("Should ")
 // Test: ReadFilenames should return filenames in a directory
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
