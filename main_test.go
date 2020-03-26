@@ -11,13 +11,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMain(t *testing.T) {
-	t.Run("Should return a files property from a directory name", func(t *testing.T) {
-		res := main()
-		expected := "{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}"
-		t.Equal(t, expected, res)
-	})
-}
+// func TestMain(t *testing.T) {
+// 	t.Run("Should return a files property from a directory name", func(t *testing.T) {
+// 		res := main()
+// 		expected := "{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}"
+// 		t.Equal(t, expected, res)
+// 	})
+// }
 
 // Test: ReadFilenames should return filenames in a directory
 func TestReadFilenames(t *testing.T) {
@@ -46,12 +46,14 @@ func TestReadFilenames(t *testing.T) {
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		res, _ := PrepareImport([]string{"Sigfaibles_debits.csv"})
-		expected := FileProperty{"debit": []string{"Sigfaibles_debits.csv"}}
+    expected := map[string]interface{}{
+      "files":FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+    }
 		assert.Equal(t, expected, res)
 	})
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res, _ := PrepareImport([]string{})
-		assert.Equal(t, FileProperty{}, res)
+    assert.Equal(t, map[string]interface{}{"files": FileProperty{}}, res)
 	})
 }
 

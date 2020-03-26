@@ -6,9 +6,22 @@ package main
 import (
 	"errors"
   "io/ioutil"
+  // "log"
 )
 
 func main() {
+
+}
+
+func PrepareImport(filenames []string) (map[string]interface{}, error) {
+  // func Valid(data []byte) bool
+  // filenames, err := ReadFilenames(path)
+  // if err != nil {
+  //   log.Fatal(err)
+  // }
+  fileProperty := PopulateFilesProperty(filenames)
+
+  return map[string]interface{}{"files": fileProperty}, nil
 }
 
 func ReadFilenames(path string) ([]string, error) {
@@ -23,12 +36,6 @@ func ReadFilenames(path string) ([]string, error) {
   return files, nil
 }
 
-func PrepareImport(filenames []string) (FileProperty, error) {
-  // func Valid(data []byte) bool
-  fileProperty := PopulateFilesProperty(filenames)
-
-  return fileProperty, nil
-}
 
 type FileProperty map[string][]string
 
