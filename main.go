@@ -10,7 +10,7 @@ import (
 func main() {
 }
 
-func PrepareImport() (string, error) {
+func PrepareImport(filenames []string) (string, error) {
 	// func Valid(data []byte) bool
 	return "{}", nil
 }
