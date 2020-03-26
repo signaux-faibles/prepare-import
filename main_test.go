@@ -46,14 +46,14 @@ func TestReadFilenames(t *testing.T) {
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		res, _ := PrepareImport([]string{"Sigfaibles_debits.csv"})
-    expected := map[string]interface{}{
-      "files":FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
-    }
+		expected := map[string]interface{}{
+			"files": FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+		}
 		assert.Equal(t, expected, res)
 	})
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res, _ := PrepareImport([]string{})
-    assert.Equal(t, map[string]interface{}{"files": FileProperty{}}, res)
+		assert.Equal(t, map[string]interface{}{"files": FileProperty{}}, res)
 	})
 }
 
