@@ -57,10 +57,32 @@ func TestPurePrepareImport(t *testing.T) {
 		}
 		assert.Equal(t, expected, res)
 	})
+
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res := PurePrepareImport([]string{})
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
+
+	t.Run("Should support usual csv files", func(t *testing.T) {
+		files := []string{
+			// "Sigfaibles_effectif_siret.csv",
+			// "Sigfaibles_debits.csv",
+			"diane_req_2002.csv",
+			"diane_req_dom_2002.csv",
+			"effectif_dom.csv",
+			"filter_siren_2002.csv",
+			"sireneUL.csv",
+			"StockEtablissement_utf8_geo.csv",
+		}
+		res := PurePrepareImport(files)
+		resFilesProperty := res["files"].(FilesProperty)
+		resultingFiles := []string{}
+		for _, filenames := range resFilesProperty {
+			resultingFiles = append(resultingFiles, filenames...)
+		}
+		assert.Equal(t, files, resultingFiles)
+	})
+
 }
 
 func TestPopulateFilesProperty(t *testing.T) {
