@@ -26,12 +26,12 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	return PurePrepareImport(filenames)
+	return PurePrepareImport(filenames), nil
 }
 
-func PurePrepareImport(filenames []string) (AdminObject, error) {
+func PurePrepareImport(filenames []string) AdminObject {
 	filesProperty := PopulateFilesProperty(filenames)
-	return AdminObject{"files": filesProperty}, nil
+	return AdminObject{"files": filesProperty}
 }
 
 func ReadFilenames(path string) ([]string, error) {

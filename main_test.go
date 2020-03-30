@@ -61,14 +61,14 @@ func TestPrepareImport(t *testing.T) {
 // Prepare import should return json object.
 func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
-		res, _ := PurePrepareImport([]string{"Sigfaibles_debits.csv"})
+		res := PurePrepareImport([]string{"Sigfaibles_debits.csv"})
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
 		assert.Equal(t, expected, res)
 	})
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res, _ := PurePrepareImport([]string{})
+		res := PurePrepareImport([]string{})
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
 }
