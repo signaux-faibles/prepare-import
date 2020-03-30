@@ -12,7 +12,7 @@ func main() {
 	// flags
 	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
 	flag.Parse()
-	adminObject, err := PrepareImport(path)
+	adminObject, err := PrepareImport(*path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,6 +56,10 @@ func PopulateFilesProperty(filenames []string) FileProperty {
 	}
 	for _, filename := range filenames {
 		filetype, _ := GetFileType(filename)
+    if filetype == "" {
+      // Unsupported file
+      continue
+    }
 		if _, exists := fileProperty[filetype]; !exists {
 			fileProperty[filetype] = []string{}
 		}

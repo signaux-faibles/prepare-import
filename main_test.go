@@ -92,6 +92,10 @@ func TestPopulateFilesProperty(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
+  t.Run("Should not include unsupported files", func(t *testing.T) {
+    filesProperty := PopulateFilesProperty([]string{"coco.csv"})
+    assert.Equal(t, FileProperty{}, filesProperty)
+  })
 }
 
 func TestGetFileType(t *testing.T) {
