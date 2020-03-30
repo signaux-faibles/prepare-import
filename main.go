@@ -10,7 +10,9 @@ func main() {
 
 }
 
-func PrepareImport(filenames []string) (map[string]interface{}, error) {
+type AdminObject map[string]interface{}
+
+func PrepareImport(filenames []string) (AdminObject, error) {
 	// func Valid(data []byte) bool
 	// filenames, err := ReadFilenames(path)
 	// if err != nil {
@@ -18,7 +20,7 @@ func PrepareImport(filenames []string) (map[string]interface{}, error) {
 	// }
 	fileProperty := PopulateFilesProperty(filenames)
 
-	return map[string]interface{}{"files": fileProperty}, nil
+	return AdminObject{"files": fileProperty}, nil
 }
 
 func ReadFilenames(path string) ([]string, error) {
