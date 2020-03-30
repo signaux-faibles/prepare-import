@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"regexp"
 )
 
 func main() {
@@ -67,14 +68,18 @@ func PopulateFilesProperty(filenames []string) FilesProperty {
 	return filesProperty
 }
 
+var hasDianePrefix = regexp.MustCompile(`^diane`)
+
 // GetFileType returns a file type from filename, or empty string for unsupported file names
 func GetFileType(filename string) string {
-	switch filename {
-	case "Sigfaibles_effectif_siret.csv":
+	switch {
+	case hasDianePrefix.MatchString(filename):
+		return "diane"
+	case filename == "Sigfaibles_effectif_siret.csv":
 		return "effectif"
-	case "Sigfaibles_debits.csv":
+	case filename == "Sigfaibles_debits.csv":
 		return "debit"
-	case "Sigfaibles_debits2.csv":
+	case filename == "Sigfaibles_debits2.csv":
 		return "debit"
 	default:
 		return ""
