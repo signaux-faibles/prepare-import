@@ -70,6 +70,7 @@ func PopulateFilesProperty(filenames []string) FilesProperty {
 
 var hasDianePrefix = regexp.MustCompile(`^diane`)
 var mentionsEffectif = regexp.MustCompile(`effectif_`)
+var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 
 // GetFileType returns a file type from filename, or empty string for unsupported file names
 func GetFileType(filename string) string {
@@ -78,6 +79,8 @@ func GetFileType(filename string) string {
 		return "diane"
 	case mentionsEffectif.MatchString(filename):
 		return "effectif"
+	case hasFilterPrefix.MatchString(filename):
+		return "filter"
 	case filename == "Sigfaibles_debits.csv":
 		return "debit"
 	case filename == "Sigfaibles_debits2.csv":
