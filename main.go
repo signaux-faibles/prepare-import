@@ -2,12 +2,22 @@ package main
 
 import (
 	"errors"
+	"flag"
+	"fmt"
 	"io/ioutil"
-	// "log"
+	"log"
 )
 
 func main() {
-
+	// flags
+	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
+	flag.Parse()
+	adminObject, err := PrepareImport(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(adminObject)
+	// serialization
 }
 
 type AdminObject map[string]interface{}
@@ -21,13 +31,7 @@ func PrepareImport(pathname string) (AdminObject, error) {
 }
 
 func PurePrepareImport(filenames []string) (AdminObject, error) {
-	// func Valid(data []byte) bool
-	// filenames, err := ReadFilenames(path)
-	// if err != nil {
-	//   log.Fatal(err)
-	// }
 	fileProperty := PopulateFilesProperty(filenames)
-
 	return AdminObject{"files": fileProperty}, nil
 }
 
