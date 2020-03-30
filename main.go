@@ -31,8 +31,8 @@ func PrepareImport(pathname string) (AdminObject, error) {
 }
 
 func PurePrepareImport(filenames []string) (AdminObject, error) {
-	fileProperty := PopulateFilesProperty(filenames)
-	return AdminObject{"files": fileProperty}, nil
+	filesProperty := PopulateFilesProperty(filenames)
+	return AdminObject{"files": filesProperty}, nil
 }
 
 func ReadFilenames(path string) ([]string, error) {
@@ -47,25 +47,25 @@ func ReadFilenames(path string) ([]string, error) {
 	return files, nil
 }
 
-type FileProperty map[string][]string
+type FilesProperty map[string][]string
 
-func PopulateFilesProperty(filenames []string) FileProperty {
-	fileProperty := FileProperty{
+func PopulateFilesProperty(filenames []string) FilesProperty {
+	filesProperty := FilesProperty{
 		// "effectif": []string{"coucou"},
 		// "debit":    []string{},
 	}
 	for _, filename := range filenames {
 		filetype, _ := GetFileType(filename)
-    if filetype == "" {
-      // Unsupported file
-      continue
-    }
-		if _, exists := fileProperty[filetype]; !exists {
-			fileProperty[filetype] = []string{}
+		if filetype == "" {
+			// Unsupported file
+			continue
 		}
-		fileProperty[filetype] = append(fileProperty[filetype], filename)
+		if _, exists := filesProperty[filetype]; !exists {
+			filesProperty[filetype] = []string{}
+		}
+		filesProperty[filetype] = append(filesProperty[filetype], filename)
 	}
-	return fileProperty
+	return filesProperty
 }
 
 func GetFileType(filename string) (string, error) {

@@ -52,7 +52,7 @@ func TestPrepareImport(t *testing.T) {
 		dir := createTempFiles(t, "Sigfaibles_debits.csv")
 		res, _ := PrepareImport(dir)
 		expected := AdminObject{
-			"files": FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
 		assert.Equal(t, expected, res)
 	})
@@ -63,13 +63,13 @@ func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		res, _ := PurePrepareImport([]string{"Sigfaibles_debits.csv"})
 		expected := AdminObject{
-			"files": FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
 		assert.Equal(t, expected, res)
 	})
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res, _ := PurePrepareImport([]string{})
-		assert.Equal(t, AdminObject{"files": FileProperty{}}, res)
+		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
 }
 
@@ -94,7 +94,7 @@ func TestPopulateFilesProperty(t *testing.T) {
 	})
   t.Run("Should not include unsupported files", func(t *testing.T) {
     filesProperty := PopulateFilesProperty([]string{"coco.csv"})
-    assert.Equal(t, FileProperty{}, filesProperty)
+    assert.Equal(t, FilesProperty{}, filesProperty)
   })
 }
 
