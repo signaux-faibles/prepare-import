@@ -63,27 +63,23 @@ func TestPurePrepareImport(t *testing.T) {
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
 
-	/*
-		t.Run("Should support usual csv files", func(t *testing.T) {
-			files := []string{
-				// "Sigfaibles_effectif_siret.csv",
-				// "Sigfaibles_debits.csv",
-				"diane_req_2002.csv",              // --> "diane"
-				"diane_req_dom_2002.csv",          // --> "diane"
-				"effectif_dom.csv",                // --> "effectif"
-				"filter_siren_2002.csv",           // --> "filter"
-				"sireneUL.csv",                    // --> "sirene_ul"
-				"StockEtablissement_utf8_geo.csv", // --> "comptes"
-			}
-			res := PurePrepareImport(files)
-			resFilesProperty := res["files"].(FilesProperty)
-			resultingFiles := []string{}
-			for _, filenames := range resFilesProperty {
-				resultingFiles = append(resultingFiles, filenames...)
-			}
-			assert.Equal(t, files, resultingFiles)
-		})
-	*/
+	t.Run("Should support multiple types of csv files", func(t *testing.T) {
+		files := []string{
+			"diane_req_2002.csv",              // --> "diane"
+			"diane_req_dom_2002.csv",          // --> "diane"
+			"effectif_dom.csv",                // --> "effectif"
+			"filter_siren_2002.csv",           // --> "filter"
+			"sireneUL.csv",                    // --> "sirene_ul"
+			"StockEtablissement_utf8_geo.csv", // --> "comptes"
+		}
+		res := PurePrepareImport(files)
+		resFilesProperty := res["files"].(FilesProperty)
+		resultingFiles := []string{}
+		for _, filenames := range resFilesProperty {
+			resultingFiles = append(resultingFiles, filenames...)
+		}
+		assert.Equal(t, files, resultingFiles)
+	})
 }
 
 func TestPopulateFilesProperty(t *testing.T) {
