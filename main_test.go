@@ -136,7 +136,7 @@ func TestGetFileType(t *testing.T) {
 		// {"StockEtablissement_utf8_geo.csv", "comptes"},
 	}
 	for _, testCase := range cases {
-		t.Run(testCase.name, func(t *testing.T) {
+		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
 			got := GetFileType(testCase.name)
 			assert.Equal(t, testCase.category, got)
 		})
