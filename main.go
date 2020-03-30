@@ -83,6 +83,8 @@ func GetFileType(filename string) string {
 		return "filter"
 	case filename == "sireneUL.csv":
 		return "sirene_ul"
+	case filename == "StockEtablissement_utf8_geo.csv":
+		return "comptes"
 	case filename == "Sigfaibles_debits.csv":
 		return "debit"
 	case filename == "Sigfaibles_debits2.csv":
