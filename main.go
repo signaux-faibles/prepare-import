@@ -81,6 +81,8 @@ func GetFileType(filename string) string {
 		return "effectif"
 	case hasFilterPrefix.MatchString(filename):
 		return "filter"
+	case filename == "sireneUL.csv":
+		return "sirene_ul"
 	case filename == "Sigfaibles_debits.csv":
 		return "debit"
 	case filename == "Sigfaibles_debits2.csv":
