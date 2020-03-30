@@ -1,5 +1,3 @@
-// $ go test # to run the tests
-
 package main
 
 import (
@@ -10,14 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
-// func TestMain(t *testing.T) {
-// 	t.Run("Should return a files property from a directory name", func(t *testing.T) {
-// 		res := main()
-// 		expected := "{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}"
-// 		t.Equal(t, expected, res)
-// 	})
-// }
 
 func createTempFiles(t *testing.T, filename string) string {
 	t.Helper()
@@ -74,12 +64,8 @@ func TestPurePrepareImport(t *testing.T) {
 }
 
 func TestPopulateFilesProperty(t *testing.T) {
-
-	// t.Run() is used to define sub-tests. (see https://golang.org/pkg/testing/#hdr-Subtests_and_Sub_benchmarks)
-
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_effectif_siret.csv"})
-		// isEqualSlice(t, filesProperty["effectif"], []string{"Sigfaibles_effectif_siret.csv"})
 		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
 	})
 
