@@ -43,8 +43,8 @@ func TestReadFilenames(t *testing.T) {
 }
 
 func TestPrepareImport(t *testing.T) {
-  t.Run("Should return a json with one file", func(t *testing.T) {
-    // Setup the test env
+	t.Run("Should return a json with one file", func(t *testing.T) {
+		// Setup the test env
 		dir, err := ioutil.TempDir(os.TempDir(), "example")
 		if err != nil {
 			t.Fatal(err.Error())
@@ -57,14 +57,14 @@ func TestPrepareImport(t *testing.T) {
 			t.Fatal(err.Error())
 		}
 
-   // Run the actual test
-   res := PrepareImport([]string{dir})
-   expected := AdminObject{
-     "files": FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
-   }
-   assert.Equal(t, expected, res)
+		// Run the actual test
+		res, _ := PrepareImport(dir)
+		expected := AdminObject{
+			"files": FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+		}
+		assert.Equal(t, expected, res)
 
-  }
+	})
 }
 
 // Prepare import should return json object.

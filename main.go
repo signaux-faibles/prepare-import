@@ -12,6 +12,14 @@ func main() {
 
 type AdminObject map[string]interface{}
 
+func PrepareImport(pathname string) (AdminObject, error) {
+	filenames, err := ReadFilenames(pathname)
+	if err != nil {
+		return nil, err
+	}
+	return PurePrepareImport(filenames)
+}
+
 func PurePrepareImport(filenames []string) (AdminObject, error) {
 	// func Valid(data []byte) bool
 	// filenames, err := ReadFilenames(path)
