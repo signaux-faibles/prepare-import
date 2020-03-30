@@ -19,8 +19,6 @@ import (
 // 	})
 // }
 
-// var update = flag.Bool("update", false, "Update the expected test values in golden file")
-
 // Test: ReadFilenames should return filenames in a directory
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
@@ -44,17 +42,42 @@ func TestReadFilenames(t *testing.T) {
 	})
 }
 
-// Prepare import should return json object.
 func TestPrepareImport(t *testing.T) {
+  t.Run("Should return a json with one file", func(t *testing.T) {
+    // Setup the test env
+		dir, err := ioutil.TempDir(os.TempDir(), "example")
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+
+		defer os.RemoveAll(dir) // clean up
+
+		tmpFilename := filepath.Join(dir, "Sigfaibles_debits.csv")
+		if err := ioutil.WriteFile(tmpFilename, []byte{}, 0666); err != nil {
+			t.Fatal(err.Error())
+		}
+
+   // Run the actual test
+   res := PrepareImport([]string{dir})
+   expected := AdminObject{
+     "files": FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+   }
+   assert.Equal(t, expected, res)
+
+  }
+}
+
+// Prepare import should return json object.
+func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
-		res, _ := PrepareImport([]string{"Sigfaibles_debits.csv"})
+		res, _ := PurePrepareImport([]string{"Sigfaibles_debits.csv"})
 		expected := AdminObject{
 			"files": FileProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
 		assert.Equal(t, expected, res)
 	})
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res, _ := PrepareImport([]string{})
+		res, _ := PurePrepareImport([]string{})
 		assert.Equal(t, AdminObject{"files": FileProperty{}}, res)
 	})
 }
