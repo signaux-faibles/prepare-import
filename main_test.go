@@ -92,25 +92,25 @@ func TestPopulateFilesProperty(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
-  t.Run("Should not include unsupported files", func(t *testing.T) {
-    filesProperty := PopulateFilesProperty([]string{"coco.csv"})
-    assert.Equal(t, FilesProperty{}, filesProperty)
-  })
+	t.Run("Should not include unsupported files", func(t *testing.T) {
+		filesProperty := PopulateFilesProperty([]string{"coco.csv"})
+		assert.Equal(t, FilesProperty{}, filesProperty)
+	})
 }
 
 func TestGetFileType(t *testing.T) {
 	t.Run("should return \"effectif\" for \"Sigfaibles_effectif_siret.csv\"", func(t *testing.T) {
-		got, _ := GetFileType("Sigfaibles_effectif_siret.csv")
+		got := GetFileType("Sigfaibles_effectif_siret.csv")
 		assert.Equal(t, "effectif", got)
 	})
 
 	t.Run("should return \"debit\" for \"Sigfaibles_debits.csv\"", func(t *testing.T) {
-		got, _ := GetFileType("Sigfaibles_debits.csv")
+		got := GetFileType("Sigfaibles_debits.csv")
 		assert.Equal(t, "debit", got)
 	})
 
 	t.Run("should return \"debit\" for \"Sigfaibles_debits2.csv\"", func(t *testing.T) {
-		got, _ := GetFileType("Sigfaibles_debits2.csv")
+		got := GetFileType("Sigfaibles_debits2.csv")
 		assert.Equal(t, "debit", got)
 	})
 }

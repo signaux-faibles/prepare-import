@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -55,7 +54,7 @@ func PopulateFilesProperty(filenames []string) FilesProperty {
 		// "debit":    []string{},
 	}
 	for _, filename := range filenames {
-		filetype, _ := GetFileType(filename)
+		filetype := GetFileType(filename)
 		if filetype == "" {
 			// Unsupported file
 			continue
@@ -68,15 +67,16 @@ func PopulateFilesProperty(filenames []string) FilesProperty {
 	return filesProperty
 }
 
-func GetFileType(filename string) (string, error) {
+// GetFileType returns a file type from filename, or empty string for unsupported file names
+func GetFileType(filename string) string {
 	switch filename {
 	case "Sigfaibles_effectif_siret.csv":
-		return "effectif", nil
+		return "effectif"
 	case "Sigfaibles_debits.csv":
-		return "debit", nil
+		return "debit"
 	case "Sigfaibles_debits2.csv":
-		return "debit", nil
+		return "debit"
 	default:
-		return "", errors.New("Unrecognized type for " + filename)
+		return ""
 	}
 }
