@@ -19,6 +19,10 @@ import (
 // 	})
 // }
 
+func CreateTempDir() {
+	// see https://godoc.org/github.com/golang/dep/internal/test#Helper.TempDir
+}
+
 // Test: ReadFilenames should return filenames in a directory
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
