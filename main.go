@@ -16,7 +16,7 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(adminObject)
-	// serialization
+	// TODO: serialize to JSON string
 }
 
 type AdminObject map[string]interface{}
