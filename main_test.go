@@ -63,26 +63,27 @@ func TestPurePrepareImport(t *testing.T) {
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
 
-	t.Run("Should support usual csv files", func(t *testing.T) {
-		files := []string{
-			// "Sigfaibles_effectif_siret.csv",
-			// "Sigfaibles_debits.csv",
-			"diane_req_2002.csv",
-			"diane_req_dom_2002.csv",
-			"effectif_dom.csv",
-			"filter_siren_2002.csv",
-			"sireneUL.csv",
-			"StockEtablissement_utf8_geo.csv",
-		}
-		res := PurePrepareImport(files)
-		resFilesProperty := res["files"].(FilesProperty)
-		resultingFiles := []string{}
-		for _, filenames := range resFilesProperty {
-			resultingFiles = append(resultingFiles, filenames...)
-		}
-		assert.Equal(t, files, resultingFiles)
-	})
-
+	/*
+		t.Run("Should support usual csv files", func(t *testing.T) {
+			files := []string{
+				// "Sigfaibles_effectif_siret.csv",
+				// "Sigfaibles_debits.csv",
+				"diane_req_2002.csv",              // --> "diane"
+				"diane_req_dom_2002.csv",          // --> "diane"
+				"effectif_dom.csv",                // --> "effectif"
+				"filter_siren_2002.csv",           // --> "filter"
+				"sireneUL.csv",                    // --> "sirene_ul"
+				"StockEtablissement_utf8_geo.csv", // --> "comptes"
+			}
+			res := PurePrepareImport(files)
+			resFilesProperty := res["files"].(FilesProperty)
+			resultingFiles := []string{}
+			for _, filenames := range resFilesProperty {
+				resultingFiles = append(resultingFiles, filenames...)
+			}
+			assert.Equal(t, files, resultingFiles)
+		})
+	*/
 }
 
 func TestPopulateFilesProperty(t *testing.T) {
@@ -121,4 +122,23 @@ func TestGetFileType(t *testing.T) {
 		got := GetFileType("Sigfaibles_debits2.csv")
 		assert.Equal(t, "debit", got)
 	})
+
+	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
+	cases := []struct {
+		name     string
+		category string
+	}{
+		{"diane_req_2002.csv", "diane"},
+		// {"diane_req_dom_2002.csv", "diane"},
+		// {"effectif_dom.csv", "effectif"},
+		// {"filter_siren_2002.csv", "filter"},
+		// {"sireneUL.csv", "sirene_ul"},
+		// {"StockEtablissement_utf8_geo.csv", "comptes"},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			got := GetFileType(testCase.name)
+			assert.Equal(t, testCase.category, got)
+		})
+	}
 }
