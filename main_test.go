@@ -1,5 +1,3 @@
-// $ go test # to run the tests
-
 package main
 
 import (
@@ -10,14 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
-// func TestMain(t *testing.T) {
-// 	t.Run("Should return a files property from a directory name", func(t *testing.T) {
-// 		res := main()
-// 		expected := "{\"files\": {\"debit\": [\"Sigfaibles_debits.csv\"]}}"
-// 		t.Equal(t, expected, res)
-// 	})
-// }
 
 func createTempFiles(t *testing.T, filename string) string {
 	t.Helper()
@@ -67,19 +57,34 @@ func TestPurePrepareImport(t *testing.T) {
 		}
 		assert.Equal(t, expected, res)
 	})
+
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res := PurePrepareImport([]string{})
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
+
+	t.Run("Should support multiple types of csv files", func(t *testing.T) {
+		files := []string{
+			"diane_req_2002.csv",              // --> "diane"
+			"diane_req_dom_2002.csv",          // --> "diane"
+			"effectif_dom.csv",                // --> "effectif"
+			"filter_siren_2002.csv",           // --> "filter"
+			"sireneUL.csv",                    // --> "sirene_ul"
+			"StockEtablissement_utf8_geo.csv", // --> "comptes"
+		}
+		res := PurePrepareImport(files)
+		resFilesProperty := res["files"].(FilesProperty)
+		resultingFiles := []string{}
+		for _, filenames := range resFilesProperty {
+			resultingFiles = append(resultingFiles, filenames...)
+		}
+		assert.Subset(t, resultingFiles, files)
+	})
 }
 
 func TestPopulateFilesProperty(t *testing.T) {
-
-	// t.Run() is used to define sub-tests. (see https://golang.org/pkg/testing/#hdr-Subtests_and_Sub_benchmarks)
-
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_effectif_siret.csv"})
-		// isEqualSlice(t, filesProperty["effectif"], []string{"Sigfaibles_effectif_siret.csv"})
 		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
 	})
 
@@ -113,4 +118,23 @@ func TestGetFileType(t *testing.T) {
 		got := GetFileType("Sigfaibles_debits2.csv")
 		assert.Equal(t, "debit", got)
 	})
+
+	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
+	cases := []struct {
+		name     string
+		category string
+	}{
+		{"diane_req_2002.csv", "diane"},
+		{"diane_req_dom_2002.csv", "diane"},
+		{"effectif_dom.csv", "effectif"},
+		{"filter_siren_2002.csv", "filter"},
+		{"sireneUL.csv", "sirene_ul"},
+		{"StockEtablissement_utf8_geo.csv", "comptes"},
+	}
+	for _, testCase := range cases {
+		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
+			got := GetFileType(testCase.name)
+			assert.Equal(t, testCase.category, got)
+		})
+	}
 }
