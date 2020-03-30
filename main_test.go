@@ -129,7 +129,7 @@ func TestGetFileType(t *testing.T) {
 		category string
 	}{
 		{"diane_req_2002.csv", "diane"},
-		// {"diane_req_dom_2002.csv", "diane"},
+		{"diane_req_dom_2002.csv", "diane"},
 		// {"effectif_dom.csv", "effectif"},
 		// {"filter_siren_2002.csv", "filter"},
 		// {"sireneUL.csv", "sirene_ul"},
