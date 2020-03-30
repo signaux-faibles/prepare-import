@@ -133,7 +133,7 @@ func TestGetFileType(t *testing.T) {
 		{"effectif_dom.csv", "effectif"},
 		{"filter_siren_2002.csv", "filter"},
 		{"sireneUL.csv", "sirene_ul"},
-		// {"StockEtablissement_utf8_geo.csv", "comptes"},
+		{"StockEtablissement_utf8_geo.csv", "comptes"},
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
