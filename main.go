@@ -75,12 +75,6 @@ var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 // GetFileType returns a file type from filename, or empty string for unsupported file names
 func GetFileType(filename string) string {
 	switch {
-	case hasDianePrefix.MatchString(filename):
-		return "diane"
-	case mentionsEffectif.MatchString(filename):
-		return "effectif"
-	case hasFilterPrefix.MatchString(filename):
-		return "filter"
 	case filename == "sireneUL.csv":
 		return "sirene_ul"
 	case filename == "StockEtablissement_utf8_geo.csv":
@@ -89,6 +83,12 @@ func GetFileType(filename string) string {
 		return "debit"
 	case filename == "Sigfaibles_debits2.csv":
 		return "debit"
+	case hasDianePrefix.MatchString(filename):
+		return "diane"
+	case mentionsEffectif.MatchString(filename):
+		return "effectif"
+	case hasFilterPrefix.MatchString(filename):
+		return "filter"
 	default:
 		return ""
 	}
