@@ -78,7 +78,7 @@ func TestPurePrepareImport(t *testing.T) {
 		for _, filenames := range resFilesProperty {
 			resultingFiles = append(resultingFiles, filenames...)
 		}
-		assert.Equal(t, files, resultingFiles)
+		assert.Subset(t, resultingFiles, files)
 	})
 }
 
