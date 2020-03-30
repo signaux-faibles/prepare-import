@@ -1,24 +1,37 @@
 package main
 
 import (
-	"errors"
+	"flag"
+	"fmt"
 	"io/ioutil"
-	// "log"
+	"log"
 )
 
 func main() {
-
+	// flags
+	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
+	flag.Parse()
+	adminObject, err := PrepareImport(*path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(adminObject)
+	// TODO: serialize to JSON string
 }
 
-func PrepareImport(filenames []string) (map[string]interface{}, error) {
-	// func Valid(data []byte) bool
-	// filenames, err := ReadFilenames(path)
-	// if err != nil {
-	//   log.Fatal(err)
-	// }
-	fileProperty := PopulateFilesProperty(filenames)
+type AdminObject map[string]interface{}
 
-	return map[string]interface{}{"files": fileProperty}, nil
+func PrepareImport(pathname string) (AdminObject, error) {
+	filenames, err := ReadFilenames(pathname)
+	if err != nil {
+		return nil, err
+	}
+	return PurePrepareImport(filenames), nil
+}
+
+func PurePrepareImport(filenames []string) AdminObject {
+	filesProperty := PopulateFilesProperty(filenames)
+	return AdminObject{"files": filesProperty}
 }
 
 func ReadFilenames(path string) ([]string, error) {
@@ -33,32 +46,37 @@ func ReadFilenames(path string) ([]string, error) {
 	return files, nil
 }
 
-type FileProperty map[string][]string
+type FilesProperty map[string][]string
 
-func PopulateFilesProperty(filenames []string) FileProperty {
-	fileProperty := FileProperty{
+func PopulateFilesProperty(filenames []string) FilesProperty {
+	filesProperty := FilesProperty{
 		// "effectif": []string{"coucou"},
 		// "debit":    []string{},
 	}
 	for _, filename := range filenames {
-		filetype, _ := GetFileType(filename)
-		if _, exists := fileProperty[filetype]; !exists {
-			fileProperty[filetype] = []string{}
+		filetype := GetFileType(filename)
+		if filetype == "" {
+			// Unsupported file
+			continue
 		}
-		fileProperty[filetype] = append(fileProperty[filetype], filename)
+		if _, exists := filesProperty[filetype]; !exists {
+			filesProperty[filetype] = []string{}
+		}
+		filesProperty[filetype] = append(filesProperty[filetype], filename)
 	}
-	return fileProperty
+	return filesProperty
 }
 
-func GetFileType(filename string) (string, error) {
+// GetFileType returns a file type from filename, or empty string for unsupported file names
+func GetFileType(filename string) string {
 	switch filename {
 	case "Sigfaibles_effectif_siret.csv":
-		return "effectif", nil
+		return "effectif"
 	case "Sigfaibles_debits.csv":
-		return "debit", nil
+		return "debit"
 	case "Sigfaibles_debits2.csv":
-		return "debit", nil
+		return "debit"
 	default:
-		return "", errors.New("Unrecognized type for " + filename)
+		return ""
 	}
 }
