@@ -104,6 +104,12 @@ func TestPopulateFilesProperty(t *testing.T) {
 	})
 }
 
+func MakeMetadataReader(metadataFields map[string]string) func(string) UploadedFileMeta {
+	return func(filename string) UploadedFileMeta {
+		return UploadedFileMeta{"MetaData": metadataFields}
+	}
+}
+
 func TestGetFileType(t *testing.T) {
 	t.Run("should return \"effectif\" for \"Sigfaibles_effectif_siret.csv\"", func(t *testing.T) {
 		got := GetFileType("Sigfaibles_effectif_siret.csv", DefaultMetadataReader)
@@ -121,14 +127,10 @@ func TestGetFileType(t *testing.T) {
 	})
 
 	t.Run("should return \"cotisation\" for bin file which original name included \"cotisdues\"", func(t *testing.T) {
-		got := GetFileType("15b6ceeb928a3bc160b0e2dc2a794ad4.bin", func(filename string) UploadedFileMeta {
-			return UploadedFileMeta{
-				"MetaData": map[string]string{
-					"filename":  "Sigfaible_cotisdues.csv",
-					"goup-path": "urssaf",
-				},
-			}
-		})
+		got := GetFileType("15b6ceeb928a3bc160b0e2dc2a794ad4.bin", MakeMetadataReader(map[string]string{
+			"filename":  "Sigfaible_cotisdues.csv",
+			"goup-path": "urssaf",
+		}))
 		assert.Equal(t, "cotisation", got)
 	})
 
