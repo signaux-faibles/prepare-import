@@ -75,6 +75,7 @@ func PopulateFilesProperty(filenames []string) FilesProperty {
 
 var hasDianePrefix = regexp.MustCompile(`^diane`)
 var mentionsEffectif = regexp.MustCompile(`effectif_`)
+var mentionsDebits = regexp.MustCompile(`_debits`)
 var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 
 type UploadedFileMeta map[string]interface{}
@@ -84,14 +85,14 @@ func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) str
 	switch {
 	case strings.HasSuffix(filename, ".bin"):
 		metadata := getFileMeta(filename)["MetaData"].(map[string]string)
-		return metadata["goup-path"] // e.g. "urssaf"
+		return GetFileType(metadata["filename"], DefaultMetadataReader)
+	case filename == "Sigfaible_cotisdues.csv":
+		return "urssaf"
 	case filename == "sireneUL.csv":
 		return "sirene_ul"
 	case filename == "StockEtablissement_utf8_geo.csv":
 		return "comptes"
-	case filename == "Sigfaibles_debits.csv":
-		return "debit"
-	case filename == "Sigfaibles_debits2.csv":
+	case mentionsDebits.MatchString(filename):
 		return "debit"
 	case hasDianePrefix.MatchString(filename):
 		return "diane"
