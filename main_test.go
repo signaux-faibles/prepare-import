@@ -145,6 +145,10 @@ func TestGetFileType(t *testing.T) {
 		// {"xx.csv", "dpae"}, // Déclaration préalable à l'embauche => TODO: filename?
 		// {"xx.csv", "dmmo"}, // Déclaration annuelle des mouvements de main-d'œuvre => TODO: filename?
 
+		// guessed from dgefp files
+		{"act_partielle_conso_depuis2014_FRANCE.csv", "apconso"},
+		{"act_partielle_ddes_depuis2015_FRANCE.csv", "apdemande"},
+
 		// others
 		{"Sigfaibles_debits.csv", "debit"},
 		{"Sigfaibles_debits2.csv", "debit"},
