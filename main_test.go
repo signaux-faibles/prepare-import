@@ -111,28 +111,6 @@ func MakeMetadataReader(metadataFields map[string]string) func(string) UploadedF
 }
 
 func TestGetFileType(t *testing.T) {
-	t.Run("should return \"effectif\" for \"Sigfaibles_effectif_siret.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_effectif_siret.csv", DefaultMetadataReader)
-		assert.Equal(t, "effectif", got)
-	})
-
-	t.Run("should return \"debit\" for \"Sigfaibles_debits.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_debits.csv", DefaultMetadataReader)
-		assert.Equal(t, "debit", got)
-	})
-
-	t.Run("should return \"debit\" for \"Sigfaibles_debits2.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_debits2.csv", DefaultMetadataReader)
-		assert.Equal(t, "debit", got)
-	})
-
-	t.Run("should return \"cotisation\" for bin file which original name included \"cotisdues\"", func(t *testing.T) {
-		got := GetFileType("15b6ceeb928a3bc160b0e2dc2a794ad4.bin", MakeMetadataReader(map[string]string{
-			"filename":  "Sigfaible_cotisdues.csv",
-			"goup-path": "urssaf",
-		}))
-		assert.Equal(t, "cotisation", got)
-	})
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
 		got := GetFileType("9a047825d8173684b69994428449302f.bin", MakeMetadataReader(map[string]string{
@@ -147,6 +125,10 @@ func TestGetFileType(t *testing.T) {
 		name     string
 		category string
 	}{
+		{"Sigfaibles_effectif_siret.csv", "effectif"},
+		{"Sigfaibles_debits.csv", "debit"},
+		{"Sigfaibles_debits2.csv", "debit"},
+		{"Sigfaible_cotisdues.csv", "cotisation"},
 		{"diane_req_2002.csv", "diane"},
 		{"diane_req_dom_2002.csv", "diane"},
 		{"effectif_dom.csv", "effectif"},
