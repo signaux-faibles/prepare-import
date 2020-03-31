@@ -97,26 +97,47 @@ func TestPopulateFilesProperty(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
+
 	t.Run("Should not include unsupported files", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"coco.csv"})
 		assert.Equal(t, FilesProperty{}, filesProperty)
 	})
 }
 
+func MakeMetadataReader(metadataFields map[string]string) func(string) UploadedFileMeta {
+	return func(filename string) UploadedFileMeta {
+		return UploadedFileMeta{"MetaData": metadataFields}
+	}
+}
+
+func DummyMetadataReader(filename string) UploadedFileMeta {
+	return UploadedFileMeta{}
+}
+
 func TestGetFileType(t *testing.T) {
-	t.Run("should return \"effectif\" for \"Sigfaibles_effectif_siret.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_effectif_siret.csv")
-		assert.Equal(t, "effectif", got)
-	})
 
-	t.Run("should return \"debit\" for \"Sigfaibles_debits.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_debits.csv")
+	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
+		got := GetFileType("9a047825d8173684b69994428449302f.bin", MakeMetadataReader(map[string]string{
+			"filename":  "Sigfaible_debits.csv",
+			"goup-path": "urssaf",
+		}))
 		assert.Equal(t, "debit", got)
 	})
 
-	t.Run("should return \"debit\" for \"Sigfaibles_debits2.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_debits2.csv")
-		assert.Equal(t, "debit", got)
+	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
+		got := GetFileType("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadataReader(map[string]string{
+			"filename":  "FICHIER_SF_2020_02.csv",
+			"goup-path": "bdf",
+		}))
+		assert.Equal(t, "bdf", got)
+	})
+
+	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
+		got := GetFileType("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadataReader(map[string]string{
+			"filename":  "tab_19m10.sas7bdat",
+			"goup-path": "dgefp",
+		}))
+		assert.Equal(t, "interim", got)
 	})
 
 	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
@@ -124,6 +145,25 @@ func TestGetFileType(t *testing.T) {
 		name     string
 		category string
 	}{
+		// guessed from urssaf files found on stockage/goub server
+		{"Sigfaible_debits.csv", "debit"},
+		{"Sigfaible_cotisdues.csv", "cotisation"},
+		{"Sigfaible_pcoll.csv", "procol"},
+		// {"Sigfaible_etablissement_utf8.csv", "admin_urssaf"}, // to be confirmed
+		{"Sigfaible_effectif_siret.csv.csv", "effectif"}, // to be confirmed
+		{"Sigfaible_effectif_siren.csv.csv", "effectif"}, // to be confirmed
+		{"Sigfaible_delais.csv", "delai"},
+		{"Sigfaible_ccsf.csv", "ccsf"},
+		// {"xx.csv", "dpae"}, // Déclaration préalable à l'embauche => TODO: filename?
+		// {"xx.csv", "dmmo"}, // Déclaration annuelle des mouvements de main-d'œuvre => TODO: filename?
+
+		// guessed from dgefp files
+		{"act_partielle_conso_depuis2014_FRANCE.csv", "apconso"},
+		{"act_partielle_ddes_depuis2015_FRANCE.csv", "apdemande"},
+
+		// others
+		{"Sigfaibles_debits.csv", "debit"},
+		{"Sigfaibles_debits2.csv", "debit"},
 		{"diane_req_2002.csv", "diane"},
 		{"diane_req_dom_2002.csv", "diane"},
 		{"effectif_dom.csv", "effectif"},
@@ -133,7 +173,7 @@ func TestGetFileType(t *testing.T) {
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
-			got := GetFileType(testCase.name)
+			got := GetFileType(testCase.name, DummyMetadataReader)
 			assert.Equal(t, testCase.category, got)
 		})
 	}

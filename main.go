@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"regexp"
+	"strings"
 )
 
 func main() {
@@ -49,13 +50,17 @@ func ReadFilenames(path string) ([]string, error) {
 
 type FilesProperty map[string][]string
 
+func DefaultMetadataReader(filename string) UploadedFileMeta {
+	return UploadedFileMeta{} // TODO: if filename is a bin file, we should return the metadata from the corresponding info file
+}
+
 func PopulateFilesProperty(filenames []string) FilesProperty {
 	filesProperty := FilesProperty{
 		// "effectif": []string{"coucou"},
 		// "debit":    []string{},
 	}
 	for _, filename := range filenames {
-		filetype := GetFileType(filename)
+		filetype := GetFileType(filename, DefaultMetadataReader)
 		if filetype == "" {
 			// Unsupported file
 			continue
@@ -70,18 +75,39 @@ func PopulateFilesProperty(filenames []string) FilesProperty {
 
 var hasDianePrefix = regexp.MustCompile(`^diane`)
 var mentionsEffectif = regexp.MustCompile(`effectif_`)
+var mentionsDebits = regexp.MustCompile(`_debits`)
 var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 
+type UploadedFileMeta map[string]interface{}
+
 // GetFileType returns a file type from filename, or empty string for unsupported file names
-func GetFileType(filename string) string {
+func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) string {
 	switch {
+	case strings.HasSuffix(filename, ".bin"):
+		metadata := getFileMeta(filename)["MetaData"].(map[string]string)
+		if metadata["goup-path"] == "bdf" {
+			return "bdf"
+		}
+		return GetFileType(metadata["filename"], DefaultMetadataReader)
+	case filename == "act_partielle_conso_depuis2014_FRANCE.csv":
+		return "apconso"
+	case filename == "act_partielle_ddes_depuis2015_FRANCE.csv":
+		return "apdemande"
+	case filename == "Sigfaible_pcoll.csv":
+		return "procol"
+	case filename == "Sigfaible_cotisdues.csv":
+		return "cotisation"
+	case filename == "Sigfaible_delais.csv":
+		return "delai"
+	case filename == "Sigfaible_ccsf.csv":
+		return "ccsf"
 	case filename == "sireneUL.csv":
 		return "sirene_ul"
 	case filename == "StockEtablissement_utf8_geo.csv":
 		return "comptes"
-	case filename == "Sigfaibles_debits.csv":
-		return "debit"
-	case filename == "Sigfaibles_debits2.csv":
+	case strings.HasSuffix(filename, ".sas7bdat"):
+		return "interim"
+	case mentionsDebits.MatchString(filename):
 		return "debit"
 	case hasDianePrefix.MatchString(filename):
 		return "diane"
