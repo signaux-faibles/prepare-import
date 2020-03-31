@@ -86,8 +86,14 @@ func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) str
 	case strings.HasSuffix(filename, ".bin"):
 		metadata := getFileMeta(filename)["MetaData"].(map[string]string)
 		return GetFileType(metadata["filename"], DefaultMetadataReader)
+	case filename == "Sigfaible_pcoll.csv":
+		return "procol"
 	case filename == "Sigfaible_cotisdues.csv":
 		return "cotisation"
+	case filename == "Sigfaible_delais.csv":
+		return "delai"
+	case filename == "Sigfaible_ccsf.csv":
+		return "ccsf"
 	case filename == "sireneUL.csv":
 		return "sirene_ul"
 	case filename == "StockEtablissement_utf8_geo.csv":

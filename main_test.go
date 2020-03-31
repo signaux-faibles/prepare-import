@@ -130,8 +130,8 @@ func TestGetFileType(t *testing.T) {
 		{"Sigfaible_cotisdues.csv", "cotisation"},
 		{"Sigfaible_pcoll.csv", "procol"},
 		// {"Sigfaible_etablissement_utf8.csv", "admin_urssaf"}, // to be confirmed
-		{"Sigfaible_effectif_siret.csv.csv", "effectif"},     // to be confirmed
-		{"Sigfaible_effectif_siren.csv.csv", "effectif"},     // to be confirmed
+		{"Sigfaible_effectif_siret.csv.csv", "effectif"}, // to be confirmed
+		{"Sigfaible_effectif_siren.csv.csv", "effectif"}, // to be confirmed
 		{"Sigfaible_delais.csv", "delai"},
 		{"Sigfaible_ccsf.csv", "ccsf"},
 		// {"xx.csv", "dpae"}, // Déclaration préalable à l'embauche => TODO: filename?
