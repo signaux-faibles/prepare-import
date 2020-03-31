@@ -51,7 +51,7 @@ func ReadFilenames(path string) ([]string, error) {
 type FilesProperty map[string][]string
 
 func DefaultMetadataReader(filename string) UploadedFileMeta {
-	return UploadedFileMeta{}
+	return UploadedFileMeta{} // TODO: if filename is a bin file, we should return the metadata from the corresponding info file
 }
 
 func PopulateFilesProperty(filenames []string) FilesProperty {

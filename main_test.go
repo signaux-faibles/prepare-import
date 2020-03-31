@@ -110,6 +110,10 @@ func MakeMetadataReader(metadataFields map[string]string) func(string) UploadedF
 	}
 }
 
+func DummyMetadataReader(filename string) UploadedFileMeta {
+	return UploadedFileMeta{}
+}
+
 func TestGetFileType(t *testing.T) {
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
@@ -169,7 +173,7 @@ func TestGetFileType(t *testing.T) {
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
-			got := GetFileType(testCase.name, DefaultMetadataReader)
+			got := GetFileType(testCase.name, DummyMetadataReader)
 			assert.Equal(t, testCase.category, got)
 		})
 	}
