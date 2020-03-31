@@ -128,6 +128,14 @@ func TestGetFileType(t *testing.T) {
 		assert.Equal(t, "bdf", got)
 	})
 
+	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
+		got := GetFileType("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadataReader(map[string]string{
+			"filename":  "tab_19m10.sas7bdat",
+			"goup-path": "dgefp",
+		}))
+		assert.Equal(t, "interim", got)
+	})
+
 	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
 	cases := []struct {
 		name     string
