@@ -149,13 +149,11 @@ func TestGetFileType(t *testing.T) {
 		{"Sigfaible_debits.csv", "debit"},
 		{"Sigfaible_cotisdues.csv", "cotisation"},
 		{"Sigfaible_pcoll.csv", "procol"},
-		// {"Sigfaible_etablissement_utf8.csv", "admin_urssaf"}, // to be confirmed
-		{"Sigfaible_effectif_siret.csv.csv", "effectif"}, // to be confirmed
-		{"Sigfaible_effectif_siren.csv.csv", "effectif"}, // to be confirmed
+		{"Sigfaible_etablissement_utf8.csv", "admin_urssaf"},
+		{"Sigfaible_effectif_siret.csv", "effectif"},
+		{"Sigfaible_effectif_siren.csv", "effectif_ent"},
 		{"Sigfaible_delais.csv", "delai"},
 		{"Sigfaible_ccsf.csv", "ccsf"},
-		// {"xx.csv", "dpae"}, // Déclaration préalable à l'embauche => TODO: filename?
-		// {"xx.csv", "dmmo"}, // Déclaration annuelle des mouvements de main-d'œuvre => TODO: filename?
 
 		// guessed from dgefp files
 		{"act_partielle_conso_depuis2014_FRANCE.csv", "apconso"},
