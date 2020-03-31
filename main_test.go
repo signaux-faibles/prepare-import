@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Helper to create temporary files, and clean up after the execution of tests
 func createTempFiles(t *testing.T, filename string) string {
 	t.Helper()
 	dir, err := ioutil.TempDir(os.TempDir(), "example")
@@ -43,6 +44,22 @@ func TestPrepareImport(t *testing.T) {
 		res, _ := PrepareImport(dir)
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+		}
+		assert.Equal(t, expected, res)
+	})
+
+	t.Run("Should support uploaded files (bin+info)", func(t *testing.T) {
+		dir := createTempFiles(t, "9a047825d8173684b69994428449302f.bin")
+
+		tmpFilename := filepath.Join(dir, "9a047825d8173684b69994428449302f.info")
+		content := []byte("{\"MetaData\":{\"filename\":\"Sigfaible_debits.csv\",\"goup-path\":\"urssaf\"}}")
+		if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
+			t.Fatal(err.Error())
+		}
+
+		res, _ := PrepareImport(dir)
+		expected := AdminObject{
+			"files": FilesProperty{"debit": []string{"9a047825d8173684b69994428449302f.bin"}},
 		}
 		assert.Equal(t, expected, res)
 	})
