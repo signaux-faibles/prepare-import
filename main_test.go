@@ -120,12 +120,12 @@ func TestGetFileType(t *testing.T) {
 		assert.Equal(t, "debit", got)
 	})
 
-	t.Run("should return \"entreprise\" for bin file which came from bdf", func(t *testing.T) {
+	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
 		got := GetFileType("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadataReader(map[string]string{
 			"filename":  "FICHIER_SF_2020_02.csv",
 			"goup-path": "bdf",
 		}))
-		assert.Equal(t, "entreprise", got)
+		assert.Equal(t, "bdf", got)
 	})
 
 	// inspired by https://github.com/golang/go/wiki/TableDrivenTests

@@ -86,7 +86,7 @@ func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) str
 	case strings.HasSuffix(filename, ".bin"):
 		metadata := getFileMeta(filename)["MetaData"].(map[string]string)
 		if metadata["goup-path"] == "bdf" {
-			return "entreprise"
+			return "bdf"
 		}
 		return GetFileType(metadata["filename"], DefaultMetadataReader)
 	case filename == "Sigfaible_pcoll.csv":
