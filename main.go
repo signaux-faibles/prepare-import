@@ -89,6 +89,10 @@ func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) str
 			return "bdf"
 		}
 		return GetFileType(metadata["filename"], DefaultMetadataReader)
+	case filename == "act_partielle_conso_depuis2014_FRANCE.csv":
+		return "apconso"
+	case filename == "act_partielle_ddes_depuis2015_FRANCE.csv":
+		return "apdemande"
 	case filename == "Sigfaible_pcoll.csv":
 		return "procol"
 	case filename == "Sigfaible_cotisdues.csv":
