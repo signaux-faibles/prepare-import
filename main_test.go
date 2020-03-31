@@ -104,20 +104,14 @@ func TestPopulateFilesProperty(t *testing.T) {
 	})
 }
 
-func MakeMetadataReader(metadataFields map[string]string) func(string) UploadedFileMeta {
-	return func(filename string) UploadedFileMeta {
-		return UploadedFileMeta{"MetaData": metadataFields}
-	}
-}
-
-func DummyMetadataReader(filename string) UploadedFileMeta {
-	return UploadedFileMeta{}
+func MakeMetadata(metadataFields map[string]string) UploadedFileMeta {
+	return UploadedFileMeta{"MetaData": metadataFields}
 }
 
 func TestGetFileType(t *testing.T) {
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
-		got := GetFileType("9a047825d8173684b69994428449302f.bin", MakeMetadataReader(map[string]string{
+		got := GetFileTypeFromMetadata("9a047825d8173684b69994428449302f.bin", MakeMetadata(map[string]string{
 			"filename":  "Sigfaible_debits.csv",
 			"goup-path": "urssaf",
 		}))
@@ -125,7 +119,7 @@ func TestGetFileType(t *testing.T) {
 	})
 
 	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
-		got := GetFileType("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadataReader(map[string]string{
+		got := GetFileTypeFromMetadata("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadata(map[string]string{
 			"filename":  "FICHIER_SF_2020_02.csv",
 			"goup-path": "bdf",
 		}))
@@ -133,7 +127,7 @@ func TestGetFileType(t *testing.T) {
 	})
 
 	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
-		got := GetFileType("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadataReader(map[string]string{
+		got := GetFileTypeFromMetadata("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadata(map[string]string{
 			"filename":  "tab_19m10.sas7bdat",
 			"goup-path": "dgefp",
 		}))
@@ -171,7 +165,7 @@ func TestGetFileType(t *testing.T) {
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
-			got := GetFileType(testCase.name, DummyMetadataReader)
+			got := GetFileType(testCase.name)
 			assert.Equal(t, testCase.category, got)
 		})
 	}

@@ -50,8 +50,8 @@ func ReadFilenames(path string) ([]string, error) {
 
 type FilesProperty map[string][]string
 
-func DefaultMetadataReader(filename string) UploadedFileMeta {
-	return UploadedFileMeta{} // TODO: if filename is a bin file, we should return the metadata from the corresponding info file
+func LoadMetadata(filename string) UploadedFileMeta {
+	return UploadedFileMeta{} // TODO
 }
 
 func PopulateFilesProperty(filenames []string) FilesProperty {
@@ -60,7 +60,13 @@ func PopulateFilesProperty(filenames []string) FilesProperty {
 		// "debit":    []string{},
 	}
 	for _, filename := range filenames {
-		filetype := GetFileType(filename, DefaultMetadataReader)
+		var filetype string
+		if strings.HasSuffix(filename, ".bin") {
+			fileinfo := LoadMetadata(strings.Replace(filename, ".bin", ".info", 1))
+			filetype = GetFileTypeFromMetadata(filename, fileinfo)
+		} else {
+			filetype = GetFileType(filename)
+		}
 		if filetype == "" {
 			// Unsupported file
 			continue
@@ -80,15 +86,18 @@ var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 
 type UploadedFileMeta map[string]interface{}
 
+func GetFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
+	metadata := fileinfo["MetaData"].(map[string]string)
+	if metadata["goup-path"] == "bdf" {
+		return "bdf"
+	} else {
+		return GetFileType(metadata["filename"])
+	}
+}
+
 // GetFileType returns a file type from filename, or empty string for unsupported file names
-func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) string {
+func GetFileType(filename string) string {
 	switch {
-	case strings.HasSuffix(filename, ".bin"):
-		metadata := getFileMeta(filename)["MetaData"].(map[string]string)
-		if metadata["goup-path"] == "bdf" {
-			return "bdf"
-		}
-		return GetFileType(metadata["filename"], DefaultMetadataReader)
 	case filename == "act_partielle_conso_depuis2014_FRANCE.csv":
 		return "apconso"
 	case filename == "act_partielle_ddes_depuis2015_FRANCE.csv":
