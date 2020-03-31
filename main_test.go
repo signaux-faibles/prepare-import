@@ -120,7 +120,7 @@ func TestGetFileType(t *testing.T) {
 		assert.Equal(t, "debit", got)
 	})
 
-	t.Run("should return \"urssaf\" for bin file which come from urssaf", func(t *testing.T) {
+	t.Run("should return \"cotisation\" for bin file which come from urssaf", func(t *testing.T) {
 		got := GetFileType("15b6ceeb928a3bc160b0e2dc2a794ad4.bin", func(filename string) UploadedFileMeta {
 			return UploadedFileMeta{
 				"MetaData": map[string]string{
@@ -131,7 +131,7 @@ func TestGetFileType(t *testing.T) {
 				},
 			}
 		})
-		assert.Equal(t, "urssaf", got)
+		assert.Equal(t, "cotisation", got)
 	})
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {

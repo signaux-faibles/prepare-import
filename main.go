@@ -87,7 +87,7 @@ func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) str
 		metadata := getFileMeta(filename)["MetaData"].(map[string]string)
 		return GetFileType(metadata["filename"], DefaultMetadataReader)
 	case filename == "Sigfaible_cotisdues.csv":
-		return "urssaf"
+		return "cotisation"
 	case filename == "sireneUL.csv":
 		return "sirene_ul"
 	case filename == "StockEtablissement_utf8_geo.csv":
