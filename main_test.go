@@ -120,14 +120,12 @@ func TestGetFileType(t *testing.T) {
 		assert.Equal(t, "debit", got)
 	})
 
-	t.Run("should return \"cotisation\" for bin file which come from urssaf", func(t *testing.T) {
+	t.Run("should return \"cotisation\" for bin file which original name included \"cotisdues\"", func(t *testing.T) {
 		got := GetFileType("15b6ceeb928a3bc160b0e2dc2a794ad4.bin", func(filename string) UploadedFileMeta {
 			return UploadedFileMeta{
 				"MetaData": map[string]string{
 					"filename":  "Sigfaible_cotisdues.csv",
-					"filetype":  "application/vnd.ms-excel",
 					"goup-path": "urssaf",
-					"private":   "false",
 				},
 			}
 		})
@@ -135,13 +133,11 @@ func TestGetFileType(t *testing.T) {
 	})
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
-		got := GetFileType("15b6ceeb928a3bc160b0e2dc2a794ad4.bin", func(filename string) UploadedFileMeta {
+		got := GetFileType("9a047825d8173684b69994428449302f.bin", func(filename string) UploadedFileMeta {
 			return UploadedFileMeta{
 				"MetaData": map[string]string{
 					"filename":  "Sigfaible_debits.csv",
-					"filetype":  "application/vnd.ms-excel",
 					"goup-path": "urssaf",
-					"private":   "false",
 				},
 			}
 		})
