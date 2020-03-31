@@ -97,6 +97,7 @@ func TestPopulateFilesProperty(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
+
 	t.Run("Should not include unsupported files", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"coco.csv"})
 		assert.Equal(t, FilesProperty{}, filesProperty)
@@ -105,22 +106,21 @@ func TestPopulateFilesProperty(t *testing.T) {
 
 func TestGetFileType(t *testing.T) {
 	t.Run("should return \"effectif\" for \"Sigfaibles_effectif_siret.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_effectif_siret.csv")
+		got := GetFileType("Sigfaibles_effectif_siret.csv", DefaultMetadataReader)
 		assert.Equal(t, "effectif", got)
 	})
 
 	t.Run("should return \"debit\" for \"Sigfaibles_debits.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_debits.csv")
+		got := GetFileType("Sigfaibles_debits.csv", DefaultMetadataReader)
 		assert.Equal(t, "debit", got)
 	})
 
 	t.Run("should return \"debit\" for \"Sigfaibles_debits2.csv\"", func(t *testing.T) {
-		got := GetFileType("Sigfaibles_debits2.csv")
+		got := GetFileType("Sigfaibles_debits2.csv", DefaultMetadataReader)
 		assert.Equal(t, "debit", got)
 	})
 
 	t.Run("should return \"urssaf\" for bin file which come from urssaf", func(t *testing.T) {
-		type UploadedFileMeta map[string]interface{}
 		got := GetFileType("15b6ceeb928a3bc160b0e2dc2a794ad4.bin", func(filename string) UploadedFileMeta {
 			return UploadedFileMeta{
 				"MetaData": map[string]string{
@@ -148,7 +148,7 @@ func TestGetFileType(t *testing.T) {
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
-			got := GetFileType(testCase.name)
+			got := GetFileType(testCase.name, DefaultMetadataReader)
 			assert.Equal(t, testCase.category, got)
 		})
 	}

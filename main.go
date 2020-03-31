@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"regexp"
+	"strings"
 )
 
 func main() {
@@ -49,13 +50,17 @@ func ReadFilenames(path string) ([]string, error) {
 
 type FilesProperty map[string][]string
 
+func DefaultMetadataReader(filename string) UploadedFileMeta {
+	return UploadedFileMeta{} // TODO
+}
+
 func PopulateFilesProperty(filenames []string) FilesProperty {
 	filesProperty := FilesProperty{
 		// "effectif": []string{"coucou"},
 		// "debit":    []string{},
 	}
 	for _, filename := range filenames {
-		filetype := GetFileType(filename)
+		filetype := GetFileType(filename, DefaultMetadataReader)
 		if filetype == "" {
 			// Unsupported file
 			continue
@@ -72,9 +77,14 @@ var hasDianePrefix = regexp.MustCompile(`^diane`)
 var mentionsEffectif = regexp.MustCompile(`effectif_`)
 var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 
+type UploadedFileMeta map[string]interface{}
+
 // GetFileType returns a file type from filename, or empty string for unsupported file names
-func GetFileType(filename string) string {
+func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) string {
 	switch {
+	case strings.HasSuffix(filename, ".bin"):
+		metadata := getFileMeta(filename)["MetaData"].(map[string]string)
+		return metadata["goup-path"] // e.g. "urssaf"
 	case filename == "sireneUL.csv":
 		return "sirene_ul"
 	case filename == "StockEtablissement_utf8_geo.csv":
