@@ -51,7 +51,7 @@ func ReadFilenames(path string) ([]string, error) {
 type FilesProperty map[string][]string
 
 func DefaultMetadataReader(filename string) UploadedFileMeta {
-	return UploadedFileMeta{} // TODO
+	return UploadedFileMeta{}
 }
 
 func PopulateFilesProperty(filenames []string) FilesProperty {
