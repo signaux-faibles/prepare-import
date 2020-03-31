@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -28,11 +30,12 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	return PurePrepareImport(filenames), nil
+	return PurePrepareImport(filenames, pathname), nil
 }
 
-func PurePrepareImport(filenames []string) AdminObject {
-	filesProperty := PopulateFilesProperty(filenames)
+// TODO: PurePrepareImport is not pure anymore, because it takes a path, and can indirectly read files
+func PurePrepareImport(filenames []string, path string) AdminObject {
+	filesProperty := PopulateFilesProperty(filenames, path)
 	return AdminObject{"files": filesProperty}
 }
 
@@ -50,11 +53,25 @@ func ReadFilenames(path string) ([]string, error) {
 
 type FilesProperty map[string][]string
 
-func LoadMetadata(filename string) UploadedFileMeta {
-	return UploadedFileMeta{} // TODO
+func LoadMetadata(filepath string) (UploadedFileMeta, error) {
+
+	// read file
+	data, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return UploadedFileMeta{}, err
+	}
+
+	// unmarshall data from json
+	var uploadedFileMeta UploadedFileMeta
+	err = json.Unmarshal(data, &uploadedFileMeta)
+	if err != nil {
+		return UploadedFileMeta{}, err
+	}
+
+	return uploadedFileMeta, nil
 }
 
-func PopulateFilesProperty(filenames []string) FilesProperty {
+func PopulateFilesProperty(filenames []string, path string) FilesProperty {
 	filesProperty := FilesProperty{
 		// "effectif": []string{"coucou"},
 		// "debit":    []string{},
@@ -62,7 +79,11 @@ func PopulateFilesProperty(filenames []string) FilesProperty {
 	for _, filename := range filenames {
 		var filetype string
 		if strings.HasSuffix(filename, ".bin") {
-			fileinfo := LoadMetadata(strings.Replace(filename, ".bin", ".info", 1))
+			metaFilepath := filepath.Join(path, strings.Replace(filename, ".bin", ".info", 1))
+			fileinfo, err := LoadMetadata(metaFilepath)
+			if err != nil {
+				log.Fatal(err)
+			}
 			filetype = GetFileTypeFromMetadata(filename, fileinfo)
 		} else {
 			filetype = GetFileType(filename)
@@ -84,10 +105,14 @@ var mentionsEffectif = regexp.MustCompile(`effectif_`)
 var mentionsDebits = regexp.MustCompile(`_debits`)
 var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 
-type UploadedFileMeta map[string]interface{}
+type MetadataProperty map[string]string
+
+type UploadedFileMeta struct {
+	MetaData MetadataProperty
+}
 
 func GetFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
-	metadata := fileinfo["MetaData"].(map[string]string)
+	metadata := fileinfo.MetaData
 	if metadata["goup-path"] == "bdf" {
 		return "bdf"
 	} else {
