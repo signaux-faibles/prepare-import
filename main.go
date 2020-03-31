@@ -105,6 +105,8 @@ func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) str
 		return "sirene_ul"
 	case filename == "StockEtablissement_utf8_geo.csv":
 		return "comptes"
+	case strings.HasSuffix(filename, ".sas7bdat"):
+		return "interim"
 	case mentionsDebits.MatchString(filename):
 		return "debit"
 	case hasDianePrefix.MatchString(filename):
