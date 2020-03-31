@@ -125,10 +125,21 @@ func TestGetFileType(t *testing.T) {
 		name     string
 		category string
 	}{
-		{"Sigfaibles_effectif_siret.csv", "effectif"},
+		// guessed from urssaf files found on stockage/goub server
+		{"Sigfaible_debits.csv", "debit"},
+		{"Sigfaible_cotisdues.csv", "cotisation"},
+		{"Sigfaible_pcoll.csv", "procol"},
+		// {"Sigfaible_etablissement_utf8.csv", "admin_urssaf"}, // to be confirmed
+		{"Sigfaible_effectif_siret.csv.csv", "effectif"},     // to be confirmed
+		{"Sigfaible_effectif_siren.csv.csv", "effectif"},     // to be confirmed
+		{"Sigfaible_delais.csv", "delai"},
+		{"Sigfaible_ccsf.csv", "ccsf"},
+		// {"xx.csv", "dpae"}, // Déclaration préalable à l'embauche => TODO: filename?
+		// {"xx.csv", "dmmo"}, // Déclaration annuelle des mouvements de main-d'œuvre => TODO: filename?
+
+		// others
 		{"Sigfaibles_debits.csv", "debit"},
 		{"Sigfaibles_debits2.csv", "debit"},
-		{"Sigfaible_cotisdues.csv", "cotisation"},
 		{"diane_req_2002.csv", "diane"},
 		{"diane_req_dom_2002.csv", "diane"},
 		{"effectif_dom.csv", "effectif"},
