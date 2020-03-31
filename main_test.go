@@ -135,14 +135,10 @@ func TestGetFileType(t *testing.T) {
 	})
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
-		got := GetFileType("9a047825d8173684b69994428449302f.bin", func(filename string) UploadedFileMeta {
-			return UploadedFileMeta{
-				"MetaData": map[string]string{
-					"filename":  "Sigfaible_debits.csv",
-					"goup-path": "urssaf",
-				},
-			}
-		})
+		got := GetFileType("9a047825d8173684b69994428449302f.bin", MakeMetadataReader(map[string]string{
+			"filename":  "Sigfaible_debits.csv",
+			"goup-path": "urssaf",
+		}))
 		assert.Equal(t, "debit", got)
 	})
 
