@@ -93,6 +93,10 @@ func GetFileType(filename string, getFileMeta func(string) UploadedFileMeta) str
 		return "apconso"
 	case filename == "act_partielle_ddes_depuis2015_FRANCE.csv":
 		return "apdemande"
+	case filename == "Sigfaible_etablissement_utf8.csv":
+		return "admin_urssaf"
+	case filename == "Sigfaible_effectif_siren.csv":
+		return "effectif_ent"
 	case filename == "Sigfaible_pcoll.csv":
 		return "procol"
 	case filename == "Sigfaible_cotisdues.csv":
