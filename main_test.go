@@ -119,6 +119,21 @@ func TestGetFileType(t *testing.T) {
 		assert.Equal(t, "debit", got)
 	})
 
+	t.Run("should return \"urssaf\" for bin file which come from urssaf", func(t *testing.T) {
+		type UploadedFileMeta map[string]interface{}
+		got := GetFileType("15b6ceeb928a3bc160b0e2dc2a794ad4.bin", func(filename string) UploadedFileMeta {
+			return UploadedFileMeta{
+				"MetaData": map[string]string{
+					"filename":  "Sigfaible_cotisdues.csv",
+					"filetype":  "application/vnd.ms-excel",
+					"goup-path": "urssaf",
+					"private":   "false",
+				},
+			}
+		})
+		assert.Equal(t, "urssaf", got)
+	})
+
 	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
 	cases := []struct {
 		name     string
