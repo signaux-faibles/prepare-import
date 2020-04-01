@@ -8,7 +8,6 @@ import (
 	// "flag"
 	// "fmt"
 	"io/ioutil"
-	// "log"
 	"regexp"
 	"strings"
 )
@@ -29,11 +28,9 @@ func main() {
 
 type AdminObject map[string]interface{}
 
-
 type Filename interface {
 	GetFilenameToImport() string // the name as it will be stored in Admin
-	GetOriginalFilename() string // the name as it may be defined in the metadata file
-  GetFiletype() string
+	GetFiletype() string
 }
 
 type SimpleFilename struct {
@@ -41,14 +38,10 @@ type SimpleFilename struct {
 }
 
 func (ffn SimpleFilename) GetFiletype() string {
-  return GetFileType(ffn.filename)
+	return GetFileType(ffn.filename)
 }
 
 func (ffn SimpleFilename) GetFilenameToImport() string {
-	return ffn.filename
-}
-
-func (ffn SimpleFilename) GetOriginalFilename() string {
 	return ffn.filename
 }
 
@@ -57,25 +50,14 @@ type UploadedFilename struct {
 	path     string
 }
 
-
 func (ffn UploadedFilename) GetFiletype() string {
 	metaFilepath := filepath.Join(ffn.path, strings.Replace(ffn.filename, ".bin", ".info", 1))
 	fileinfo, err := LoadMetadata(metaFilepath)
 	if err != nil {
 		log.Fatal(err)
 	}
-  filetype := GetFileTypeFromMetadata(metaFilepath, fileinfo)
+	filetype := GetFileTypeFromMetadata(metaFilepath, fileinfo)
 	return filetype // e.g. "Sigfaible_debits.csv"
-}
-
-func (ffn UploadedFilename) GetOriginalFilename() string {
-	metaFilepath := filepath.Join(ffn.path, strings.Replace(ffn.filename, ".bin", ".info", 1))
-	fileinfo, err := LoadMetadata(metaFilepath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// filetype = GetFileTypeFromMetadata(filename, fileinfo)
-	return fileinfo.MetaData["filename"] // e.g. "Sigfaible_debits.csv"
 }
 
 func (ffn UploadedFilename) GetFilenameToImport() string {
@@ -99,13 +81,6 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	}
 	return PurePrepareImport(augmentedFiles), nil
 }
-
-// TODO: OldPurePrepareImport is not pure anymore, because it takes a path, and can indirectly read files
-// func OldPurePrepareImport(filenames []string, path string) AdminObject {
-// 	filesProperty := PopulateFilesProperty(filenames, path)
-// 	return AdminObject{"files": filesProperty}
-// }
-
 
 func PurePrepareImport(augmentedFilenames []Filename) AdminObject {
 	filesProperty := PopulateFilesProperty(augmentedFilenames)
@@ -144,44 +119,10 @@ func LoadMetadata(filepath string) (UploadedFileMeta, error) {
 	return uploadedFileMeta, nil
 }
 
-// func PopulateFilesProperty(filenames []string, path string) FilesProperty {
-// 	filesProperty := FilesProperty{
-// 		// "effectif": []string{"coucou"},
-// 		// "debit":    []string{},
-// 	}
-// 	for _, filename := range filenames {
-// 		var filetype string
-// 		if strings.HasSuffix(filename, ".bin") {
-// 			metaFilepath := filepath.Join(path, strings.Replace(filename, ".bin", ".info", 1))
-// 			fileinfo, err := LoadMetadata(metaFilepath)
-// 			if err != nil {
-// 				log.Fatal(err)
-// 			}
-// 			filetype = GetFileTypeFromMetadata(filename, fileinfo)
-// 		} else {
-// 			filetype = GetFileType(filename)
-// 		}
-// 		if filetype == "" {
-// 			// Unsupported file
-// 			continue
-// 		}
-// 		if _, exists := filesProperty[filetype]; !exists {
-// 			filesProperty[filetype] = []string{}
-// 		}
-// 		filesProperty[filetype] = append(filesProperty[filetype], filename)
-// 	}
-// 	return filesProperty
-// }
-
 func PopulateFilesProperty(filenames []Filename) FilesProperty {
-	filesProperty := FilesProperty{
-		// "effectif": []string{"coucou"},
-		// "debit":    []string{},
-	}
+	filesProperty := FilesProperty{}
 	for _, filename := range filenames {
-		var filetype string
-
-		filetype = GetFileType(filename.GetOriginalFilename())
+		filetype := filename.GetFiletype()
 
 		if filetype == "" {
 			// Unsupported file

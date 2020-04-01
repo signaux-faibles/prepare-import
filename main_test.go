@@ -63,6 +63,22 @@ func TestPrepareImport(t *testing.T) {
 		}
 		assert.Equal(t, expected, res)
 	})
+
+	t.Run("Should use goup-path to detect file type", func(t *testing.T) {
+		dir := createTempFiles(t, "60d1bd320523904d8b8b427efbbd3928.bin")
+
+		tmpFilename := filepath.Join(dir, "60d1bd320523904d8b8b427efbbd3928.info")
+		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
+		if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
+			t.Fatal(err.Error())
+		}
+
+		res, _ := PrepareImport(dir)
+		expected := AdminObject{
+			"files": FilesProperty{"bdf": []string{"60d1bd320523904d8b8b427efbbd3928.bin"}},
+		}
+		assert.Equal(t, expected, res)
+	})
 }
 
 func TestPurePrepareImport(t *testing.T) {
