@@ -99,6 +99,25 @@ func TestOldPurePrepareImport(t *testing.T) {
 	})
 }
 
+type FakeFileName string
+
+func (ffn FakeFileName) GetFilenameToImport() string{
+  return ffn.(string)
+}
+
+
+func TestPurePrepareImport(t *testing.T) {
+	t.Run("Should return the filename in the debit property", func(t *testing.T) {
+    filename := Filename{}
+
+		res := PurePrepareImport([]string{"Sigfaibles_debits.csv"})
+		expected := AdminObject{
+			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+		}
+		assert.Equal(t, expected, res)
+	})
+}
+
 func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_effectif_siret.csv"}, "")

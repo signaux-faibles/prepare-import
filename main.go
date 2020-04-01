@@ -42,7 +42,8 @@ func OldPurePrepareImport(filenames []string, path string) AdminObject {
 }
 
 type Filename interface{
-	func GetFilenameToImport() string
+	GetFilenameToImport() string // the name as it will be stored in Admin
+  GetOriginalFilename() string // the name as it may be defined in the metadata file
 }
 
 func PurePrepareImport(augmentedFilenames []Filename) AdminObject {
