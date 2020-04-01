@@ -188,14 +188,14 @@ type UploadedFileMeta struct {
 	MetaData MetadataProperty
 }
 
-func GetFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
-	metadata := fileinfo.MetaData
-	if metadata["goup-path"] == "bdf" {
-		return "bdf"
-	} else {
-		return GetFileType(metadata["filename"])
-	}
-}
+// func GetFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
+// 	metadata := fileinfo.MetaData
+// 	if metadata["goup-path"] == "bdf" {
+// 		return "bdf"
+// 	} else {
+// 		return GetFileType(metadata["filename"])
+// 	}
+// }
 
 // GetFileType returns a file type from filename, or empty string for unsupported file names
 func GetFileType(filename string) string {

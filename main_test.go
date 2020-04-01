@@ -26,17 +26,17 @@ func createTempFiles(t *testing.T, filename string) string {
 	return dir
 }
 
-// // Test: ReadFilenames should return filenames in a directory
-// func TestReadFilenames(t *testing.T) {
-// 	t.Run("Should return filenames in a directory", func(t *testing.T) {
-// 		dir := createTempFiles(t, "tmpfile")
-// 		filenames, err := ReadFilenames(dir)
-// 		if err != nil {
-// 			t.Fatal(err.Error())
-// 		}
-// 		assert.Equal(t, []string{"tmpfile"}, filenames)
-// 	})
-// }
+// Test: ReadFilenames should return filenames in a directory
+func TestReadFilenames(t *testing.T) {
+	t.Run("Should return filenames in a directory", func(t *testing.T) {
+		dir := createTempFiles(t, "tmpfile")
+		filenames, err := ReadFilenames(dir)
+		if err != nil {
+			t.Fatal(err.Error())
+		}
+		assert.Equal(t, []string{"tmpfile"}, filenames)
+	})
+}
 
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
