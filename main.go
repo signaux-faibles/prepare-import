@@ -38,6 +38,21 @@ func (ffn SimpleFilename) GetOriginalFilename() string {
 	return ffn.filename
 }
 
+type UploadedFilename struct {
+  filename string
+  path string
+}
+
+func (ffn UploadedFilename) GetOriginalFilename() string {
+  //TODO read from metadata
+  // return ffn.filename
+  return ffn.filename
+}
+
+func (ffn UploadedFilename) GetFilenameToImport() string {
+  return ffn.filename
+}
+
 func PrepareImport(pathname string) (AdminObject, error) {
 	filenames, err := ReadFilenames(pathname)
 	if err != nil {
@@ -45,7 +60,13 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	}
 	augmentedFiles := []Filename{}
 	for _, file := range filenames {
-		augmentedFiles = append(augmentedFiles, SimpleFilename{file})
+    var filename Filename
+    if strings.HasSuffix(file, ".bin") {
+      filename = UploadedFilename{file, pathname}
+    } else {
+      filename = SimpleFilename{file}
+    }
+		augmentedFiles = append(augmentedFiles, filename)
 	}
 	return PurePrepareImport(augmentedFiles), nil
 }
