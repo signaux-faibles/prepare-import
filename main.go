@@ -2,43 +2,43 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
-	"fmt"
+	// "flag"
+	// "fmt"
 	"io/ioutil"
-	"log"
+	// "log"
 	"regexp"
 	"strings"
 )
 
 func main() {
-	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
-	flag.Parse()
-	adminObject, err := PrepareImport(*path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	json, err := json.MarshalIndent(adminObject, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(json))
+	// var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
+	// flag.Parse()
+	// adminObject, err := PrepareImport(*path)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// json, err := json.MarshalIndent(adminObject, "", "  ")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(string(json))
 }
 
 type AdminObject map[string]interface{}
 
-func PrepareImport(pathname string) (AdminObject, error) {
-	filenames, err := ReadFilenames(pathname)
-	if err != nil {
-		return nil, err
-	}
-	return OldPurePrepareImport(filenames, pathname), nil
-}
+// func PrepareImport(pathname string) (AdminObject, error) {
+// 	filenames, err := ReadFilenames(pathname)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return PurePrepareImport(filenames, pathname), nil
+// }
 
 // TODO: OldPurePrepareImport is not pure anymore, because it takes a path, and can indirectly read files
-func OldPurePrepareImport(filenames []string, path string) AdminObject {
-	filesProperty := PopulateFilesProperty(filenames, path)
-	return AdminObject{"files": filesProperty}
-}
+// func OldPurePrepareImport(filenames []string, path string) AdminObject {
+// 	filesProperty := PopulateFilesProperty(filenames, path)
+// 	return AdminObject{"files": filesProperty}
+// }
 
 type Filename interface {
 	GetFilenameToImport() string // the name as it will be stored in Admin
@@ -118,13 +118,9 @@ func PopulateFilesProperty(filenames []Filename) FilesProperty {
 	}
 	for _, filename := range filenames {
 		var filetype string
-		if strings.HasSuffix(filename.GetFilenameToImport(), ".bin") {
-			filename.GetOriginalFilename()
 
-			filetype = GetFileTypeFromMetadata(filename, fileinfo)
-		} else {
-			filetype = GetFileType(filename)
-		}
+    filetype = GetFileType(filename.GetOriginalFilename())
+
 		if filetype == "" {
 			// Unsupported file
 			continue
@@ -132,7 +128,7 @@ func PopulateFilesProperty(filenames []Filename) FilesProperty {
 		if _, exists := filesProperty[filetype]; !exists {
 			filesProperty[filetype] = []string{}
 		}
-		filesProperty[filetype] = append(filesProperty[filetype], filename)
+		filesProperty[filetype] = append(filesProperty[filetype], filename.GetFilenameToImport())
 	}
 	return filesProperty
 }
