@@ -119,7 +119,7 @@ func PopulateFilesProperty(filenames []Filename) FilesProperty {
 	for _, filename := range filenames {
 		var filetype string
 
-    filetype = GetFileType(filename.GetOriginalFilename())
+		filetype = GetFileType(filename.GetOriginalFilename())
 
 		if filetype == "" {
 			// Unsupported file

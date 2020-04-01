@@ -62,40 +62,6 @@ import (
 // 	})
 // }
 
-// // Prepare import should return json object.
-// func TestOldPurePrepareImport(t *testing.T) {
-// 	t.Run("Should return a json with one file", func(t *testing.T) {
-// 		res := OldPurePrepareImport([]string{"Sigfaibles_debits.csv"}, "")
-// 		expected := AdminObject{
-// 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
-// 		}
-// 		assert.Equal(t, expected, res)
-// 	})
-
-// 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-// 		res := OldPurePrepareImport([]string{}, "")
-// 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
-// 	})
-
-// 	t.Run("Should support multiple types of csv files", func(t *testing.T) {
-// 		files := []string{
-// 			"diane_req_2002.csv",              // --> "diane"
-// 			"diane_req_dom_2002.csv",          // --> "diane"
-// 			"effectif_dom.csv",                // --> "effectif"
-// 			"filter_siren_2002.csv",           // --> "filter"
-// 			"sireneUL.csv",                    // --> "sirene_ul"
-// 			"StockEtablissement_utf8_geo.csv", // --> "comptes"
-// 		}
-// 		res := OldPurePrepareImport(files, "")
-// 		resFilesProperty := res["files"].(FilesProperty)
-// 		resultingFiles := []string{}
-// 		for _, filenames := range resFilesProperty {
-// 			resultingFiles = append(resultingFiles, filenames...)
-// 		}
-// 		assert.Subset(t, resultingFiles, files)
-// 	})
-// }
-
 type FakeFilename struct {
 	filename string
 }
@@ -117,6 +83,33 @@ func TestPurePrepareImport(t *testing.T) {
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
 		assert.Equal(t, expected, res)
+	})
+
+	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
+		res := PurePrepareImport([]Filename{})
+		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
+	})
+
+	t.Run("Should support multiple types of csv files", func(t *testing.T) {
+		files := []string{
+			"diane_req_2002.csv",              // --> "diane"
+			"diane_req_dom_2002.csv",          // --> "diane"
+			"effectif_dom.csv",                // --> "effectif"
+			"filter_siren_2002.csv",           // --> "filter"
+			"sireneUL.csv",                    // --> "sirene_ul"
+			"StockEtablissement_utf8_geo.csv", // --> "comptes"
+		}
+		augmentedFiles := []Filename{}
+		for _, file := range files {
+			augmentedFiles = append(augmentedFiles, FakeFilename{file})
+		}
+		res := PurePrepareImport(augmentedFiles)
+		resFilesProperty := res["files"].(FilesProperty)
+		resultingFiles := []string{}
+		for _, filenames := range resFilesProperty {
+			resultingFiles = append(resultingFiles, filenames...)
+		}
+		assert.Subset(t, resultingFiles, files)
 	})
 }
 
