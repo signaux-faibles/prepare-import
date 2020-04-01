@@ -19,8 +19,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(adminObject)
-	// TODO: serialize to JSON string
+  json, err := json.MarshalIndent(adminObject, "", "  ")
+  if (err != nil) {
+    log.Fatal(err)
+  }
+	fmt.Println(string(json))
 }
 
 type AdminObject map[string]interface{}
