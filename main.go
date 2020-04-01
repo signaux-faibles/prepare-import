@@ -7,8 +7,6 @@ import (
 	"log"
 	"path/filepath"
 
-	// "flag"
-	// "fmt"
 	"io/ioutil"
 	"regexp"
 	"strings"
@@ -32,14 +30,14 @@ type AdminObject map[string]interface{}
 
 type Filename interface {
 	GetFilenameToImport() string // the name as it will be stored in Admin
-	GetFiletype() string
+	DetectFileType() string
 }
 
 type SimpleFilename struct {
 	filename string
 }
 
-func (ffn SimpleFilename) GetFiletype() string {
+func (ffn SimpleFilename) DetectFileType() string {
 	return GetFileType(ffn.filename)
 }
 
@@ -52,7 +50,7 @@ type UploadedFilename struct {
 	path     string
 }
 
-func (ffn UploadedFilename) GetFiletype() string {
+func (ffn UploadedFilename) DetectFileType() string {
 	metaFilepath := filepath.Join(ffn.path, strings.Replace(ffn.filename, ".bin", ".info", 1))
 	fileinfo, err := LoadMetadata(metaFilepath)
 	if err != nil {
@@ -124,7 +122,7 @@ func LoadMetadata(filepath string) (UploadedFileMeta, error) {
 func PopulateFilesProperty(filenames []Filename) FilesProperty {
 	filesProperty := FilesProperty{}
 	for _, filename := range filenames {
-		filetype := filename.GetFiletype()
+		filetype := filename.DetectFileType()
 
 		if filetype == "" {
 			// Unsupported file
