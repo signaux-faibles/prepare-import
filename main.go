@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -41,13 +40,13 @@ func OldPurePrepareImport(filenames []string, path string) AdminObject {
 	return AdminObject{"files": filesProperty}
 }
 
-type Filename interface{
+type Filename interface {
 	GetFilenameToImport() string // the name as it will be stored in Admin
-  GetOriginalFilename() string // the name as it may be defined in the metadata file
+	GetOriginalFilename() string // the name as it may be defined in the metadata file
 }
 
 func PurePrepareImport(augmentedFilenames []Filename) AdminObject {
-	filesProperty := PopulateFilesProperty(filenames, path)
+	filesProperty := PopulateFilesProperty(augmentedFilenames)
 	return AdminObject{"files": filesProperty}
 }
 
@@ -83,19 +82,45 @@ func LoadMetadata(filepath string) (UploadedFileMeta, error) {
 	return uploadedFileMeta, nil
 }
 
-func PopulateFilesProperty(filenames []string, path string) FilesProperty {
+// func PopulateFilesProperty(filenames []string, path string) FilesProperty {
+// 	filesProperty := FilesProperty{
+// 		// "effectif": []string{"coucou"},
+// 		// "debit":    []string{},
+// 	}
+// 	for _, filename := range filenames {
+// 		var filetype string
+// 		if strings.HasSuffix(filename, ".bin") {
+// 			metaFilepath := filepath.Join(path, strings.Replace(filename, ".bin", ".info", 1))
+// 			fileinfo, err := LoadMetadata(metaFilepath)
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			filetype = GetFileTypeFromMetadata(filename, fileinfo)
+// 		} else {
+// 			filetype = GetFileType(filename)
+// 		}
+// 		if filetype == "" {
+// 			// Unsupported file
+// 			continue
+// 		}
+// 		if _, exists := filesProperty[filetype]; !exists {
+// 			filesProperty[filetype] = []string{}
+// 		}
+// 		filesProperty[filetype] = append(filesProperty[filetype], filename)
+// 	}
+// 	return filesProperty
+// }
+
+func PopulateFilesProperty(filenames []Filename) FilesProperty {
 	filesProperty := FilesProperty{
 		// "effectif": []string{"coucou"},
 		// "debit":    []string{},
 	}
 	for _, filename := range filenames {
 		var filetype string
-		if strings.HasSuffix(filename, ".bin") {
-			metaFilepath := filepath.Join(path, strings.Replace(filename, ".bin", ".info", 1))
-			fileinfo, err := LoadMetadata(metaFilepath)
-			if err != nil {
-				log.Fatal(err)
-			}
+		if strings.HasSuffix(filename.GetFilenameToImport(), ".bin") {
+			filename.GetOriginalFilename()
+
 			filetype = GetFileTypeFromMetadata(filename, fileinfo)
 		} else {
 			filetype = GetFileType(filename)
