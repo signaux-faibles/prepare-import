@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"io/ioutil"
-	"regexp"
-	"strings"
 )
 
 func main() {
@@ -28,40 +27,40 @@ func main() {
 
 type AdminObject map[string]interface{}
 
-type Filename interface {
-	GetFilenameToImport() string // the name as it will be stored in Admin
+type DataFile interface {
+	GetFilename() string // the name as it will be stored in Admin
 	DetectFileType() string
 }
 
-type SimpleFilename struct {
+type SimpleDataFile struct {
 	filename string
 }
 
-func (ffn SimpleFilename) DetectFileType() string {
-	return GetFileType(ffn.filename)
+func (dataFile SimpleDataFile) DetectFileType() string {
+	return ExtractFileTypeFromFilename(dataFile.filename)
 }
 
-func (ffn SimpleFilename) GetFilenameToImport() string {
-	return ffn.filename
+func (dataFile SimpleDataFile) GetFilename() string {
+	return dataFile.filename
 }
 
-type UploadedFilename struct {
+type UploadedDataFile struct {
 	filename string
 	path     string
 }
 
-func (ffn UploadedFilename) DetectFileType() string {
-	metaFilepath := filepath.Join(ffn.path, strings.Replace(ffn.filename, ".bin", ".info", 1))
+func (dataFile UploadedDataFile) DetectFileType() string {
+	metaFilepath := filepath.Join(dataFile.path, strings.Replace(dataFile.filename, ".bin", ".info", 1))
 	fileinfo, err := LoadMetadata(metaFilepath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	filetype := GetFileTypeFromMetadata(metaFilepath, fileinfo)
+	filetype := ExtractFileTypeFromMetadata(metaFilepath, fileinfo)
 	return filetype // e.g. "Sigfaible_debits.csv"
 }
 
-func (ffn UploadedFilename) GetFilenameToImport() string {
-	return ffn.filename
+func (dataFile UploadedDataFile) GetFilename() string {
+	return dataFile.filename
 }
 
 func PrepareImport(pathname string) (AdminObject, error) {
@@ -69,20 +68,20 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	augmentedFiles := []Filename{}
+	augmentedFiles := []DataFile{}
 	for _, file := range filenames {
-		var filename Filename
+		var filename DataFile
 		if strings.HasSuffix(file, ".bin") {
-			filename = UploadedFilename{file, pathname}
+			filename = UploadedDataFile{file, pathname}
 		} else {
-			filename = SimpleFilename{file}
+			filename = SimpleDataFile{file}
 		}
 		augmentedFiles = append(augmentedFiles, filename)
 	}
 	return PurePrepareImport(augmentedFiles), nil
 }
 
-func PurePrepareImport(augmentedFilenames []Filename) AdminObject {
+func PurePrepareImport(augmentedFilenames []DataFile) AdminObject {
 	filesProperty := PopulateFilesProperty(augmentedFilenames)
 	return AdminObject{"files": filesProperty}
 }
@@ -119,7 +118,7 @@ func LoadMetadata(filepath string) (UploadedFileMeta, error) {
 	return uploadedFileMeta, nil
 }
 
-func PopulateFilesProperty(filenames []Filename) FilesProperty {
+func PopulateFilesProperty(filenames []DataFile) FilesProperty {
 	filesProperty := FilesProperty{}
 	for _, filename := range filenames {
 		filetype := filename.DetectFileType()
@@ -131,65 +130,7 @@ func PopulateFilesProperty(filenames []Filename) FilesProperty {
 		if _, exists := filesProperty[filetype]; !exists {
 			filesProperty[filetype] = []string{}
 		}
-		filesProperty[filetype] = append(filesProperty[filetype], filename.GetFilenameToImport())
+		filesProperty[filetype] = append(filesProperty[filetype], filename.GetFilename())
 	}
 	return filesProperty
-}
-
-var hasDianePrefix = regexp.MustCompile(`^diane`)
-var mentionsEffectif = regexp.MustCompile(`effectif_`)
-var mentionsDebits = regexp.MustCompile(`_debits`)
-var hasFilterPrefix = regexp.MustCompile(`^filter_`)
-
-type MetadataProperty map[string]string
-
-type UploadedFileMeta struct {
-	MetaData MetadataProperty
-}
-
-func GetFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
-	metadata := fileinfo.MetaData
-	if metadata["goup-path"] == "bdf" {
-		return "bdf"
-	} else {
-		return GetFileType(metadata["filename"])
-	}
-}
-
-// GetFileType returns a file type from filename, or empty string for unsupported file names
-func GetFileType(filename string) string {
-	switch {
-	case filename == "act_partielle_conso_depuis2014_FRANCE.csv":
-		return "apconso"
-	case filename == "act_partielle_ddes_depuis2015_FRANCE.csv":
-		return "apdemande"
-	case filename == "Sigfaible_etablissement_utf8.csv":
-		return "admin_urssaf"
-	case filename == "Sigfaible_effectif_siren.csv":
-		return "effectif_ent"
-	case filename == "Sigfaible_pcoll.csv":
-		return "procol"
-	case filename == "Sigfaible_cotisdues.csv":
-		return "cotisation"
-	case filename == "Sigfaible_delais.csv":
-		return "delai"
-	case filename == "Sigfaible_ccsf.csv":
-		return "ccsf"
-	case filename == "sireneUL.csv":
-		return "sirene_ul"
-	case filename == "StockEtablissement_utf8_geo.csv":
-		return "comptes"
-	case strings.HasSuffix(filename, ".sas7bdat"):
-		return "interim"
-	case mentionsDebits.MatchString(filename):
-		return "debit"
-	case hasDianePrefix.MatchString(filename):
-		return "diane"
-	case mentionsEffectif.MatchString(filename):
-		return "effectif"
-	case hasFilterPrefix.MatchString(filename):
-		return "filter"
-	default:
-		return ""
-	}
 }

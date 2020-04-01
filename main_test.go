@@ -83,9 +83,9 @@ func TestPrepareImport(t *testing.T) {
 
 func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
-		filename := SimpleFilename{"Sigfaibles_debits.csv"}
+		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res := PurePrepareImport([]Filename{filename})
+		res := PurePrepareImport([]DataFile{filename})
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
@@ -93,7 +93,7 @@ func TestPurePrepareImport(t *testing.T) {
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res := PurePrepareImport([]Filename{})
+		res := PurePrepareImport([]DataFile{})
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
 
@@ -106,9 +106,9 @@ func TestPurePrepareImport(t *testing.T) {
 			"sireneUL.csv",                    // --> "sirene_ul"
 			"StockEtablissement_utf8_geo.csv", // --> "comptes"
 		}
-		augmentedFiles := []Filename{}
+		augmentedFiles := []DataFile{}
 		for _, file := range files {
-			augmentedFiles = append(augmentedFiles, SimpleFilename{file})
+			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
 		res := PurePrepareImport(augmentedFiles)
 		resFilesProperty := res["files"].(FilesProperty)
@@ -122,22 +122,22 @@ func TestPurePrepareImport(t *testing.T) {
 
 func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]Filename{SimpleFilename{"Sigfaibles_effectif_siret.csv"}})
+		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]Filename{SimpleFilename{"Sigfaibles_debits.csv"}})
+		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]Filename{SimpleFilename{"Sigfaibles_debits.csv"}, SimpleFilename{"Sigfaibles_debits2.csv"}})
+		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("Should not include unsupported files", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]Filename{SimpleFilename{"coco.csv"}})
+		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
 		assert.Equal(t, FilesProperty{}, filesProperty)
 	})
 }
@@ -149,7 +149,7 @@ func MakeMetadata(metadataFields MetadataProperty) UploadedFileMeta {
 func TestGetFileTypeFromMetadata(t *testing.T) {
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
-		got := GetFileTypeFromMetadata("9a047825d8173684b69994428449302f.bin", MakeMetadata(MetadataProperty{
+		got := ExtractFileTypeFromMetadata("9a047825d8173684b69994428449302f.bin", MakeMetadata(MetadataProperty{
 			"filename":  "Sigfaible_debits.csv",
 			"goup-path": "urssaf",
 		}))
@@ -157,7 +157,7 @@ func TestGetFileTypeFromMetadata(t *testing.T) {
 	})
 
 	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
-		got := GetFileTypeFromMetadata("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadata(MetadataProperty{
+		got := ExtractFileTypeFromMetadata("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadata(MetadataProperty{
 			"filename":  "FICHIER_SF_2020_02.csv",
 			"goup-path": "bdf",
 		}))
@@ -165,7 +165,7 @@ func TestGetFileTypeFromMetadata(t *testing.T) {
 	})
 
 	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
-		got := GetFileTypeFromMetadata("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadata(MetadataProperty{
+		got := ExtractFileTypeFromMetadata("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadata(MetadataProperty{
 			"filename":  "tab_19m10.sas7bdat",
 			"goup-path": "dgefp",
 		}))
@@ -206,7 +206,7 @@ func TestGetFileType(t *testing.T) {
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
-			got := GetFileType(testCase.name)
+			got := ExtractFileTypeFromFilename(testCase.name)
 			assert.Equal(t, testCase.category, got)
 		})
 	}
