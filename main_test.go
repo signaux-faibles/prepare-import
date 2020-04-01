@@ -1,27 +1,30 @@
 package main
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-// // Helper to create temporary files, and clean up after the execution of tests
-// func createTempFiles(t *testing.T, filename string) string {
-// 	t.Helper()
-// 	dir, err := ioutil.TempDir(os.TempDir(), "example")
-// 	if err != nil {
-// 		t.Fatal(err.Error())
-// 	}
-// 	t.Cleanup(func() { os.RemoveAll(dir) })
+// Helper to create temporary files, and clean up after the execution of tests
+func createTempFiles(t *testing.T, filename string) string {
+	t.Helper()
+	dir, err := ioutil.TempDir(os.TempDir(), "example")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	t.Cleanup(func() { os.RemoveAll(dir) })
 
-// 	tmpFilename := filepath.Join(dir, filename)
-// 	if err := ioutil.WriteFile(tmpFilename, []byte{}, 0666); err != nil {
-// 		t.Fatal(err.Error())
-// 	}
+	tmpFilename := filepath.Join(dir, filename)
+	if err := ioutil.WriteFile(tmpFilename, []byte{}, 0666); err != nil {
+		t.Fatal(err.Error())
+	}
 
-// 	return dir
-// }
+	return dir
+}
 
 // // Test: ReadFilenames should return filenames in a directory
 // func TestReadFilenames(t *testing.T) {
@@ -35,48 +38,36 @@ import (
 // 	})
 // }
 
-// func TestPrepareImport(t *testing.T) {
-// 	t.Run("Should return a json with one file", func(t *testing.T) {
-// 		dir := createTempFiles(t, "Sigfaibles_debits.csv")
-// 		res, _ := PrepareImport(dir)
-// 		expected := AdminObject{
-// 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
-// 		}
-// 		assert.Equal(t, expected, res)
-// 	})
+func TestPrepareImport(t *testing.T) {
+	t.Run("Should return a json with one file", func(t *testing.T) {
+		dir := createTempFiles(t, "Sigfaibles_debits.csv")
+		res, _ := PrepareImport(dir)
+		expected := AdminObject{
+			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
+		}
+		assert.Equal(t, expected, res)
+	})
 
-// 	t.Run("Should support uploaded files (bin+info)", func(t *testing.T) {
-// 		dir := createTempFiles(t, "9a047825d8173684b69994428449302f.bin")
+	t.Run("Should support uploaded files (bin+info)", func(t *testing.T) {
+		dir := createTempFiles(t, "9a047825d8173684b69994428449302f.bin")
 
-// 		tmpFilename := filepath.Join(dir, "9a047825d8173684b69994428449302f.info")
-// 		content := []byte("{\"MetaData\":{\"filename\":\"Sigfaible_debits.csv\",\"goup-path\":\"urssaf\"}}")
-// 		if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
-// 			t.Fatal(err.Error())
-// 		}
+		tmpFilename := filepath.Join(dir, "9a047825d8173684b69994428449302f.info")
+		content := []byte("{\"MetaData\":{\"filename\":\"Sigfaible_debits.csv\",\"goup-path\":\"urssaf\"}}")
+		if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
+			t.Fatal(err.Error())
+		}
 
-// 		res, _ := PrepareImport(dir)
-// 		expected := AdminObject{
-// 			"files": FilesProperty{"debit": []string{"9a047825d8173684b69994428449302f.bin"}},
-// 		}
-// 		assert.Equal(t, expected, res)
-// 	})
-// }
-
-type FakeFilename struct {
-	filename string
-}
-
-func (ffn FakeFilename) GetFilenameToImport() string {
-	return ffn.filename
-}
-
-func (ffn FakeFilename) GetOriginalFilename() string {
-	return ffn.filename
+		res, _ := PrepareImport(dir)
+		expected := AdminObject{
+			"files": FilesProperty{"debit": []string{"9a047825d8173684b69994428449302f.bin"}},
+		}
+		assert.Equal(t, expected, res)
+	})
 }
 
 func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
-		filename := FakeFilename{"Sigfaibles_debits.csv"}
+		filename := SimpleFilename{"Sigfaibles_debits.csv"}
 
 		res := PurePrepareImport([]Filename{filename})
 		expected := AdminObject{
@@ -101,7 +92,7 @@ func TestPurePrepareImport(t *testing.T) {
 		}
 		augmentedFiles := []Filename{}
 		for _, file := range files {
-			augmentedFiles = append(augmentedFiles, FakeFilename{file})
+			augmentedFiles = append(augmentedFiles, SimpleFilename{file})
 		}
 		res := PurePrepareImport(augmentedFiles)
 		resFilesProperty := res["files"].(FilesProperty)
@@ -115,22 +106,22 @@ func TestPurePrepareImport(t *testing.T) {
 
 func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]Filename{FakeFilename{"Sigfaibles_effectif_siret.csv"}})
+		filesProperty := PopulateFilesProperty([]Filename{SimpleFilename{"Sigfaibles_effectif_siret.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]Filename{FakeFilename{"Sigfaibles_debits.csv"}})
+		filesProperty := PopulateFilesProperty([]Filename{SimpleFilename{"Sigfaibles_debits.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]Filename{FakeFilename{"Sigfaibles_debits.csv"}, FakeFilename{"Sigfaibles_debits2.csv"}})
+		filesProperty := PopulateFilesProperty([]Filename{SimpleFilename{"Sigfaibles_debits.csv"}, SimpleFilename{"Sigfaibles_debits2.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("Should not include unsupported files", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]Filename{FakeFilename{"coco.csv"}})
+		filesProperty := PopulateFilesProperty([]Filename{SimpleFilename{"coco.csv"}})
 		assert.Equal(t, FilesProperty{}, filesProperty)
 	})
 }

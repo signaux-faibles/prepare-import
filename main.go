@@ -26,13 +26,29 @@ func main() {
 
 type AdminObject map[string]interface{}
 
-// func PrepareImport(pathname string) (AdminObject, error) {
-// 	filenames, err := ReadFilenames(pathname)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return PurePrepareImport(filenames, pathname), nil
-// }
+type SimpleFilename struct {
+	filename string
+}
+
+func (ffn SimpleFilename) GetFilenameToImport() string {
+	return ffn.filename
+}
+
+func (ffn SimpleFilename) GetOriginalFilename() string {
+	return ffn.filename
+}
+
+func PrepareImport(pathname string) (AdminObject, error) {
+	filenames, err := ReadFilenames(pathname)
+	if err != nil {
+		return nil, err
+	}
+	augmentedFiles := []Filename{}
+	for _, file := range filenames {
+		augmentedFiles = append(augmentedFiles, SimpleFilename{file})
+	}
+	return PurePrepareImport(augmentedFiles), nil
+}
 
 // TODO: OldPurePrepareImport is not pure anymore, because it takes a path, and can indirectly read files
 // func OldPurePrepareImport(filenames []string, path string) AdminObject {
