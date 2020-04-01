@@ -29,8 +29,19 @@ func main() {
 
 type AdminObject map[string]interface{}
 
+
+type Filename interface {
+	GetFilenameToImport() string // the name as it will be stored in Admin
+	GetOriginalFilename() string // the name as it may be defined in the metadata file
+  GetFiletype() string
+}
+
 type SimpleFilename struct {
 	filename string
+}
+
+func (ffn SimpleFilename) GetFiletype() string {
+  return GetFileType(ffn.filename)
 }
 
 func (ffn SimpleFilename) GetFilenameToImport() string {
@@ -44,6 +55,17 @@ func (ffn SimpleFilename) GetOriginalFilename() string {
 type UploadedFilename struct {
 	filename string
 	path     string
+}
+
+
+func (ffn UploadedFilename) GetFiletype() string {
+	metaFilepath := filepath.Join(ffn.path, strings.Replace(ffn.filename, ".bin", ".info", 1))
+	fileinfo, err := LoadMetadata(metaFilepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+  filetype := GetFileTypeFromMetadata(metaFilepath, fileinfo)
+	return filetype // e.g. "Sigfaible_debits.csv"
 }
 
 func (ffn UploadedFilename) GetOriginalFilename() string {
@@ -84,10 +106,6 @@ func PrepareImport(pathname string) (AdminObject, error) {
 // 	return AdminObject{"files": filesProperty}
 // }
 
-type Filename interface {
-	GetFilenameToImport() string // the name as it will be stored in Admin
-	GetOriginalFilename() string // the name as it may be defined in the metadata file
-}
 
 func PurePrepareImport(augmentedFilenames []Filename) AdminObject {
 	filesProperty := PopulateFilesProperty(augmentedFilenames)
@@ -188,14 +206,14 @@ type UploadedFileMeta struct {
 	MetaData MetadataProperty
 }
 
-// func GetFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
-// 	metadata := fileinfo.MetaData
-// 	if metadata["goup-path"] == "bdf" {
-// 		return "bdf"
-// 	} else {
-// 		return GetFileType(metadata["filename"])
-// 	}
-// }
+func GetFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
+	metadata := fileinfo.MetaData
+	if metadata["goup-path"] == "bdf" {
+		return "bdf"
+	} else {
+		return GetFileType(metadata["filename"])
+	}
+}
 
 // GetFileType returns a file type from filename, or empty string for unsupported file names
 func GetFileType(filename string) string {
