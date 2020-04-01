@@ -99,18 +99,23 @@ func TestOldPurePrepareImport(t *testing.T) {
 	})
 }
 
-type FakeFileName string
-
-func (ffn FakeFileName) GetFilenameToImport() string{
-  return ffn.(string)
+type FakeFileName struct {
+	filename string
 }
 
+func (ffn FakeFileName) GetFilenameToImport() string {
+	return ffn.filename
+}
+
+func (ffn FakeFileName) GetOriginalFilename() string {
+	return ffn.filename
+}
 
 func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
-    filename := Filename{}
+		filename := FakeFileName{"Sigfaibles_debits.csv"}
 
-		res := PurePrepareImport([]string{"Sigfaibles_debits.csv"})
+		res := PurePrepareImport([]Filename{filename})
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
