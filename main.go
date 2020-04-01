@@ -12,17 +12,16 @@ import (
 )
 
 func main() {
-	// flags
 	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
 	flag.Parse()
 	adminObject, err := PrepareImport(*path)
 	if err != nil {
 		log.Fatal(err)
 	}
-  json, err := json.MarshalIndent(adminObject, "", "  ")
-  if (err != nil) {
-    log.Fatal(err)
-  }
+	json, err := json.MarshalIndent(adminObject, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println(string(json))
 }
 
@@ -33,11 +32,20 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	return PurePrepareImport(filenames, pathname), nil
+	return OldPurePrepareImport(filenames, pathname), nil
 }
 
-// TODO: PurePrepareImport is not pure anymore, because it takes a path, and can indirectly read files
-func PurePrepareImport(filenames []string, path string) AdminObject {
+// TODO: OldPurePrepareImport is not pure anymore, because it takes a path, and can indirectly read files
+func OldPurePrepareImport(filenames []string, path string) AdminObject {
+	filesProperty := PopulateFilesProperty(filenames, path)
+	return AdminObject{"files": filesProperty}
+}
+
+type Filename interface{
+	func GetFilenameToImport() string
+}
+
+func PurePrepareImport(augmentedFilenames []Filename) AdminObject {
 	filesProperty := PopulateFilesProperty(filenames, path)
 	return AdminObject{"files": filesProperty}
 }

@@ -66,9 +66,9 @@ func TestPrepareImport(t *testing.T) {
 }
 
 // Prepare import should return json object.
-func TestPurePrepareImport(t *testing.T) {
+func TestOldPurePrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
-		res := PurePrepareImport([]string{"Sigfaibles_debits.csv"}, "")
+		res := OldPurePrepareImport([]string{"Sigfaibles_debits.csv"}, "")
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
@@ -76,7 +76,7 @@ func TestPurePrepareImport(t *testing.T) {
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res := PurePrepareImport([]string{}, "")
+		res := OldPurePrepareImport([]string{}, "")
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
 
@@ -89,7 +89,7 @@ func TestPurePrepareImport(t *testing.T) {
 			"sireneUL.csv",                    // --> "sirene_ul"
 			"StockEtablissement_utf8_geo.csv", // --> "comptes"
 		}
-		res := PurePrepareImport(files, "")
+		res := OldPurePrepareImport(files, "")
 		resFilesProperty := res["files"].(FilesProperty)
 		resultingFiles := []string{}
 		for _, filenames := range resFilesProperty {
