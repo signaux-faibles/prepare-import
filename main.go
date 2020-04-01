@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"log"
 	"path/filepath"
 
@@ -13,17 +15,17 @@ import (
 )
 
 func main() {
-	// var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
-	// flag.Parse()
-	// adminObject, err := PrepareImport(*path)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// json, err := json.MarshalIndent(adminObject, "", "  ")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(string(json))
+	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
+	flag.Parse()
+	adminObject, err := PrepareImport(*path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	json, err := json.MarshalIndent(adminObject, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(json))
 }
 
 type AdminObject map[string]interface{}
