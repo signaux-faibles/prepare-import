@@ -2,6 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"log"
+	"path/filepath"
+
 	// "flag"
 	// "fmt"
 	"io/ioutil"
@@ -39,18 +42,22 @@ func (ffn SimpleFilename) GetOriginalFilename() string {
 }
 
 type UploadedFilename struct {
-  filename string
-  path string
+	filename string
+	path     string
 }
 
 func (ffn UploadedFilename) GetOriginalFilename() string {
-  //TODO read from metadata
-  // return ffn.filename
-  return ffn.filename
+	metaFilepath := filepath.Join(ffn.path, strings.Replace(ffn.filename, ".bin", ".info", 1))
+	fileinfo, err := LoadMetadata(metaFilepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// filetype = GetFileTypeFromMetadata(filename, fileinfo)
+	return fileinfo.MetaData["filename"] // e.g. "Sigfaible_debits.csv"
 }
 
 func (ffn UploadedFilename) GetFilenameToImport() string {
-  return ffn.filename
+	return ffn.filename
 }
 
 func PrepareImport(pathname string) (AdminObject, error) {
@@ -60,12 +67,12 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	}
 	augmentedFiles := []Filename{}
 	for _, file := range filenames {
-    var filename Filename
-    if strings.HasSuffix(file, ".bin") {
-      filename = UploadedFilename{file, pathname}
-    } else {
-      filename = SimpleFilename{file}
-    }
+		var filename Filename
+		if strings.HasSuffix(file, ".bin") {
+			filename = UploadedFilename{file, pathname}
+		} else {
+			filename = SimpleFilename{file}
+		}
 		augmentedFiles = append(augmentedFiles, filename)
 	}
 	return PurePrepareImport(augmentedFiles), nil
