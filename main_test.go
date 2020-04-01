@@ -96,21 +96,21 @@ import (
 // 	})
 // }
 
-type FakeFileName struct {
+type FakeFilename struct {
 	filename string
 }
 
-func (ffn FakeFileName) GetFilenameToImport() string {
+func (ffn FakeFilename) GetFilenameToImport() string {
 	return ffn.filename
 }
 
-func (ffn FakeFileName) GetOriginalFilename() string {
+func (ffn FakeFilename) GetOriginalFilename() string {
 	return ffn.filename
 }
 
 func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
-		filename := FakeFileName{"Sigfaibles_debits.csv"}
+		filename := FakeFilename{"Sigfaibles_debits.csv"}
 
 		res := PurePrepareImport([]Filename{filename})
 		expected := AdminObject{
@@ -120,91 +120,91 @@ func TestPurePrepareImport(t *testing.T) {
 	})
 }
 
-// func TestPopulateFilesProperty(t *testing.T) {
-// 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
-// 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_effectif_siret.csv"}, "")
-// 		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
-// 	})
+func TestPopulateFilesProperty(t *testing.T) {
+	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
+		filesProperty := PopulateFilesProperty([]Filename{FakeFilename{"Sigfaibles_effectif_siret.csv"}})
+		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
+	})
 
-// 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
-// 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv"}, "")
-// 		assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
-// 	})
+	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
+		filesProperty := PopulateFilesProperty([]Filename{FakeFilename{"Sigfaibles_debits.csv"}})
+		assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
+	})
 
-// 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
-// 		filesProperty := PopulateFilesProperty([]string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, "")
-// 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
-// 	})
+	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
+		filesProperty := PopulateFilesProperty([]Filename{FakeFilename{"Sigfaibles_debits.csv"}, FakeFilename{"Sigfaibles_debits2.csv"}})
+		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
+	})
 
-// 	t.Run("Should not include unsupported files", func(t *testing.T) {
-// 		filesProperty := PopulateFilesProperty([]string{"coco.csv"}, "")
-// 		assert.Equal(t, FilesProperty{}, filesProperty)
-// 	})
-// }
+	t.Run("Should not include unsupported files", func(t *testing.T) {
+		filesProperty := PopulateFilesProperty([]Filename{FakeFilename{"coco.csv"}})
+		assert.Equal(t, FilesProperty{}, filesProperty)
+	})
+}
 
-// func MakeMetadata(metadataFields MetadataProperty) UploadedFileMeta {
-// 	return UploadedFileMeta{MetaData: metadataFields}
-// }
+func MakeMetadata(metadataFields MetadataProperty) UploadedFileMeta {
+	return UploadedFileMeta{MetaData: metadataFields}
+}
 
-// func TestGetFileType(t *testing.T) {
+func TestGetFileType(t *testing.T) {
 
-// 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
-// 		got := GetFileTypeFromMetadata("9a047825d8173684b69994428449302f.bin", MakeMetadata(MetadataProperty{
-// 			"filename":  "Sigfaible_debits.csv",
-// 			"goup-path": "urssaf",
-// 		}))
-// 		assert.Equal(t, "debit", got)
-// 	})
+	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
+		got := GetFileTypeFromMetadata("9a047825d8173684b69994428449302f.bin", MakeMetadata(MetadataProperty{
+			"filename":  "Sigfaible_debits.csv",
+			"goup-path": "urssaf",
+		}))
+		assert.Equal(t, "debit", got)
+	})
 
-// 	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
-// 		got := GetFileTypeFromMetadata("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadata(MetadataProperty{
-// 			"filename":  "FICHIER_SF_2020_02.csv",
-// 			"goup-path": "bdf",
-// 		}))
-// 		assert.Equal(t, "bdf", got)
-// 	})
+	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
+		got := GetFileTypeFromMetadata("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadata(MetadataProperty{
+			"filename":  "FICHIER_SF_2020_02.csv",
+			"goup-path": "bdf",
+		}))
+		assert.Equal(t, "bdf", got)
+	})
 
-// 	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
-// 		got := GetFileTypeFromMetadata("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadata(MetadataProperty{
-// 			"filename":  "tab_19m10.sas7bdat",
-// 			"goup-path": "dgefp",
-// 		}))
-// 		assert.Equal(t, "interim", got)
-// 	})
+	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
+		got := GetFileTypeFromMetadata("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadata(MetadataProperty{
+			"filename":  "tab_19m10.sas7bdat",
+			"goup-path": "dgefp",
+		}))
+		assert.Equal(t, "interim", got)
+	})
 
-// 	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
-// 	cases := []struct {
-// 		name     string
-// 		category string
-// 	}{
-// 		// guessed from urssaf files found on stockage/goub server
-// 		{"Sigfaible_debits.csv", "debit"},
-// 		{"Sigfaible_cotisdues.csv", "cotisation"},
-// 		{"Sigfaible_pcoll.csv", "procol"},
-// 		{"Sigfaible_etablissement_utf8.csv", "admin_urssaf"},
-// 		{"Sigfaible_effectif_siret.csv", "effectif"},
-// 		{"Sigfaible_effectif_siren.csv", "effectif_ent"},
-// 		{"Sigfaible_delais.csv", "delai"},
-// 		{"Sigfaible_ccsf.csv", "ccsf"},
+	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
+	cases := []struct {
+		name     string
+		category string
+	}{
+		// guessed from urssaf files found on stockage/goub server
+		{"Sigfaible_debits.csv", "debit"},
+		{"Sigfaible_cotisdues.csv", "cotisation"},
+		{"Sigfaible_pcoll.csv", "procol"},
+		{"Sigfaible_etablissement_utf8.csv", "admin_urssaf"},
+		{"Sigfaible_effectif_siret.csv", "effectif"},
+		{"Sigfaible_effectif_siren.csv", "effectif_ent"},
+		{"Sigfaible_delais.csv", "delai"},
+		{"Sigfaible_ccsf.csv", "ccsf"},
 
-// 		// guessed from dgefp files
-// 		{"act_partielle_conso_depuis2014_FRANCE.csv", "apconso"},
-// 		{"act_partielle_ddes_depuis2015_FRANCE.csv", "apdemande"},
+		// guessed from dgefp files
+		{"act_partielle_conso_depuis2014_FRANCE.csv", "apconso"},
+		{"act_partielle_ddes_depuis2015_FRANCE.csv", "apdemande"},
 
-// 		// others
-// 		{"Sigfaibles_debits.csv", "debit"},
-// 		{"Sigfaibles_debits2.csv", "debit"},
-// 		{"diane_req_2002.csv", "diane"},
-// 		{"diane_req_dom_2002.csv", "diane"},
-// 		{"effectif_dom.csv", "effectif"},
-// 		{"filter_siren_2002.csv", "filter"},
-// 		{"sireneUL.csv", "sirene_ul"},
-// 		{"StockEtablissement_utf8_geo.csv", "comptes"},
-// 	}
-// 	for _, testCase := range cases {
-// 		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
-// 			got := GetFileType(testCase.name)
-// 			assert.Equal(t, testCase.category, got)
-// 		})
-// 	}
-// }
+		// others
+		{"Sigfaibles_debits.csv", "debit"},
+		{"Sigfaibles_debits2.csv", "debit"},
+		{"diane_req_2002.csv", "diane"},
+		{"diane_req_dom_2002.csv", "diane"},
+		{"effectif_dom.csv", "effectif"},
+		{"filter_siren_2002.csv", "filter"},
+		{"sireneUL.csv", "sirene_ul"},
+		{"StockEtablissement_utf8_geo.csv", "comptes"},
+	}
+	for _, testCase := range cases {
+		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
+			got := GetFileType(testCase.name)
+			assert.Equal(t, testCase.category, got)
+		})
+	}
+}
