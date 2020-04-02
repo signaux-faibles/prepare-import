@@ -74,7 +74,6 @@ func TestPrepareImport(t *testing.T) {
 			assert.Equal(t, expected, res)
 		})
 	}
-
 }
 
 func TestPurePrepareImport(t *testing.T) {
@@ -118,23 +117,27 @@ func TestPurePrepareImport(t *testing.T) {
 
 func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
+		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
+		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
+		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("Should not include unsupported files", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
+		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
 		assert.Equal(t, FilesProperty{}, filesProperty)
+	})
+	t.Run("Should report unsupported files", func(t *testing.T) {
+		_, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
+		assert.Equal(t, []string{"coco.csv"}, unsupportedFiles)
 	})
 }
 

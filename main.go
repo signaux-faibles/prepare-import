@@ -93,7 +93,8 @@ func PrepareImport(pathname string) (AdminObject, error) {
 
 // PurePrepareImport populates an AdminObject, given a list of data files.
 func PurePrepareImport(augmentedFilenames []DataFile) AdminObject {
-	filesProperty := PopulateFilesProperty(augmentedFilenames)
+	filesProperty, _ := PopulateFilesProperty(augmentedFilenames)
+	// TODO deal with returned unsupported files
 	return AdminObject{"files": filesProperty}
 }
 
@@ -130,13 +131,14 @@ func LoadMetadata(filepath string) (UploadedFileMeta, error) {
 }
 
 // PopulateFilesProperty populates the "files" property of an Admin object, given a list of Data files.
-func PopulateFilesProperty(filenames []DataFile) FilesProperty {
+func PopulateFilesProperty(filenames []DataFile) (FilesProperty, []string) {
 	filesProperty := FilesProperty{}
+	unsupportedFiles := []string{}
 	for _, filename := range filenames {
 		filetype := filename.DetectFileType()
 
 		if filetype == "" {
-			// Unsupported file
+			unsupportedFiles = append(unsupportedFiles, filename.GetFilename())
 			continue
 		}
 		if _, exists := filesProperty[filetype]; !exists {
@@ -144,5 +146,5 @@ func PopulateFilesProperty(filenames []DataFile) FilesProperty {
 		}
 		filesProperty[filetype] = append(filesProperty[filetype], filename.GetFilename())
 	}
-	return filesProperty
+	return filesProperty, unsupportedFiles
 }
