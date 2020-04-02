@@ -51,41 +51,30 @@ func TestPrepareImport(t *testing.T) {
 		id       string
 		filename string
 		goupPath string
+		filetype string
 	}{
-		{"9a047825d8173684b69994428449302f", "Sigfaible_debits.csv", "urssaf"}
+		{"9a047825d8173684b69994428449302f", "Sigfaible_debits.csv", "urssaf", "debit"},
+		{"60d1bd320523904d8b8b427efbbd3928", "FICHIER_SF_2020_02.csv", "bdf", "bdf"},
 	}
 
-	t.Run("Should support uploaded files (bin+info)", func(t *testing.T) {
-		dir := createTempFiles(t, "9a047825d8173684b69994428449302f.bin")
+	for _, testCase := range cases {
+		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+testCase.filetype, func(t *testing.T) {
+			dir := createTempFiles(t, testCase.id+".bin")
 
-		tmpFilename := filepath.Join(dir, "9a047825d8173684b69994428449302f.info")
-		content := []byte("{\"MetaData\":{\"filename\":\"Sigfaible_debits.csv\",\"goup-path\":\"urssaf\"}}")
-		if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
-			t.Fatal(err.Error())
-		}
+			tmpFilename := filepath.Join(dir, testCase.id+".info")
+			content := []byte("{\"MetaData\":{\"filename\":\"" + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
+			if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
+				t.Fatal(err.Error())
+			}
 
-		res, _ := PrepareImport(dir)
-		expected := AdminObject{
-			"files": FilesProperty{"debit": []string{"9a047825d8173684b69994428449302f.bin"}},
-		}
-		assert.Equal(t, expected, res)
-	})
+			res, _ := PrepareImport(dir)
+			expected := AdminObject{
+				"files": FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}},
+			}
+			assert.Equal(t, expected, res)
+		})
+	}
 
-	t.Run("Should use goup-path to detect file type", func(t *testing.T) {
-		dir := createTempFiles(t, "60d1bd320523904d8b8b427efbbd3928.bin")
-
-		tmpFilename := filepath.Join(dir, "60d1bd320523904d8b8b427efbbd3928.info")
-		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
-		if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
-			t.Fatal(err.Error())
-		}
-
-		res, _ := PrepareImport(dir)
-		expected := AdminObject{
-			"files": FilesProperty{"bdf": []string{"60d1bd320523904d8b8b427efbbd3928.bin"}},
-		}
-		assert.Equal(t, expected, res)
-	})
 }
 
 func TestPurePrepareImport(t *testing.T) {
