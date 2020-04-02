@@ -26,7 +26,6 @@ func createTempFiles(t *testing.T, filename string) string {
 	return dir
 }
 
-// Test: ReadFilenames should return filenames in a directory
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
 		dir := createTempFiles(t, "tmpfile")

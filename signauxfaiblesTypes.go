@@ -1,8 +1,8 @@
 package main
 
 import (
-  "regexp"
-  "strings"
+	"regexp"
+	"strings"
 )
 
 var hasDianePrefix = regexp.MustCompile(`^diane`)
