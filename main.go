@@ -59,10 +59,7 @@ type UploadedDataFile struct {
 
 func (dataFile UploadedDataFile) DetectFileType() string {
 	metaFilepath := filepath.Join(dataFile.path, strings.Replace(dataFile.filename, ".bin", ".info", 1))
-	fileinfo, err := LoadMetadata(metaFilepath)
-	if err != nil {
-		panic(err)
-	}
+	fileinfo := LoadMetadata(metaFilepath)
 	return ExtractFileTypeFromMetadata(metaFilepath, fileinfo) // e.g. "Sigfaible_debits.csv"
 }
 
@@ -123,22 +120,22 @@ func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.
-func LoadMetadata(filepath string) (UploadedFileMeta, error) {
+func LoadMetadata(filepath string) UploadedFileMeta {
 
 	// read file
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
-		return UploadedFileMeta{}, err
+		panic(err)
 	}
 
 	// unmarshall data from json
 	var uploadedFileMeta UploadedFileMeta
 	err = json.Unmarshal(data, &uploadedFileMeta)
 	if err != nil {
-		return UploadedFileMeta{}, err
+		panic(err)
 	}
 
-	return uploadedFileMeta, nil
+	return uploadedFileMeta
 }
 
 // PopulateFilesProperty populates the "files" property of an Admin object, given a list of Data files.
