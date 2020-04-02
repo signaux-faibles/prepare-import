@@ -39,4 +39,4 @@ jobs:
     - name: Upload coverage to codacy
       run: |
         go get github.com/schrej/godacov
-        godacov -t ${CODACY_REPOSITORY_TOKEN_FOR_COVERAGE} -r ./coverage.out -c ${GITHUB_SHA}
+        go run github.com/schrej/godacov -t ${CODACY_REPOSITORY_TOKEN_FOR_COVERAGE} -r ./coverage.out -c ${GITHUB_SHA}
