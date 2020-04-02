@@ -77,12 +77,19 @@ func TestPrepareImport(t *testing.T) {
 	}
 
 	t.Run("should return list of unsupported files", func(t *testing.T) {
-		dir := createTempFiles(t, "unsupported-file.csv") // TODO: also test with alone.bin (without .info)
+		dir := createTempFiles(t, "unsupported-file.csv")
 		_, err := PrepareImport(dir)
 		var e *UnsupportedFilesError
 		if assert.Error(t, err) && errors.As(err, &e) {
 			assert.Equal(t, []string{"unsupported-file.csv"}, e.UnsupportedFiles)
 		}
+	})
+
+	t.Run("should fail if missing .info file", func(t *testing.T) {
+		dir := createTempFiles(t, "lonely.bin")
+		assert.Panics(t, func() {
+			PrepareImport(dir)
+		})
 	})
 }
 

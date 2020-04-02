@@ -61,7 +61,7 @@ func (dataFile UploadedDataFile) DetectFileType() string {
 	metaFilepath := filepath.Join(dataFile.path, strings.Replace(dataFile.filename, ".bin", ".info", 1))
 	fileinfo, err := LoadMetadata(metaFilepath)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return ExtractFileTypeFromMetadata(metaFilepath, fileinfo) // e.g. "Sigfaible_debits.csv"
 }
