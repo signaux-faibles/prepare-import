@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -72,7 +71,11 @@ func (dataFile UploadedDataFile) GetFilename() string {
 }
 
 type UnsupportedFilesError struct {
-	unsupportedFiles []string
+	UnsupportedFiles []string
+}
+
+func (err UnsupportedFilesError) Error() string {
+	return "unsupported: " + strings.Join(err.UnsupportedFiles, ", ")
 }
 
 // ReadFilenames returns the name of files found at the provided path.
@@ -112,11 +115,11 @@ func PrepareImport(pathname string) (AdminObject, error) {
 // PurePrepareImport populates an AdminObject, given a list of data files.
 func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
-	var errMsg string
+	var err UnsupportedFilesError
 	if unsupportedFiles != nil {
-		errMsg = "unsupported: " + strings.Join(unsupportedFiles, ", ")
+		err = UnsupportedFilesError{unsupportedFiles}
 	}
-	return AdminObject{"files": filesProperty}, errors.New(errMsg)
+	return AdminObject{"files": filesProperty}, err
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.

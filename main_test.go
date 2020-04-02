@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -77,9 +78,10 @@ func TestPrepareImport(t *testing.T) {
 
 	t.Run("should return list of unsupported files", func(t *testing.T) {
 		dir := createTempFiles(t, "unsupported-file.csv") // TODO: also test with alone.bin (without .info)
-		_, error := PrepareImport(dir)
-		if assert.Error(t, error) {
-			assert.Equal(t, "unsupported: unsupported-file.csv", error.Error()) // TODO: more robust error matching
+		_, err := PrepareImport(dir)
+		var e *UnsupportedFilesError
+		if assert.Error(t, err) && errors.As(err, &e) {
+			assert.Equal(t, []string{"unsupported-file.csv"}, e.UnsupportedFiles)
 		}
 	})
 }
