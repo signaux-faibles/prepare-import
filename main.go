@@ -74,9 +74,8 @@ func (dataFile UploadedDataFile) GetFilename() string {
 func AugmentDataFile(file string, pathname string) DataFile {
 	if strings.HasSuffix(file, ".bin") {
 		return UploadedDataFile{file, pathname}
-	} else {
-		return SimpleDataFile{file}
 	}
+	return SimpleDataFile{file}
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system
