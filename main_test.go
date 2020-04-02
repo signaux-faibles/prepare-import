@@ -74,6 +74,14 @@ func TestPrepareImport(t *testing.T) {
 			assert.Equal(t, expected, res)
 		})
 	}
+
+	t.Run("should return list of unsupported files", func(t *testing.T) {
+		dir := createTempFiles(t, "unsupported-file.csv") // TODO: also test with alone.bin (without .info)
+		_, error := PrepareImport(dir)
+		if assert.Error(t, error) {
+			assert.Equal(t, "unsupported: unsupported-file.csv", error.Error()) // TODO: more robust error matching
+		}
+	})
 }
 
 func TestPurePrepareImport(t *testing.T) {
