@@ -71,6 +71,23 @@ func (dataFile UploadedDataFile) GetFilename() string {
 	return dataFile.filename
 }
 
+type UnsupportedFilesError struct {
+	unsupportedFiles []string
+}
+
+// ReadFilenames returns the name of files found at the provided path.
+func ReadFilenames(path string) ([]string, error) {
+	var files []string
+	fileInfo, err := ioutil.ReadDir(path)
+	if err != nil {
+		return files, err
+	}
+	for _, file := range fileInfo {
+		files = append(files, file.Name())
+	}
+	return files, nil
+}
+
 // AugmentDataFile returns a SimpleDataFile or UploadedDataFile (if metadata had to be loaded).
 func AugmentDataFile(file string, pathname string) DataFile {
 	if strings.HasSuffix(file, ".bin") {
@@ -100,19 +117,6 @@ func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
 		errMsg = "unsupported: " + strings.Join(unsupportedFiles, ", ")
 	}
 	return AdminObject{"files": filesProperty}, errors.New(errMsg)
-}
-
-// ReadFilenames returns the name of files found at the provided path.
-func ReadFilenames(path string) ([]string, error) {
-	var files []string
-	fileInfo, err := ioutil.ReadDir(path)
-	if err != nil {
-		return files, err
-	}
-	for _, file := range fileInfo {
-		files = append(files, file.Name())
-	}
-	return files, nil
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.
