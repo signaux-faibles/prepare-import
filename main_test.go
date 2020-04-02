@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -47,36 +48,48 @@ func TestPrepareImport(t *testing.T) {
 		assert.Equal(t, expected, res)
 	})
 
-	t.Run("Should support uploaded files (bin+info)", func(t *testing.T) {
-		dir := createTempFiles(t, "9a047825d8173684b69994428449302f.bin")
+	cases := []struct {
+		id       string
+		filename string
+		goupPath string
+		filetype string
+	}{
+		{"9a047825d8173684b69994428449302f", "Sigfaible_debits.csv", "urssaf", "debit"},
+		{"60d1bd320523904d8b8b427efbbd3928", "FICHIER_SF_2020_02.csv", "bdf", "bdf"},
+	}
 
-		tmpFilename := filepath.Join(dir, "9a047825d8173684b69994428449302f.info")
-		content := []byte("{\"MetaData\":{\"filename\":\"Sigfaible_debits.csv\",\"goup-path\":\"urssaf\"}}")
-		if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
-			t.Fatal(err.Error())
-		}
+	for _, testCase := range cases {
+		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+testCase.filetype, func(t *testing.T) {
+			dir := createTempFiles(t, testCase.id+".bin")
 
-		res, _ := PrepareImport(dir)
-		expected := AdminObject{
-			"files": FilesProperty{"debit": []string{"9a047825d8173684b69994428449302f.bin"}},
+			tmpFilename := filepath.Join(dir, testCase.id+".info")
+			content := []byte("{\"MetaData\":{\"filename\":\"" + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
+			if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
+				t.Fatal(err.Error())
+			}
+
+			res, _ := PrepareImport(dir)
+			expected := AdminObject{
+				"files": FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}},
+			}
+			assert.Equal(t, expected, res)
+		})
+	}
+
+	t.Run("should return list of unsupported files", func(t *testing.T) {
+		dir := createTempFiles(t, "unsupported-file.csv")
+		_, err := PrepareImport(dir)
+		var e *UnsupportedFilesError
+		if assert.Error(t, err) && errors.As(err, &e) {
+			assert.Equal(t, []string{"unsupported-file.csv"}, e.UnsupportedFiles)
 		}
-		assert.Equal(t, expected, res)
 	})
 
-	t.Run("Should use goup-path to detect file type", func(t *testing.T) {
-		dir := createTempFiles(t, "60d1bd320523904d8b8b427efbbd3928.bin")
-
-		tmpFilename := filepath.Join(dir, "60d1bd320523904d8b8b427efbbd3928.info")
-		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
-		if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
-			t.Fatal(err.Error())
-		}
-
-		res, _ := PrepareImport(dir)
-		expected := AdminObject{
-			"files": FilesProperty{"bdf": []string{"60d1bd320523904d8b8b427efbbd3928.bin"}},
-		}
-		assert.Equal(t, expected, res)
+	t.Run("should fail if missing .info file", func(t *testing.T) {
+		dir := createTempFiles(t, "lonely.bin")
+		assert.Panics(t, func() {
+			PrepareImport(dir)
+		})
 	})
 }
 
@@ -84,7 +97,7 @@ func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res := PurePrepareImport([]DataFile{filename})
+		res, _ := PurePrepareImport([]DataFile{filename})
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
@@ -92,7 +105,7 @@ func TestPurePrepareImport(t *testing.T) {
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res := PurePrepareImport([]DataFile{})
+		res, _ := PurePrepareImport([]DataFile{})
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
 
@@ -109,7 +122,7 @@ func TestPurePrepareImport(t *testing.T) {
 		for _, file := range files {
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
-		res := PurePrepareImport(augmentedFiles)
+		res, _ := PurePrepareImport(augmentedFiles)
 		resFilesProperty := res["files"].(FilesProperty)
 		resultingFiles := []string{}
 		for _, filenames := range resFilesProperty {
@@ -121,23 +134,27 @@ func TestPurePrepareImport(t *testing.T) {
 
 func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
+		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
+		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
+		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
 		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
 	})
 
 	t.Run("Should not include unsupported files", func(t *testing.T) {
-		filesProperty := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
+		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
 		assert.Equal(t, FilesProperty{}, filesProperty)
+	})
+	t.Run("Should report unsupported files", func(t *testing.T) {
+		_, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
+		assert.Equal(t, []string{"coco.csv"}, unsupportedFiles)
 	})
 }
 
@@ -145,7 +162,7 @@ func MakeMetadata(metadataFields MetadataProperty) UploadedFileMeta {
 	return UploadedFileMeta{MetaData: metadataFields}
 }
 
-func TestGetFileTypeFromMetadata(t *testing.T) {
+func TestExtractFileTypeFromMetadata(t *testing.T) {
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
 		got := ExtractFileTypeFromMetadata("9a047825d8173684b69994428449302f.bin", MakeMetadata(MetadataProperty{
@@ -172,7 +189,7 @@ func TestGetFileTypeFromMetadata(t *testing.T) {
 	})
 }
 
-func TestGetFileType(t *testing.T) {
+func TestExtractFileTypeFromFilename(t *testing.T) {
 
 	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
 	cases := []struct {

@@ -59,15 +59,33 @@ type UploadedDataFile struct {
 
 func (dataFile UploadedDataFile) DetectFileType() string {
 	metaFilepath := filepath.Join(dataFile.path, strings.Replace(dataFile.filename, ".bin", ".info", 1))
-	fileinfo, err := LoadMetadata(metaFilepath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fileinfo := LoadMetadata(metaFilepath)
 	return ExtractFileTypeFromMetadata(metaFilepath, fileinfo) // e.g. "Sigfaible_debits.csv"
 }
 
 func (dataFile UploadedDataFile) GetFilename() string {
 	return dataFile.filename
+}
+
+type UnsupportedFilesError struct {
+	UnsupportedFiles []string
+}
+
+func (err UnsupportedFilesError) Error() string {
+	return "unsupported: " + strings.Join(err.UnsupportedFiles, ", ")
+}
+
+// ReadFilenames returns the name of files found at the provided path.
+func ReadFilenames(path string) ([]string, error) {
+	var files []string
+	fileInfo, err := ioutil.ReadDir(path)
+	if err != nil {
+		return files, err
+	}
+	for _, file := range fileInfo {
+		files = append(files, file.Name())
+	}
+	return files, nil
 }
 
 // AugmentDataFile returns a SimpleDataFile or UploadedDataFile (if metadata had to be loaded).
@@ -88,55 +106,47 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PurePrepareImport(augmentedFiles), nil
+	return PurePrepareImport(augmentedFiles)
 }
 
 // PurePrepareImport populates an AdminObject, given a list of data files.
-func PurePrepareImport(augmentedFilenames []DataFile) AdminObject {
-	filesProperty := PopulateFilesProperty(augmentedFilenames)
-	return AdminObject{"files": filesProperty}
-}
-
-// ReadFilenames returns the name of files found at the provided path.
-func ReadFilenames(path string) ([]string, error) {
-	var files []string
-	fileInfo, err := ioutil.ReadDir(path)
-	if err != nil {
-		return files, err
+func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
+	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
+	var err UnsupportedFilesError
+	if unsupportedFiles != nil {
+		err = UnsupportedFilesError{unsupportedFiles}
 	}
-	for _, file := range fileInfo {
-		files = append(files, file.Name())
-	}
-	return files, nil
+	return AdminObject{"files": filesProperty}, err
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.
-func LoadMetadata(filepath string) (UploadedFileMeta, error) {
+func LoadMetadata(filepath string) UploadedFileMeta {
 
 	// read file
 	data, err := ioutil.ReadFile(filepath)
 	if err != nil {
-		return UploadedFileMeta{}, err
+		panic(err)
 	}
 
 	// unmarshall data from json
 	var uploadedFileMeta UploadedFileMeta
 	err = json.Unmarshal(data, &uploadedFileMeta)
 	if err != nil {
-		return UploadedFileMeta{}, err
+		panic(err)
 	}
 
-	return uploadedFileMeta, nil
+	return uploadedFileMeta
 }
 
 // PopulateFilesProperty populates the "files" property of an Admin object, given a list of Data files.
-func PopulateFilesProperty(filenames []DataFile) FilesProperty {
+func PopulateFilesProperty(filenames []DataFile) (FilesProperty, []string) {
 	filesProperty := FilesProperty{}
+	unsupportedFiles := []string{}
 	for _, filename := range filenames {
 		filetype := filename.DetectFileType()
 
 		if filetype == "" {
-			// Unsupported file
+			unsupportedFiles = append(unsupportedFiles, filename.GetFilename())
 			continue
 		}
 		if _, exists := filesProperty[filetype]; !exists {
@@ -144,5 +154,5 @@ func PopulateFilesProperty(filenames []DataFile) FilesProperty {
 		}
 		filesProperty[filetype] = append(filesProperty[filetype], filename.GetFilename())
 	}
-	return filesProperty
+	return filesProperty, unsupportedFiles
 }
