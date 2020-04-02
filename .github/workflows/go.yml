@@ -31,8 +31,12 @@ jobs:
         fi
 
     - name: Test
-      run: go test -v
+      run: go test -v -coverprofile=coverage.out
 
     - name: Build
       run: go build -v .
     
+    - name: Upload coverage to codacy
+      run: |
+        go get github.com/schrej/godacov
+        godacov -t ${CODACY_REPOSITORY_TOKEN_FOR_COVERAGE} -r ./coverage.out -c ${GITHUB_SHA}
