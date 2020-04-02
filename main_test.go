@@ -47,6 +47,14 @@ func TestPrepareImport(t *testing.T) {
 		assert.Equal(t, expected, res)
 	})
 
+	cases := []struct {
+		id       string
+		filename string
+		goupPath string
+	}{
+		{"9a047825d8173684b69994428449302f", "Sigfaible_debits.csv", "urssaf"}
+	}
+
 	t.Run("Should support uploaded files (bin+info)", func(t *testing.T) {
 		dir := createTempFiles(t, "9a047825d8173684b69994428449302f.bin")
 
