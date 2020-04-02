@@ -145,7 +145,7 @@ func MakeMetadata(metadataFields MetadataProperty) UploadedFileMeta {
 	return UploadedFileMeta{MetaData: metadataFields}
 }
 
-func TestGetFileTypeFromMetadata(t *testing.T) {
+func TestExtractFileTypeFromMetadata(t *testing.T) {
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
 		got := ExtractFileTypeFromMetadata("9a047825d8173684b69994428449302f.bin", MakeMetadata(MetadataProperty{
@@ -172,7 +172,7 @@ func TestGetFileTypeFromMetadata(t *testing.T) {
 	})
 }
 
-func TestGetFileType(t *testing.T) {
+func TestExtractFileTypeFromFilename(t *testing.T) {
 
 	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
 	cases := []struct {
