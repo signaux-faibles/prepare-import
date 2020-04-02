@@ -67,6 +67,7 @@ func (dataFile UploadedDataFile) GetFilename() string {
 	return dataFile.filename
 }
 
+// UnsupportedFilesError is an Error object that lists files that were not supported.
 type UnsupportedFilesError struct {
 	UnsupportedFiles []string
 }
