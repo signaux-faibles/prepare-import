@@ -88,7 +88,7 @@ func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res := PurePrepareImport([]DataFile{filename})
+		res, _ := PurePrepareImport([]DataFile{filename})
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
@@ -96,7 +96,7 @@ func TestPurePrepareImport(t *testing.T) {
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res := PurePrepareImport([]DataFile{})
+		res, _ := PurePrepareImport([]DataFile{})
 		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
 	})
 
@@ -113,7 +113,7 @@ func TestPurePrepareImport(t *testing.T) {
 		for _, file := range files {
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
-		res := PurePrepareImport(augmentedFiles)
+		res, _ := PurePrepareImport(augmentedFiles)
 		resFilesProperty := res["files"].(FilesProperty)
 		resultingFiles := []string{}
 		for _, filenames := range resFilesProperty {

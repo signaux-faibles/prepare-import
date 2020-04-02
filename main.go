@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -88,14 +89,17 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PurePrepareImport(augmentedFiles), nil
+	return PurePrepareImport(augmentedFiles)
 }
 
 // PurePrepareImport populates an AdminObject, given a list of data files.
-func PurePrepareImport(augmentedFilenames []DataFile) AdminObject {
-	filesProperty, _ := PopulateFilesProperty(augmentedFilenames)
-	// TODO deal with returned unsupported files
-	return AdminObject{"files": filesProperty}
+func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
+	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
+	var errMsg string
+	if unsupportedFiles != nil {
+		errMsg = "unsupported: " + strings.Join(unsupportedFiles, ", ")
+	}
+	return AdminObject{"files": filesProperty}, errors.New(errMsg)
 }
 
 // ReadFilenames returns the name of files found at the provided path.
