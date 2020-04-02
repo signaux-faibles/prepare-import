@@ -10,12 +10,15 @@ var mentionsEffectif = regexp.MustCompile(`effectif_`)
 var mentionsDebits = regexp.MustCompile(`_debits`)
 var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 
+// MetadataProperty represents the "MetaData" property from .info files.
 type MetadataProperty map[string]string
 
+// UploadedFileMeta represents the JSON object loaded from .info files.
 type UploadedFileMeta struct {
 	MetaData MetadataProperty
 }
 
+// ExtractFileTypeFromMetadata returns the type of a .bin file, based on the contents of the associated .info file.
 func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
 	metadata := fileinfo.MetaData
 	if metadata["goup-path"] == "bdf" {
