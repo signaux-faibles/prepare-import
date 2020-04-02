@@ -21,6 +21,10 @@ jobs:
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
+      with:
+        # for deepsource, cf https://deepsource.io/docs/how-to/add-go-cov-ci.html#with-github-actions
+        ref: ${{ github.event.pull_request.head.sha }}
+
 
     - name: Get dependencies
       run: |
