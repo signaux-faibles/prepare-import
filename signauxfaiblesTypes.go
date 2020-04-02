@@ -23,9 +23,8 @@ func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) str
 	metadata := fileinfo.MetaData
 	if metadata["goup-path"] == "bdf" {
 		return "bdf"
-	} else {
-		return ExtractFileTypeFromFilename(metadata["filename"])
 	}
+	return ExtractFileTypeFromFilename(metadata["filename"])
 }
 
 // ExtractFileTypeFromFilename returns a file type from filename, or empty string for unsupported file names
