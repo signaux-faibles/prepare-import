@@ -147,7 +147,9 @@ func PopulateFilesProperty(filenames []DataFile) (FilesProperty, []string) {
 		filetype := filename.DetectFileType()
 
 		if filetype == "" {
-			unsupportedFiles = append(unsupportedFiles, filename.GetFilename())
+			if !strings.HasSuffix(filename.GetFilename(), ".info") {
+				unsupportedFiles = append(unsupportedFiles, filename.GetFilename())
+			}
 			continue
 		}
 		if _, exists := filesProperty[filetype]; !exists {
