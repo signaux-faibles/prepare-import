@@ -41,11 +41,13 @@ func TestReadFilenames(t *testing.T) {
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := createTempFiles(t, "Sigfaibles_debits.csv")
-		res, _ := PrepareImport(dir)
+		res, err := PrepareImport(dir)
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
-		assert.Equal(t, expected, res)
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected, res)
+		}
 	})
 
 	cases := []struct {
@@ -68,11 +70,13 @@ func TestPrepareImport(t *testing.T) {
 				t.Fatal(err.Error())
 			}
 
-			res, _ := PrepareImport(dir)
+			res, err := PrepareImport(dir)
 			expected := AdminObject{
 				"files": FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}},
 			}
-			assert.Equal(t, expected, res)
+			if assert.NoError(t, err) {
+				assert.Equal(t, expected, res)
+			}
 		})
 	}
 
