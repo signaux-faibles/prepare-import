@@ -41,11 +41,13 @@ func TestReadFilenames(t *testing.T) {
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := createTempFiles(t, "Sigfaibles_debits.csv")
-		res, _ := PrepareImport(dir)
+		res, err := PrepareImport(dir)
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
-		assert.Equal(t, expected, res)
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected, res)
+		}
 	})
 
 	cases := []struct {
@@ -68,11 +70,13 @@ func TestPrepareImport(t *testing.T) {
 				t.Fatal(err.Error())
 			}
 
-			res, _ := PrepareImport(dir)
+			res, err := PrepareImport(dir)
 			expected := AdminObject{
 				"files": FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}},
 			}
-			assert.Equal(t, expected, res)
+			if assert.NoError(t, err) {
+				assert.Equal(t, expected, res)
+			}
 		})
 	}
 
@@ -97,16 +101,20 @@ func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, _ := PurePrepareImport([]DataFile{filename})
+		res, err := PurePrepareImport([]DataFile{filename})
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
 		}
-		assert.Equal(t, expected, res)
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected, res)
+		}
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res, _ := PurePrepareImport([]DataFile{})
-		assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
+		res, err := PurePrepareImport([]DataFile{})
+		if assert.NoError(t, err) {
+			assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
+		}
 	})
 
 	t.Run("Should support multiple types of csv files", func(t *testing.T) {
@@ -122,34 +130,43 @@ func TestPurePrepareImport(t *testing.T) {
 		for _, file := range files {
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
-		res, _ := PurePrepareImport(augmentedFiles)
-		resFilesProperty := res["files"].(FilesProperty)
-		resultingFiles := []string{}
-		for _, filenames := range resFilesProperty {
-			resultingFiles = append(resultingFiles, filenames...)
+		res, err := PurePrepareImport(augmentedFiles)
+		if assert.NoError(t, err) {
+			resFilesProperty := res["files"].(FilesProperty)
+			resultingFiles := []string{}
+			for _, filenames := range resFilesProperty {
+				resultingFiles = append(resultingFiles, filenames...)
+			}
+			assert.Subset(t, resultingFiles, files)
 		}
-		assert.Subset(t, resultingFiles, files)
 	})
 }
 
 func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
-		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
-		assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
+		if assert.Len(t, unsupportedFiles, 0) {
+			assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
+		}
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
-		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
-		assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
+		if assert.Len(t, unsupportedFiles, 0) {
+			assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
+		}
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
-		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
-		assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
+		if assert.Len(t, unsupportedFiles, 0) {
+			assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
+		}
 	})
 
 	t.Run("Should not include unsupported files", func(t *testing.T) {
-		filesProperty, _ := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
+		assert.Len(t, unsupportedFiles, 1)
 		assert.Equal(t, FilesProperty{}, filesProperty)
 	})
 	t.Run("Should report unsupported files", func(t *testing.T) {
