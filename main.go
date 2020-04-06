@@ -113,8 +113,8 @@ func PrepareImport(pathname string) (AdminObject, error) {
 // PurePrepareImport populates an AdminObject, given a list of data files.
 func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
-	var err UnsupportedFilesError
-	if unsupportedFiles != nil {
+	var err error
+	if len(unsupportedFiles) > 0 {
 		err = UnsupportedFilesError{unsupportedFiles}
 	}
 	return AdminObject{"files": filesProperty}, err
