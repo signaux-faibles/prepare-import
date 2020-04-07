@@ -15,15 +15,18 @@ import (
 
 var goldenFile = "end_to_end_golden.txt"
 
-func diffWithGoldenFile(updateGoldenFile bool, out bytes.Buffer) []bytes {
+var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
+
+func diffWithGoldenFile(updateGoldenFile bool, cmdOutput bytes.Buffer) []byte {
 
 	if updateGoldenFile {
-		ioutil.WriteFile(goldenFile, out.Bytes(), 0644)
+		ioutil.WriteFile(goldenFile, cmdOutput.Bytes(), 0644)
 	}
 	expected, err := ioutil.ReadFile(goldenFile)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return expected
 }
 
 func TestMain(t *testing.T) {
@@ -35,18 +38,17 @@ func TestMain(t *testing.T) {
 		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
 
 		cmd := exec.Command("./prepare-import", "--path", dir)
-		var out bytes.Buffer
-		cmd.Stdout = &out
+		var cmdOutput bytes.Buffer
+		cmd.Stdout = &cmdOutput
 		err := cmd.Run()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Printf("stdout: %q\n", out.String())
+		fmt.Printf("stdout: %q\n", cmdOutput.String())
 
-		var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
-		expected := diffWithGoldenFile(*updateGoldenFile, out)
+		expected := diffWithGoldenFile(*updateGoldenFile, cmdOutput)
 
-		assert.Equal(t, string(expected), out.String())
+		assert.Equal(t, string(expected), cmdOutput.String())
 	})
 }
