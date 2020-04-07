@@ -14,7 +14,6 @@ import (
 // Implementation of the prepare-import command.
 func main() {
 	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
-	fmt.Println("a")
 	flag.Parse()
 	adminObject, err := PrepareImport(*path)
 	if err != nil {
