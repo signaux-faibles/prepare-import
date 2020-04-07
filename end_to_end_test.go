@@ -32,15 +32,18 @@ func diffWithGoldenFile(updateGoldenFile bool, cmdOutput bytes.Buffer) []byte {
 func TestMain(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
 
-		dir := createTempFiles(t, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef.bin"})
+		dir := createTempFiles(t, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef.bin", "unsupported.csv"})
 
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
 
 		cmd := exec.Command("./prepare-import", "--path", dir)
 		var cmdOutput bytes.Buffer
+		var cmdError bytes.Buffer
 		cmd.Stdout = &cmdOutput
+		cmd.Stderr = &cmdError
 		err := cmd.Run()
+		fmt.Printf("stderr: %q\n", cmdError.String())
 		if err != nil {
 			log.Fatal(err)
 		}
