@@ -11,7 +11,7 @@ import (
 )
 
 // Helper to create temporary files, and clean up after the execution of tests
-func createTempFiles(t *testing.T, filename string) string {
+func createTempFiles(t *testing.T, filenames []string) string {
 	t.Helper()
 	dir, err := ioutil.TempDir(os.TempDir(), "example")
 	if err != nil {
@@ -19,9 +19,11 @@ func createTempFiles(t *testing.T, filename string) string {
 	}
 	t.Cleanup(func() { os.RemoveAll(dir) })
 
-	tmpFilename := filepath.Join(dir, filename)
-	if err := ioutil.WriteFile(tmpFilename, []byte{}, 0666); err != nil {
-		t.Fatal(err.Error())
+	for _, filename := range filenames {
+		tmpFilename := filepath.Join(dir, filename)
+		if err := ioutil.WriteFile(tmpFilename, []byte{}, 0666); err != nil {
+			t.Fatal(err.Error())
+		}
 	}
 
 	return dir
@@ -29,7 +31,7 @@ func createTempFiles(t *testing.T, filename string) string {
 
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
-		dir := createTempFiles(t, "tmpfile")
+		dir := createTempFiles(t, []string{"tmpfile"})
 		filenames, err := ReadFilenames(dir)
 		if err != nil {
 			t.Fatal(err.Error())
@@ -40,7 +42,7 @@ func TestReadFilenames(t *testing.T) {
 
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
-		dir := createTempFiles(t, "Sigfaibles_debits.csv")
+		dir := createTempFiles(t, []string{"Sigfaibles_debits.csv"})
 		res, err := PrepareImport(dir)
 		expected := AdminObject{
 			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
@@ -62,7 +64,7 @@ func TestPrepareImport(t *testing.T) {
 
 	for _, testCase := range cases {
 		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+testCase.filetype, func(t *testing.T) {
-			dir := createTempFiles(t, testCase.id+".bin")
+			dir := createTempFiles(t, []string{testCase.id + ".bin"})
 
 			tmpFilename := filepath.Join(dir, testCase.id+".info")
 			content := []byte("{\"MetaData\":{\"filename\":\"" + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
@@ -81,7 +83,7 @@ func TestPrepareImport(t *testing.T) {
 	}
 
 	t.Run("should return list of unsupported files", func(t *testing.T) {
-		dir := createTempFiles(t, "unsupported-file.csv")
+		dir := createTempFiles(t, []string{"unsupported-file.csv"})
 		_, err := PrepareImport(dir)
 		var e *UnsupportedFilesError
 		if assert.Error(t, err) && errors.As(err, &e) {
@@ -90,7 +92,7 @@ func TestPrepareImport(t *testing.T) {
 	})
 
 	t.Run("should fail if missing .info file", func(t *testing.T) {
-		dir := createTempFiles(t, "lonely.bin")
+		dir := createTempFiles(t, []string{"lonely.bin"})
 		assert.Panics(t, func() {
 			PrepareImport(dir)
 		})

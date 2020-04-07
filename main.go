@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -14,11 +15,12 @@ import (
 // Implementation of the prepare-import command.
 func main() {
 	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
-	fmt.Println("a")
 	flag.Parse()
 	adminObject, err := PrepareImport(*path)
-	if err != nil {
-		log.Fatal(err)
+	if _, ok := err.(UnsupportedFilesError); ok {
+		fmt.Fprintln(os.Stderr, err.Error())
+	} else if err != nil {
+		log.Fatal(err) // will print in the error output stream and exit
 	}
 	json, err := json.MarshalIndent(adminObject, "", "  ")
 	if err != nil {
