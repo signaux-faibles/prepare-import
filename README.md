@@ -7,9 +7,8 @@ Lors de la constitution d'un batch, la commande `prepare-import` génère un doc
 ## Usage
 
 ```sh
-make install # Installe les dépendances, y compris de test (-t)
+make # Installe les dépendances, y compris de test (-t), et compile le binaire
 make test # Exécute les tests
-go build # Compile 
 ./prepare-import . # Retourne la définition du batch au format JSON, depuis le répertoire courant
 ```
 
