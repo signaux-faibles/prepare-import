@@ -15,7 +15,7 @@ func TestMain(t *testing.T) {
 		// dir := createTempFiles(t, "tmpfile.csv")
 		dir := createTempFiles(t, "Sigfaibles_effectif_siret.csv")
 
-		cmd := exec.Command("prepare-import", "--path", dir)
+		cmd := exec.Command("./prepare-import", "--path", dir)
 		cmd.Stdin = strings.NewReader("some input")
 		var out bytes.Buffer
 		cmd.Stdout = &out
