@@ -34,12 +34,12 @@ jobs:
             dep ensure
         fi
 
-    - name: Test
-      run: go test -v -coverprofile=coverage.out
-
     - name: Build
       run: go build -v .
     
+    - name: Test
+      run: go test -v -coverprofile=coverage.out
+
     - name: Upload coverage to codacy
       run: |
         go get github.com/schrej/godacov
