@@ -18,7 +18,7 @@ func main() {
 	flag.Parse()
 	adminObject, err := PrepareImport(*path)
 	if err != nil {
-		if _, ok := err.(UnsupportedFilesError); ok {
+		if _, ok := err.(UnsupportedFilesError); ok == true {
 			fmt.Fprintln(os.Stderr, err.Error())
 		} else {
 			log.Fatal(err) // will print in the error output stream and exit
