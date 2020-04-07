@@ -17,12 +17,10 @@ func main() {
 	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
 	flag.Parse()
 	adminObject, err := PrepareImport(*path)
-	if err != nil {
-		if _, ok := err.(UnsupportedFilesError); ok == true {
-			fmt.Fprintln(os.Stderr, err.Error())
-		} else {
-			log.Fatal(err) // will print in the error output stream and exit
-		}
+	if _, ok := err.(UnsupportedFilesError); ok {
+		fmt.Fprintln(os.Stderr, err.Error())
+	} else if err != nil {
+		log.Fatal(err) // will print in the error output stream and exit
 	}
 	json, err := json.MarshalIndent(adminObject, "", "  ")
 	if err != nil {
