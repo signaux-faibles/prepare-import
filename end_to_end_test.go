@@ -2,13 +2,19 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var goldenFile = "end_to_end_golden.txt"
+
+var update = flag.Bool("update", false, "Update the expected test values in golden file")
 
 func TestMain(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
@@ -24,7 +30,14 @@ func TestMain(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		expected := "{\n  \"files\": {\n    \"debit\": [\n      \"Sigfaibles_debits.csv\"\n    ],\n    \"effectif\": [\n      \"Sigfaibles_effectif_siret.csv\"\n    ]\n  }\n}\n"
-		assert.Equal(t, expected, out.String())
+		if *update {
+			ioutil.WriteFile(goldenFile, out.Bytes(), 0644)
+		}
+		expected, err := ioutil.ReadFile(goldenFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// expected := "{\n  \"files\": {\n    \"debit\": [\n      \"Sigfaibles_debits.csv\"\n    ],\n    \"effectif\": [\n      \"Sigfaibles_effectif_siret.csv\"\n    ]\n  }\n}\n"
+		assert.Equal(t, expected, out.Bytes())
 	})
 }

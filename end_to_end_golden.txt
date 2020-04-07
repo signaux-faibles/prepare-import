@@ -1,0 +1,10 @@
+{
+  "files": {
+    "debit": [
+      "Sigfaibles_debits.csv"
+    ],
+    "effectif": [
+      "Sigfaibles_effectif_siret.csv"
+    ]
+  }
+}
