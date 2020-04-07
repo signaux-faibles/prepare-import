@@ -53,5 +53,6 @@ func TestMain(t *testing.T) {
 		expected := diffWithGoldenFile(*updateGoldenFile, cmdOutput)
 
 		assert.Equal(t, string(expected), cmdOutput.String())
+		// TODO: also assert against stderr
 	})
 }
