@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,10 @@ var update = flag.Bool("update", false, "Update the expected test values in gold
 func TestMain(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
 
-		dir := createTempFiles(t, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv"})
+		dir := createTempFiles(t, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef.bin"})
+
+		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
+		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
 
 		cmd := exec.Command("./prepare-import", "--path", dir)
 		var out bytes.Buffer
@@ -38,6 +42,6 @@ func TestMain(t *testing.T) {
 			log.Fatal(err)
 		}
 		// expected := "{\n  \"files\": {\n    \"debit\": [\n      \"Sigfaibles_debits.csv\"\n    ],\n    \"effectif\": [\n      \"Sigfaibles_effectif_siret.csv\"\n    ]\n  }\n}\n"
-		assert.Equal(t, expected, out.Bytes())
+		assert.Equal(t, string(expected), out.String())
 	})
 }

@@ -12,6 +12,13 @@ make test # Exécute les tests
 ./prepare-import . # Retourne la définition du batch au format JSON, depuis le répertoire courant
 ```
 
+Après toute modification du rendu de prepare-import, penser à mettre à jour le 
+golden file avec la commande: 
+
+```sh
+go test --update
+```
+
 ## Contribution
 
 Nous suivons la specification [Conventional Commits](https://www.conventionalcommits.org/) pour le nommage des commits intégrés à la branche `master`. Ceci nous permet d'automatiser la génération de numéros de version avec [hekike/unchain: Tooling for conventional commit messages](https://github.com/hekike/unchain). (alternative à [semantic-release](https://github.com/semantic-release/semantic-release))
