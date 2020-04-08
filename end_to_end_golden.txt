@@ -1,4 +1,11 @@
 {
+  "_id": {
+    "key": "1802",
+    "type": "batch"
+  },
+  "complete_types": [
+    "effectif"
+  ],
   "files": {
     "bdf": [
       "abcdef.bin"

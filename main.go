@@ -32,13 +32,18 @@ func main() {
 // AdminObject represents a document going to be stored in the Admin db collection.
 type AdminObject map[string]interface{}
 
+type IdProperty struct {
+	Key  string `json:"key"`
+	Type string `json:"type"`
+}
+
 // FilesProperty represents the "files" property of an Admin object.
-type FilesProperty map[string][]string
+type FilesProperty map[ValidFileType][]string
 
 // DataFile represents a Data File to be imported, and allows to determine its type and name.
 type DataFile interface {
-	GetFilename() string    // the name as it will be stored in Admin
-	DetectFileType() string // returns the type of that file (e.g. "debit")
+	GetFilename() string           // the name as it will be stored in Admin
+	DetectFileType() ValidFileType // returns the type of that file (e.g. DEBIT)
 }
 
 // SimpleDataFile is a DataFile which type can be determined without requiring a metadata file (e.g. well-named csv file).
@@ -46,7 +51,7 @@ type SimpleDataFile struct {
 	filename string
 }
 
-func (dataFile SimpleDataFile) DetectFileType() string {
+func (dataFile SimpleDataFile) DetectFileType() ValidFileType {
 	return ExtractFileTypeFromFilename(dataFile.filename)
 }
 
@@ -60,7 +65,7 @@ type UploadedDataFile struct {
 	path     string
 }
 
-func (dataFile UploadedDataFile) DetectFileType() string {
+func (dataFile UploadedDataFile) DetectFileType() ValidFileType {
 	metaFilepath := filepath.Join(dataFile.path, strings.Replace(dataFile.filename, ".bin", ".info", 1))
 	fileinfo := LoadMetadata(metaFilepath)
 	return ExtractFileTypeFromMetadata(metaFilepath, fileinfo) // e.g. "Sigfaible_debits.csv"
@@ -110,17 +115,23 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PurePrepareImport(augmentedFiles)
+	return PopulateAdminObject(augmentedFiles, "1802") // TODO: put a real batch key here
 }
 
-// PurePrepareImport populates an AdminObject, given a list of data files.
-func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
+// PopulateAdminObject populates an AdminObject, given a list of data files.
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminObject, error) {
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
 	if len(unsupportedFiles) > 0 {
 		err = UnsupportedFilesError{unsupportedFiles}
 	}
-	return AdminObject{"files": filesProperty}, err
+	var completeTypes = []ValidFileType{}
+	for _, typeName := range defaultCompleteTypes {
+		if _, ok := filesProperty[typeName]; ok {
+			completeTypes = append(completeTypes, typeName)
+		}
+	}
+	return AdminObject{"_id": IdProperty{batchKey, "batch"}, "files": filesProperty, "complete_types": completeTypes}, err
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.

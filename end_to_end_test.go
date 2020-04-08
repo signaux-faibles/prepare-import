@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os/exec"
@@ -44,12 +43,9 @@ func TestMain(t *testing.T) {
 		cmd.Stdout = &cmdOutput
 		cmd.Stderr = &cmdError
 		err := cmd.Run()
-		fmt.Printf("stderr: %q\n", cmdError.String())
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		fmt.Printf("stdout: %q\n", cmdOutput.String())
 
 		expectedOutput := diffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
 		expectedError := diffWithGoldenFile(errGoldenFile, *updateGoldenFile, cmdError)
