@@ -119,8 +119,9 @@ func TestPurePrepareImport(t *testing.T) {
 		}
 	})
 
-	t.Run("Should support multiple types of csv files", func(t *testing.T) {
+	t.Run("Should support multiple types of files", func(t *testing.T) {
 		files := []string{
+			"diane_req_2002.csv",              // --> "diane"
 			"diane_req_2002.csv",              // --> "diane"
 			"diane_req_dom_2002.csv",          // --> "diane"
 			"effectif_dom.csv",                // --> "effectif"
@@ -230,6 +231,7 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 		{"act_partielle_ddes_depuis2015_FRANCE.csv", "apdemande"},
 
 		// others
+		{"Diane_Export_4.txt", "diane"},
 		{"Sigfaibles_debits.csv", "debit"},
 		{"Sigfaibles_debits2.csv", "debit"},
 		{"diane_req_2002.csv", "diane"},
