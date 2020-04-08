@@ -5,6 +5,26 @@ import (
 	"strings"
 )
 
+const (
+	APCONSO      ValidFileType = "apconso"
+	APDEMANDE    ValidFileType = "apdemande"
+	ADMIN_URSSAF ValidFileType = "admin_urssaf"
+	EFFECTIF_ENT ValidFileType = "effectif_ent"
+	PROCOL       ValidFileType = "procol"
+	COTISATION   ValidFileType = "cotisation"
+	DELAI        ValidFileType = "delai"
+	CCSF         ValidFileType = "ccsf"
+	SIRENE_UL    ValidFileType = "sirene_ul"
+	COMPTES      ValidFileType = "comptes"
+	INTERIM      ValidFileType = "interim"
+	DEBIT        ValidFileType = "debit"
+	DIANE        ValidFileType = "diane"
+	EFFECTIF     ValidFileType = "effectif"
+	FILTER       ValidFileType = "filter"
+)
+
+type ValidFileType string
+
 var defaultCompleteTypes = []string{
 	"apconso",
 	"apdemande",
