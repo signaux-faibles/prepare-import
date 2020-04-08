@@ -95,11 +95,11 @@ func TestPrepareImport(t *testing.T) {
 	})
 }
 
-func TestPurePrepareImport(t *testing.T) {
+func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, err := PurePrepareImport([]DataFile{filename})
+		res, err := PopulateAdminObject([]DataFile{filename})
 		expected := FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
@@ -109,7 +109,7 @@ func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return an empty complete_types property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, err := PurePrepareImport([]DataFile{filename})
+		res, err := PopulateAdminObject([]DataFile{filename})
 		expected := []string{}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
@@ -118,7 +118,7 @@ func TestPurePrepareImport(t *testing.T) {
 
 	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
 		filename := SimpleDataFile{"act_partielle_conso_depuis2014_FRANCE.csv"}
-		res, err := PurePrepareImport([]DataFile{filename})
+		res, err := PopulateAdminObject([]DataFile{filename})
 		expected := []string{"apconso"}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
@@ -126,7 +126,7 @@ func TestPurePrepareImport(t *testing.T) {
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res, err := PurePrepareImport([]DataFile{})
+		res, err := PopulateAdminObject([]DataFile{})
 		if assert.NoError(t, err) {
 			assert.Equal(t, FilesProperty{}, res["files"])
 		}
@@ -145,7 +145,7 @@ func TestPurePrepareImport(t *testing.T) {
 		for _, file := range files {
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
-		res, err := PurePrepareImport(augmentedFiles)
+		res, err := PopulateAdminObject(augmentedFiles)
 		if assert.NoError(t, err) {
 			resFilesProperty := res["files"].(FilesProperty)
 			resultingFiles := []string{}

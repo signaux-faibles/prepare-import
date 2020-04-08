@@ -110,11 +110,11 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PurePrepareImport(augmentedFiles)
+	return PopulateAdminObject(augmentedFiles)
 }
 
-// PurePrepareImport populates an AdminObject, given a list of data files.
-func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
+// PopulateAdminObject populates an AdminObject, given a list of data files.
+func PopulateAdminObject(augmentedFilenames []DataFile) (AdminObject, error) {
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
 	if len(unsupportedFiles) > 0 {
