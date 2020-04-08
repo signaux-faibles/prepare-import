@@ -99,7 +99,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, err := PopulateAdminObject([]DataFile{filename})
+		res, err := PopulateAdminObject([]DataFile{filename}, "")
 		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
@@ -109,7 +109,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return an empty complete_types property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, err := PopulateAdminObject([]DataFile{filename})
+		res, err := PopulateAdminObject([]DataFile{filename}, "")
 		expected := []ValidFileType{}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
@@ -118,7 +118,7 @@ func TestPopulateAdminObject(t *testing.T) {
 
 	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
 		filename := SimpleDataFile{"act_partielle_conso_depuis2014_FRANCE.csv"}
-		res, err := PopulateAdminObject([]DataFile{filename})
+		res, err := PopulateAdminObject([]DataFile{filename}, "")
 		expected := []ValidFileType{APCONSO}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
@@ -126,7 +126,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res, err := PopulateAdminObject([]DataFile{})
+		res, err := PopulateAdminObject([]DataFile{}, "")
 		if assert.NoError(t, err) {
 			assert.Equal(t, FilesProperty{}, res["files"])
 		}
@@ -145,7 +145,7 @@ func TestPopulateAdminObject(t *testing.T) {
 		for _, file := range files {
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
-		res, err := PopulateAdminObject(augmentedFiles)
+		res, err := PopulateAdminObject(augmentedFiles, "")
 		if assert.NoError(t, err) {
 			resFilesProperty := res["files"].(FilesProperty)
 			resultingFiles := []string{}
@@ -155,11 +155,6 @@ func TestPopulateAdminObject(t *testing.T) {
 			assert.Subset(t, resultingFiles, files)
 		}
 	})
-
-	type IdProperty struct {
-		key        string
-		objectType string
-	}
 
 	t.Run("Should return an _id property", func(t *testing.T) {
 		res, err := PopulateAdminObject([]DataFile{}, "1802")

@@ -32,6 +32,11 @@ func main() {
 // AdminObject represents a document going to be stored in the Admin db collection.
 type AdminObject map[string]interface{}
 
+type IdProperty struct {
+	Key  string `json:"key"`
+	Type string `json:"type"`
+}
+
 // FilesProperty represents the "files" property of an Admin object.
 type FilesProperty map[ValidFileType][]string
 
@@ -110,11 +115,11 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PopulateAdminObject(augmentedFiles)
+	return PopulateAdminObject(augmentedFiles, "1802") // TODO: put a real batch key here
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile) (AdminObject, error) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminObject, error) {
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
 	if len(unsupportedFiles) > 0 {
@@ -126,7 +131,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile) (AdminObject, error) {
 			completeTypes = append(completeTypes, typeName)
 		}
 	}
-	return AdminObject{"files": filesProperty, "complete_types": completeTypes}, err
+	return AdminObject{"_id": IdProperty{batchKey, "batch"}, "files": filesProperty, "complete_types": completeTypes}, err
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.
