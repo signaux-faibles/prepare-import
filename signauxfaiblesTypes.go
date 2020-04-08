@@ -6,23 +6,23 @@ import (
 )
 
 const (
+	ADMIN_URSSAF ValidFileType = "admin_urssaf"
 	APCONSO      ValidFileType = "apconso"
 	APDEMANDE    ValidFileType = "apdemande"
-	ADMIN_URSSAF ValidFileType = "admin_urssaf"
-	EFFECTIF_ENT ValidFileType = "effectif_ent"
-	PROCOL       ValidFileType = "procol"
-	COTISATION   ValidFileType = "cotisation"
-	DELAI        ValidFileType = "delai"
+	BDF          ValidFileType = "bdf"
 	CCSF         ValidFileType = "ccsf"
-	SIRENE       ValidFileType = "sirene"
-	SIRENE_UL    ValidFileType = "sirene_ul"
 	COMPTES      ValidFileType = "comptes"
-	INTERIM      ValidFileType = "interim"
+	COTISATION   ValidFileType = "cotisation"
 	DEBIT        ValidFileType = "debit"
+	DELAI        ValidFileType = "delai"
 	DIANE        ValidFileType = "diane"
 	EFFECTIF     ValidFileType = "effectif"
+	EFFECTIF_ENT ValidFileType = "effectif_ent"
 	FILTER       ValidFileType = "filter"
-	BDF          ValidFileType = "bdf"
+	INTERIM      ValidFileType = "interim"
+	PROCOL       ValidFileType = "procol"
+	SIRENE       ValidFileType = "sirene"
+	SIRENE_UL    ValidFileType = "sirene_ul"
 )
 
 type ValidFileType string

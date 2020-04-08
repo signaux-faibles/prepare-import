@@ -110,7 +110,7 @@ func TestPopulateAdminObject(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
 		res, err := PopulateAdminObject([]DataFile{filename})
-		expected := []string{}
+		expected := []ValidFileType{}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
 		}
