@@ -4,6 +4,10 @@ Scripts de préparation à l'importation de données dans le processus d'intégr
 
 Lors de la constitution d'un batch, la commande `prepare-import` génère un document JSON destiné à être inséré dans la collection `Admin` de la base de données, à partir de fichiers de données mis à disposition dans un répertoire.
 
+Elle vise à supporter tous les types de fichiers décrits dans le tableau fourni dans la [section "Spécificités de l'import" de la documentation](https://github.com/signaux-faibles/documentation/blob/master/processus-traitement-donnees.md#sp%C3%A9cificit%C3%A9s-de-limport) de Signaux Faibles.
+
+La rencontre de fichiers non supportés n'empêchera pas la génération d'un batch, mais ceux-ci seront listés dans la sortie d'erreurs. (`stderr`)
+
 ## Usage
 
 ```sh
