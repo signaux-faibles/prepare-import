@@ -44,11 +44,9 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"Sigfaibles_debits.csv"})
 		res, err := PrepareImport(dir)
-		expected := AdminObject{
-			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
-		}
+		expected := FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected, res)
+			assert.Equal(t, expected, res["files"])
 		}
 	})
 
@@ -73,11 +71,9 @@ func TestPrepareImport(t *testing.T) {
 			}
 
 			res, err := PrepareImport(dir)
-			expected := AdminObject{
-				"files": FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}},
-			}
+			expected := FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}}
 			if assert.NoError(t, err) {
-				assert.Equal(t, expected, res)
+				assert.Equal(t, expected, res["files"])
 			}
 		})
 	}
@@ -99,18 +95,14 @@ func TestPrepareImport(t *testing.T) {
 	})
 }
 
-func AssertProperty(t *testing.T, expected, res interface{}) {}
-
 func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
 		res, err := PurePrepareImport([]DataFile{filename})
-		expected := AdminObject{
-			"files": FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}},
-		}
+		expected := FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected, res)
+			assert.Equal(t, expected, res["files"])
 		}
 	})
 
@@ -120,16 +112,14 @@ func TestPurePrepareImport(t *testing.T) {
 		res, err := PurePrepareImport([]DataFile{filename})
 		expected := []string{}
 		if assert.NoError(t, err) {
-			if assert.Contains(t, res, "complete_types") {
-				assert.Equal(t, expected, res["complete_types"])
-			}
+			assert.Equal(t, expected, res["complete_types"])
 		}
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res, err := PurePrepareImport([]DataFile{})
 		if assert.NoError(t, err) {
-			assert.Equal(t, AdminObject{"files": FilesProperty{}}, res)
+			assert.Equal(t, FilesProperty{}, res["files"])
 		}
 	})
 
