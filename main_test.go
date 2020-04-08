@@ -116,6 +116,15 @@ func TestPurePrepareImport(t *testing.T) {
 		}
 	})
 
+	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
+		filename := SimpleDataFile{"act_partielle_conso_depuis2014_FRANCE.csv"}
+		res, err := PurePrepareImport([]DataFile{filename})
+		expected := []string{"apconso"}
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected, res["complete_types"])
+		}
+	})
+
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
 		res, err := PurePrepareImport([]DataFile{})
 		if assert.NoError(t, err) {
