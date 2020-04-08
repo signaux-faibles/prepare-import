@@ -119,7 +119,7 @@ func TestPurePrepareImport(t *testing.T) {
 		}
 	})
 
-	t.Run("Should support multiple types of files", func(t *testing.T) {
+	t.Run("Should support multiple types of csv files", func(t *testing.T) {
 		files := []string{
 			"diane_req_2002.csv",              // --> "diane"
 			"diane_req_dom_2002.csv",          // --> "diane"
