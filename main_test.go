@@ -139,7 +139,7 @@ func TestPopulateAdminObject(t *testing.T) {
 			"effectif_dom.csv",                // --> EFFECTIF
 			"filter_siren_2002.csv",           // --> FILTER
 			"sireneUL.csv",                    // --> SIRENE_UL
-			"StockEtablissement_utf8_geo.csv", // --> COMPTES
+			"StockEtablissement_utf8_geo.csv", // --> SIRENE
 		}
 		augmentedFiles := []DataFile{}
 		for _, file := range files {
@@ -251,7 +251,7 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 		{"effectif_dom.csv", EFFECTIF},
 		{"filter_siren_2002.csv", FILTER},
 		{"sireneUL.csv", SIRENE_UL},
-		{"StockEtablissement_utf8_geo.csv", COMPTES},
+		{"StockEtablissement_utf8_geo.csv", SIRENE},
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+string(testCase.category)+" for file "+testCase.name, func(t *testing.T) {

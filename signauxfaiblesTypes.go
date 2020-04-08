@@ -11,7 +11,6 @@ const (
 	APDEMANDE    ValidFileType = "apdemande"
 	BDF          ValidFileType = "bdf"
 	CCSF         ValidFileType = "ccsf"
-	COMPTES      ValidFileType = "comptes"
 	COTISATION   ValidFileType = "cotisation"
 	DEBIT        ValidFileType = "debit"
 	DELAI        ValidFileType = "delai"
@@ -80,7 +79,7 @@ func ExtractFileTypeFromFilename(filename string) ValidFileType {
 	case filename == "sireneUL.csv":
 		return SIRENE_UL
 	case filename == "StockEtablissement_utf8_geo.csv":
-		return COMPTES
+		return SIRENE
 	case strings.HasSuffix(filename, ".sas7bdat"):
 		return INTERIM
 	case mentionsDebits.MatchString(filename):
@@ -91,8 +90,6 @@ func ExtractFileTypeFromFilename(filename string) ValidFileType {
 		return EFFECTIF
 	case hasFilterPrefix.MatchString(filename):
 		return FILTER
-	// TODO: also detect SIRENE type
-	// TODO: replace COMPTES with ADMIN_URSSAF
 	default:
 		return ""
 	}
