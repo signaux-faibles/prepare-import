@@ -99,6 +99,8 @@ func TestPrepareImport(t *testing.T) {
 	})
 }
 
+func AssertProperty(t *testing.T, expected, res interface{}) {}
+
 func TestPurePrepareImport(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}

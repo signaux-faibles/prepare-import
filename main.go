@@ -120,7 +120,7 @@ func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
 	if len(unsupportedFiles) > 0 {
 		err = UnsupportedFilesError{unsupportedFiles}
 	}
-	return AdminObject{"files": filesProperty}, err
+	return AdminObject{"files": filesProperty, "complete_types": []string{}}, err
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.
