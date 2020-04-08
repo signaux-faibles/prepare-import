@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var hasDianePrefix = regexp.MustCompile(`^diane`)
+var hasDianePrefix = regexp.MustCompile(`^[Dd]iane`)
 var mentionsEffectif = regexp.MustCompile(`effectif_`)
 var mentionsDebits = regexp.MustCompile(`_debits`)
 var hasFilterPrefix = regexp.MustCompile(`^filter_`)
