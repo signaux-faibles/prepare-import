@@ -121,8 +121,10 @@ func PurePrepareImport(augmentedFilenames []DataFile) (AdminObject, error) {
 		err = UnsupportedFilesError{unsupportedFiles}
 	}
 	var completeTypes = []string{}
-	if _, ok := filesProperty["apconso"]; ok {
-		completeTypes = append(completeTypes, "apconso")
+	for _, typeName := range defaultCompleteTypes {
+		if _, ok := filesProperty[typeName]; ok {
+			completeTypes = append(completeTypes, typeName)
+		}
 	}
 	return AdminObject{"files": filesProperty, "complete_types": completeTypes}, err
 }

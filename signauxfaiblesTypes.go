@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+var defaultCompleteTypes = []string{"apconso"}
+
 var hasDianePrefix = regexp.MustCompile(`^[Dd]iane`)
 var mentionsEffectif = regexp.MustCompile(`effectif_`)
 var mentionsDebits = regexp.MustCompile(`_debits`)
