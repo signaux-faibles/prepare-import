@@ -14,6 +14,7 @@ const (
 	COTISATION   ValidFileType = "cotisation"
 	DELAI        ValidFileType = "delai"
 	CCSF         ValidFileType = "ccsf"
+	SIRENE       ValidFileType = "sirene"
 	SIRENE_UL    ValidFileType = "sirene_ul"
 	COMPTES      ValidFileType = "comptes"
 	INTERIM      ValidFileType = "interim"
@@ -21,17 +22,18 @@ const (
 	DIANE        ValidFileType = "diane"
 	EFFECTIF     ValidFileType = "effectif"
 	FILTER       ValidFileType = "filter"
+	BDF          ValidFileType = "bdf"
 )
 
 type ValidFileType string
 
-var defaultCompleteTypes = []string{
-	"apconso",
-	"apdemande",
-	"effectif",
-	"effectif_ent",
-	"sirene",
-	"sirene_ul",
+var defaultCompleteTypes = []ValidFileType{
+	APCONSO,
+	APDEMANDE,
+	EFFECTIF,
+	EFFECTIF_ENT,
+	SIRENE,
+	SIRENE_UL,
 }
 
 var hasDianePrefix = regexp.MustCompile(`^[Dd]iane`)
@@ -48,47 +50,49 @@ type UploadedFileMeta struct {
 }
 
 // ExtractFileTypeFromMetadata returns the type of a .bin file, based on the contents of the associated .info file.
-func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) string {
+func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) ValidFileType {
 	metadata := fileinfo.MetaData
 	if metadata["goup-path"] == "bdf" {
-		return "bdf"
+		return BDF
 	}
 	return ExtractFileTypeFromFilename(metadata["filename"])
 }
 
 // ExtractFileTypeFromFilename returns a file type from filename, or empty string for unsupported file names
-func ExtractFileTypeFromFilename(filename string) string {
+func ExtractFileTypeFromFilename(filename string) ValidFileType {
 	switch {
 	case filename == "act_partielle_conso_depuis2014_FRANCE.csv":
-		return "apconso"
+		return APCONSO
 	case filename == "act_partielle_ddes_depuis2015_FRANCE.csv":
-		return "apdemande"
+		return APDEMANDE
 	case filename == "Sigfaible_etablissement_utf8.csv":
-		return "admin_urssaf"
+		return ADMIN_URSSAF
 	case filename == "Sigfaible_effectif_siren.csv":
-		return "effectif_ent"
+		return EFFECTIF_ENT
 	case filename == "Sigfaible_pcoll.csv":
-		return "procol"
+		return PROCOL
 	case filename == "Sigfaible_cotisdues.csv":
-		return "cotisation"
+		return COTISATION
 	case filename == "Sigfaible_delais.csv":
-		return "delai"
+		return DELAI
 	case filename == "Sigfaible_ccsf.csv":
-		return "ccsf"
+		return CCSF
 	case filename == "sireneUL.csv":
-		return "sirene_ul"
+		return SIRENE_UL
 	case filename == "StockEtablissement_utf8_geo.csv":
-		return "comptes"
+		return COMPTES
 	case strings.HasSuffix(filename, ".sas7bdat"):
-		return "interim"
+		return INTERIM
 	case mentionsDebits.MatchString(filename):
-		return "debit"
+		return DEBIT
 	case hasDianePrefix.MatchString(filename):
-		return "diane"
+		return DIANE
 	case mentionsEffectif.MatchString(filename):
-		return "effectif"
+		return EFFECTIF
 	case hasFilterPrefix.MatchString(filename):
-		return "filter"
+		return FILTER
+	// TODO: also detect SIRENE type
+	// TODO: replace COMPTES with ADMIN_URSSAF
 	default:
 		return ""
 	}

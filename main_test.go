@@ -44,7 +44,7 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"Sigfaibles_debits.csv"})
 		res, err := PrepareImport(dir)
-		expected := FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}}
+		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
 		}
@@ -54,14 +54,14 @@ func TestPrepareImport(t *testing.T) {
 		id       string
 		filename string
 		goupPath string
-		filetype string
+		filetype ValidFileType
 	}{
-		{"9a047825d8173684b69994428449302f", "Sigfaible_debits.csv", "urssaf", "debit"},
-		{"60d1bd320523904d8b8b427efbbd3928", "FICHIER_SF_2020_02.csv", "bdf", "bdf"},
+		{"9a047825d8173684b69994428449302f", "Sigfaible_debits.csv", "urssaf", DEBIT},
+		{"60d1bd320523904d8b8b427efbbd3928", "FICHIER_SF_2020_02.csv", "bdf", BDF},
 	}
 
 	for _, testCase := range cases {
-		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+testCase.filetype, func(t *testing.T) {
+		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+string(testCase.filetype), func(t *testing.T) {
 			dir := createTempFiles(t, []string{testCase.id + ".bin"})
 
 			tmpFilename := filepath.Join(dir, testCase.id+".info")
@@ -100,7 +100,7 @@ func TestPopulateAdminObject(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
 		res, err := PopulateAdminObject([]DataFile{filename})
-		expected := FilesProperty{"debit": []string{"Sigfaibles_debits.csv"}}
+		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
 		}
@@ -119,7 +119,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
 		filename := SimpleDataFile{"act_partielle_conso_depuis2014_FRANCE.csv"}
 		res, err := PopulateAdminObject([]DataFile{filename})
-		expected := []string{"apconso"}
+		expected := []ValidFileType{APCONSO}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
 		}
@@ -134,12 +134,12 @@ func TestPopulateAdminObject(t *testing.T) {
 
 	t.Run("Should support multiple types of csv files", func(t *testing.T) {
 		files := []string{
-			"diane_req_2002.csv",              // --> "diane"
-			"diane_req_dom_2002.csv",          // --> "diane"
-			"effectif_dom.csv",                // --> "effectif"
-			"filter_siren_2002.csv",           // --> "filter"
-			"sireneUL.csv",                    // --> "sirene_ul"
-			"StockEtablissement_utf8_geo.csv", // --> "comptes"
+			"diane_req_2002.csv",              // --> DIANE
+			"diane_req_dom_2002.csv",          // --> DIANE
+			"effectif_dom.csv",                // --> EFFECTIF
+			"filter_siren_2002.csv",           // --> FILTER
+			"sireneUL.csv",                    // --> SIRENE_UL
+			"StockEtablissement_utf8_geo.csv", // --> COMPTES
 		}
 		augmentedFiles := []DataFile{}
 		for _, file := range files {
@@ -161,21 +161,21 @@ func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
 		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
 		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty["effectif"])
+			assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty[EFFECTIF])
 		}
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
 		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
 		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty["debit"])
+			assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty[DEBIT])
 		}
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
 		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
 		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty["debit"])
+			assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty[DEBIT])
 		}
 	})
 
@@ -201,7 +201,7 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 			"filename":  "Sigfaible_debits.csv",
 			"goup-path": "urssaf",
 		}))
-		assert.Equal(t, "debit", got)
+		assert.Equal(t, DEBIT, got)
 	})
 
 	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
@@ -209,7 +209,7 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 			"filename":  "FICHIER_SF_2020_02.csv",
 			"goup-path": "bdf",
 		}))
-		assert.Equal(t, "bdf", got)
+		assert.Equal(t, BDF, got)
 	})
 
 	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
@@ -217,7 +217,7 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 			"filename":  "tab_19m10.sas7bdat",
 			"goup-path": "dgefp",
 		}))
-		assert.Equal(t, "interim", got)
+		assert.Equal(t, INTERIM, got)
 	})
 }
 
@@ -226,35 +226,35 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 	// inspired by https://github.com/golang/go/wiki/TableDrivenTests
 	cases := []struct {
 		name     string
-		category string
+		category ValidFileType
 	}{
 		// guessed from urssaf files found on stockage/goub server
-		{"Sigfaible_debits.csv", "debit"},
-		{"Sigfaible_cotisdues.csv", "cotisation"},
-		{"Sigfaible_pcoll.csv", "procol"},
-		{"Sigfaible_etablissement_utf8.csv", "admin_urssaf"},
-		{"Sigfaible_effectif_siret.csv", "effectif"},
-		{"Sigfaible_effectif_siren.csv", "effectif_ent"},
-		{"Sigfaible_delais.csv", "delai"},
-		{"Sigfaible_ccsf.csv", "ccsf"},
+		{"Sigfaible_debits.csv", DEBIT},
+		{"Sigfaible_cotisdues.csv", COTISATION},
+		{"Sigfaible_pcoll.csv", PROCOL},
+		{"Sigfaible_etablissement_utf8.csv", ADMIN_URSSAF},
+		{"Sigfaible_effectif_siret.csv", EFFECTIF},
+		{"Sigfaible_effectif_siren.csv", EFFECTIF_ENT},
+		{"Sigfaible_delais.csv", DELAI},
+		{"Sigfaible_ccsf.csv", CCSF},
 
 		// guessed from dgefp files
-		{"act_partielle_conso_depuis2014_FRANCE.csv", "apconso"},
-		{"act_partielle_ddes_depuis2015_FRANCE.csv", "apdemande"},
+		{"act_partielle_conso_depuis2014_FRANCE.csv", APCONSO},
+		{"act_partielle_ddes_depuis2015_FRANCE.csv", APDEMANDE},
 
 		// others
-		{"Diane_Export_4.txt", "diane"},
-		{"Sigfaibles_debits.csv", "debit"},
-		{"Sigfaibles_debits2.csv", "debit"},
-		{"diane_req_2002.csv", "diane"},
-		{"diane_req_dom_2002.csv", "diane"},
-		{"effectif_dom.csv", "effectif"},
-		{"filter_siren_2002.csv", "filter"},
-		{"sireneUL.csv", "sirene_ul"},
-		{"StockEtablissement_utf8_geo.csv", "comptes"},
+		{"Diane_Export_4.txt", DIANE},
+		{"Sigfaibles_debits.csv", DEBIT},
+		{"Sigfaibles_debits2.csv", DEBIT},
+		{"diane_req_2002.csv", DIANE},
+		{"diane_req_dom_2002.csv", DIANE},
+		{"effectif_dom.csv", EFFECTIF},
+		{"filter_siren_2002.csv", FILTER},
+		{"sireneUL.csv", SIRENE_UL},
+		{"StockEtablissement_utf8_geo.csv", COMPTES},
 	}
 	for _, testCase := range cases {
-		t.Run("should return "+testCase.category+" for file "+testCase.name, func(t *testing.T) {
+		t.Run("should return "+string(testCase.category)+" for file "+testCase.name, func(t *testing.T) {
 			got := ExtractFileTypeFromFilename(testCase.name)
 			assert.Equal(t, testCase.category, got)
 		})
