@@ -13,16 +13,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var goldenFile = "end_to_end_golden.txt"
+var outGoldenFile = "end_to_end_golden.txt"
+var errGoldenFile = "end_to_end_golden_err.txt"
 
 var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
 
-func diffWithGoldenFile(updateGoldenFile bool, cmdOutput bytes.Buffer) []byte {
+func diffWithGoldenFile(filename string, updateGoldenFile bool, cmdOutput bytes.Buffer) []byte {
 
 	if updateGoldenFile {
-		ioutil.WriteFile(goldenFile, cmdOutput.Bytes(), 0644)
+		ioutil.WriteFile(filename, cmdOutput.Bytes(), 0644)
 	}
-	expected, err := ioutil.ReadFile(goldenFile)
+	expected, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,9 +51,10 @@ func TestMain(t *testing.T) {
 
 		fmt.Printf("stdout: %q\n", cmdOutput.String())
 
-		expected := diffWithGoldenFile(*updateGoldenFile, cmdOutput)
+		expectedOutput := diffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
+		expectedError := diffWithGoldenFile(errGoldenFile, *updateGoldenFile, cmdError)
 
-		assert.Equal(t, string(expected), cmdOutput.String())
-		// TODO: also assert against stderr
+		assert.Equal(t, string(expectedOutput), cmdOutput.String())
+		assert.Equal(t, string(expectedError), cmdError.String())
 	})
 }
