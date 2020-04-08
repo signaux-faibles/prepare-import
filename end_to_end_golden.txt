@@ -1,5 +1,7 @@
 {
-  "complete_types": [],
+  "complete_types": [
+    "effectif"
+  ],
   "files": {
     "bdf": [
       "abcdef.bin"
