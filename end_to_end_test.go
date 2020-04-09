@@ -15,8 +15,6 @@ import (
 var outGoldenFile = "end_to_end_golden.txt"
 var errGoldenFile = "end_to_end_golden_err.txt"
 
-var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
-
 func diffWithGoldenFile(filename string, updateGoldenFile bool, cmdOutput bytes.Buffer) []byte {
 
 	if updateGoldenFile {
@@ -29,6 +27,8 @@ func diffWithGoldenFile(filename string, updateGoldenFile bool, cmdOutput bytes.
 	return expected
 }
 
+var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
+
 func TestMain(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
 
@@ -37,14 +37,19 @@ func TestMain(t *testing.T) {
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
 
-		cmd := exec.Command("./prepare-import", "--path", dir)
+		cmds := []*exec.Cmd{
+			exec.Command("./prepare-import", "--path", dir, "--batch", "1802"),
+			exec.Command("./prepare-import", "--path", dir, "--batch", "180"),
+		}
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer
-		cmd.Stdout = &cmdOutput
-		cmd.Stderr = &cmdError
-		err := cmd.Run()
-		if err != nil {
-			log.Fatal(err)
+		for _, cmd := range cmds {
+			cmd.Stdout = &cmdOutput
+			cmd.Stderr = &cmdError
+			err := cmd.Run()
+			if err != nil {
+				// log.Fatal(err)
+			}
 		}
 
 		expectedOutput := diffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)

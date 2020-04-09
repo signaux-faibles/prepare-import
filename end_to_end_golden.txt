@@ -16,5 +16,13 @@
     "effectif": [
       "Sigfaibles_effectif_siret.csv"
     ]
+  },
+  "param": {
+    "date_debut": {
+      "$date": "2014-01-01T00:00:00.000+0000"
+    },
+    "date_fin": {
+      "$date": "2018-02-01T00:00:00.000+0000"
+    }
   }
 }

@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"io/ioutil"
@@ -15,8 +17,20 @@ import (
 // Implementation of the prepare-import command.
 func main() {
 	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
+	var batchKey = flag.String(
+		"batch",
+		"",
+		"Clé du batch à importer au format AAMM (année + mois + suffixe optionnel)\n"+
+			"Exemple: 1802_1",
+	)
 	flag.Parse()
-	adminObject, err := PrepareImport(*path)
+	validBatchKey, err := BatchKey(*batchKey)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+	adminObject, err := PrepareImport(*path, validBatchKey)
 	if _, ok := err.(UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
@@ -33,8 +47,8 @@ func main() {
 type AdminObject map[string]interface{}
 
 type IdProperty struct {
-	Key  string `json:"key"`
-	Type string `json:"type"`
+	Key  batchKeyType `json:"key"`
+	Type string       `json:"type"`
 }
 
 // FilesProperty represents the "files" property of an Admin object.
@@ -106,7 +120,7 @@ func AugmentDataFile(file string, pathname string) DataFile {
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey batchKeyType) (AdminObject, error) {
 	filenames, err := ReadFilenames(pathname)
 	if err != nil {
 		return nil, err
@@ -115,11 +129,22 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PopulateAdminObject(augmentedFiles, "1802") // TODO: put a real batch key here
+	return PopulateAdminObject(augmentedFiles, batchKey)
+}
+
+type batchKeyType string
+
+func BatchKey(key string) (batchKeyType, error) {
+	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
+	if !isValidBatchKey.MatchString(key) {
+		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
+	}
+	return batchKeyType(key), nil
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminObject, error) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType) (AdminObject, error) {
+
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
 	if len(unsupportedFiles) > 0 {
@@ -131,7 +156,19 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminO
 			completeTypes = append(completeTypes, typeName)
 		}
 	}
-	return AdminObject{"_id": IdProperty{batchKey, "batch"}, "files": filesProperty, "complete_types": completeTypes}, err
+	// { "date_debut" : { "$date" : "2014-01-01T00:00:00.000+0000" }, "date_fin" : { "$date" : "2018-12-01T00:00:00.000+0000" }, "date_fin_effectif" : { "$date" : "2018-06-01T00:00:00.000+0000" } }
+
+	paramProperty := map[string]map[string]string{
+		"date_debut": map[string]string{"$date": "2014-01-01T00:00:00.000+0000"},
+		"date_fin":   map[string]string{"$date": "20" + string(batchKey)[0:2] + "-" + string(batchKey)[2:4] + "-01T00:00:00.000+0000"},
+	}
+
+	return AdminObject{
+		"_id":            IdProperty{batchKey, "batch"},
+		"files":          filesProperty,
+		"complete_types": completeTypes,
+		"param":          paramProperty,
+	}, err
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.
