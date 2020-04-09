@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const DUMMY_BATCHKEY string = "1802"
+const DUMMY_BATCHKEY batchKeyType = "1802"
 
 // Helper to create temporary files, and clean up after the execution of tests
 func createTempFiles(t *testing.T, filenames []string) string {

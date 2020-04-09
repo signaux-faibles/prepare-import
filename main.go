@@ -30,7 +30,12 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	adminObject, err := PrepareImport(*path, *batchKey)
+	validBatchKey, err := BatchKey(*batchKey)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+	adminObject, err := PrepareImport(*path, validBatchKey)
 	if _, ok := err.(UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
@@ -47,8 +52,8 @@ func main() {
 type AdminObject map[string]interface{}
 
 type IdProperty struct {
-	Key  string `json:"key"`
-	Type string `json:"type"`
+	Key  batchKeyType `json:"key"`
+	Type string       `json:"type"`
 }
 
 // FilesProperty represents the "files" property of an Admin object.
@@ -120,7 +125,7 @@ func AugmentDataFile(file string, pathname string) DataFile {
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey string) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey batchKeyType) (AdminObject, error) {
 	filenames, err := ReadFilenames(pathname)
 	if err != nil {
 		return nil, err
@@ -143,7 +148,7 @@ func BatchKey(key string) (batchKeyType, error) {
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminObject, error) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType) (AdminObject, error) {
 
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
@@ -160,7 +165,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminO
 
 	paramProperty := map[string]map[string]string{
 		"date_debut": map[string]string{"$date": "2014-01-01T00:00:00.000+0000"},
-		"date_fin":   map[string]string{"$date": "20" + batchKey[0:2] + "-" + batchKey[2:4] + "-01T00:00:00.000+0000"},
+		"date_fin":   map[string]string{"$date": "20" + string(batchKey)[0:2] + "-" + string(batchKey)[2:4] + "-01T00:00:00.000+0000"},
 	}
 
 	return AdminObject{
