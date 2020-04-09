@@ -136,7 +136,7 @@ func PrepareImport(pathname string, batchKey string) (AdminObject, error) {
 func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminObject, error) {
 	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
 	if !isValidBatchKey.MatchString(batchKey) {
-		log.Fatal(errors.New("La clé du batch doit respecter le format requis AAMM"))
+		return nil, errors.New("La clé du batch doit respecter le format requis AAMM")
 	}
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error

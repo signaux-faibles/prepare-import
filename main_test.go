@@ -111,7 +111,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return an empty complete_types property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, err := PopulateAdminObject([]DataFile{filename}, "")
+		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY)
 		expected := []ValidFileType{}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
