@@ -174,7 +174,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return an _id property", func(t *testing.T) {
 		res, err := PopulateAdminObject([]DataFile{}, "1802")
 		if assert.NoError(t, err) {
-			assert.Equal(t, IdProperty{"1802", "batch"}, res["_id"])
+			assert.Equal(t, IDProperty{"1802", "batch"}, res["_id"])
 		}
 	})
 

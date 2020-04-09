@@ -46,7 +46,7 @@ func main() {
 // AdminObject represents a document going to be stored in the Admin db collection.
 type AdminObject map[string]interface{}
 
-type IdProperty struct {
+type IDProperty struct {
 	Key  batchKeyType `json:"key"`
 	Type string       `json:"type"`
 }
@@ -164,7 +164,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType) (
 	}
 
 	return AdminObject{
-		"_id":            IdProperty{batchKey, "batch"},
+		"_id":            IDProperty{batchKey, "batch"},
 		"files":          filesProperty,
 		"complete_types": completeTypes,
 		"param":          paramProperty,
