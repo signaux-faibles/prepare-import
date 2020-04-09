@@ -37,7 +37,7 @@ func TestMain(t *testing.T) {
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
 
-		cmd := exec.Command("./prepare-import", "--path", dir)
+		cmd := exec.Command("./prepare-import", "--path", dir, "--batch", "1802")
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer
 		cmd.Stdout = &cmdOutput
