@@ -37,17 +37,19 @@ func TestMain(t *testing.T) {
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
 
-		[]*Cmd
-
-		cmd := exec.Command("./prepare-import", "--path", dir, "--batch", "1802")
-		cmd := exec.Command("./prepare-import", "--path", dir, "--batch", "180")
+		cmds := []*exec.Cmd{
+			exec.Command("./prepare-import", "--path", dir, "--batch", "1802"),
+			exec.Command("./prepare-import", "--path", dir, "--batch", "180"),
+		}
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer
-		cmd.Stdout = &cmdOutput
-		cmd.Stderr = &cmdError
-		err := cmd.Run()
-		if err != nil {
-			log.Fatal(err)
+		for _, cmd := range cmds {
+			cmd.Stdout = &cmdOutput
+			cmd.Stderr = &cmdError
+			err := cmd.Run()
+			if err != nil {
+				// log.Fatal(err)
+			}
 		}
 
 		expectedOutput := diffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
