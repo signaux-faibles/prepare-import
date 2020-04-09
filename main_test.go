@@ -106,7 +106,7 @@ func TestBatchKey(t *testing.T) {
 
 	t.Run("Should fail if batch key is invalid", func(t *testing.T) {
 		_, err := BatchKey("")
-		assert.Error(t, err, "La clé du batch doit respecter le format requis AAMM")
+		assert.Error(t, err, "la clé du batch doit respecter le format requis AAMM")
 	})
 }
 

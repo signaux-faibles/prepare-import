@@ -137,7 +137,7 @@ type batchKeyType string
 func BatchKey(key string) (batchKeyType, error) {
 	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
 	if !isValidBatchKey.MatchString(key) {
-		return batchKeyType(""), errors.New("La clé du batch doit respecter le format requis AAMM")
+		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
 	}
 	return batchKeyType(key), nil
 }

@@ -1,5 +1,5 @@
 unsupported: unsupported.csv
-La clé du batch doit respecter le format requis AAMM
+la clé du batch doit respecter le format requis AAMM
 
 Usage:
   -batch string
