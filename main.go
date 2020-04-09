@@ -132,13 +132,14 @@ func PrepareImport(pathname string, batchKey string) (AdminObject, error) {
 	return PopulateAdminObject(augmentedFiles, batchKey)
 }
 
-type batchKey string
+type batchKeyType string
 
-func BatchKey(key string) batchKey {
+func BatchKey(key string) (batchKeyType, error) {
 	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
-	if !isValidBatchKey.MatchString(batchKey) {
-		return nil, errors.New("La clé du batch doit respecter le format requis AAMM")
+	if !isValidBatchKey.MatchString(key) {
+		return batchKeyType(""), errors.New("La clé du batch doit respecter le format requis AAMM")
 	}
+	return batchKeyType(key), nil
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.

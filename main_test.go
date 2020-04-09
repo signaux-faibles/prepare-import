@@ -97,6 +97,14 @@ func TestPrepareImport(t *testing.T) {
 	})
 }
 
+func TestBatchKey(t *testing.T) {
+
+	t.Run("Should fail if batch key is invalid", func(t *testing.T) {
+		_, err := BatchKey("")
+		assert.Error(t, err, "La clé du batch doit respecter le format requis AAMM")
+	})
+}
+
 func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
