@@ -16,10 +16,12 @@ import (
 // Implementation of the prepare-import command.
 func main() {
 	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
-	var batchKey = flag.String("batch", "", "Clé du batch qui va être importé")
+	var batchKey = flag.String("batch", "", "Clé du batch à importer.")
 	flag.Parse()
 	if *batchKey == "" {
-		log.Fatal(errors.New("La clé du batch doit être spécifiée"))
+		fmt.Fprintln(os.Stderr, errors.New("La clé du batch doit être spécifiée.\n"))
+		flag.PrintDefaults()
+		os.Exit(1)
 	}
 	adminObject, err := PrepareImport(*path, *batchKey)
 	if _, ok := err.(UnsupportedFilesError); ok {
