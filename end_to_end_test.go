@@ -15,8 +15,6 @@ import (
 var outGoldenFile = "end_to_end_golden.txt"
 var errGoldenFile = "end_to_end_golden_err.txt"
 
-var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
-
 func diffWithGoldenFile(filename string, updateGoldenFile bool, cmdOutput bytes.Buffer) []byte {
 
 	if updateGoldenFile {
@@ -31,6 +29,9 @@ func diffWithGoldenFile(filename string, updateGoldenFile bool, cmdOutput bytes.
 
 func TestMain(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
+
+		var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
+		flag.Parse()
 
 		dir := createTempFiles(t, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef.bin", "unsupported.csv"})
 
