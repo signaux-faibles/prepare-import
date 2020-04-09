@@ -99,6 +99,11 @@ func TestPrepareImport(t *testing.T) {
 
 func TestBatchKey(t *testing.T) {
 
+	t.Run("Should accept valid batch key", func(t *testing.T) {
+		_, err := BatchKey("1802")
+		assert.NoError(t, err)
+	})
+
 	t.Run("Should fail if batch key is invalid", func(t *testing.T) {
 		_, err := BatchKey("")
 		assert.Error(t, err, "La clé du batch doit respecter le format requis AAMM")
