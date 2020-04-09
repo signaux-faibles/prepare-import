@@ -144,7 +144,19 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminO
 			completeTypes = append(completeTypes, typeName)
 		}
 	}
-	return AdminObject{"_id": IdProperty{batchKey, "batch"}, "files": filesProperty, "complete_types": completeTypes}, err
+	// { "date_debut" : { "$date" : "2014-01-01T00:00:00.000+0000" }, "date_fin" : { "$date" : "2018-12-01T00:00:00.000+0000" }, "date_fin_effectif" : { "$date" : "2018-06-01T00:00:00.000+0000" } }
+
+	paramProperty := map[string]map[string]string{
+		"date_debut": map[string]string{"$date": "2014-01-01T00:00:00.000+0000"},
+		"date_fin":   map[string]string{"$date": "2018-12-01T00:00:00.000+0000"},
+	}
+
+	return AdminObject{
+		"_id":            IdProperty{batchKey, "batch"},
+		"files":          filesProperty,
+		"complete_types": completeTypes,
+		"param":          paramProperty,
+	}, err
 }
 
 // LoadMetadata returns the metadata of a .bin file, by reading the given .info file.
