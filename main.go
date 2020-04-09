@@ -148,7 +148,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminO
 
 	paramProperty := map[string]map[string]string{
 		"date_debut": map[string]string{"$date": "2014-01-01T00:00:00.000+0000"},
-		"date_fin":   map[string]string{"$date": "2018-12-01T00:00:00.000+0000"},
+		"date_fin":   map[string]string{"$date": "20" + batchKey[0:2] + "-" + batchKey[2:4] + "-01T00:00:00.000+0000"},
 	}
 
 	return AdminObject{
