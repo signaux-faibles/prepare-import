@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"io/ioutil"
@@ -133,6 +134,10 @@ func PrepareImport(pathname string, batchKey string) (AdminObject, error) {
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
 func PopulateAdminObject(augmentedFilenames []DataFile, batchKey string) (AdminObject, error) {
+	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
+	if !isValidBatchKey.MatchString(batchKey) {
+		log.Fatal(errors.New("La clé du batch doit respecter le format requis AAMM"))
+	}
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
 	if len(unsupportedFiles) > 0 {

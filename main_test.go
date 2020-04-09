@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const DUMMY_BATCHKEY string = "1802"
+
 // Helper to create temporary files, and clean up after the execution of tests
 func createTempFiles(t *testing.T, filenames []string) string {
 	t.Helper()
@@ -43,7 +45,7 @@ func TestReadFilenames(t *testing.T) {
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"Sigfaibles_debits.csv"})
-		res, err := PrepareImport(dir, "")
+		res, err := PrepareImport(dir, DUMMY_BATCHKEY)
 		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
@@ -70,7 +72,7 @@ func TestPrepareImport(t *testing.T) {
 				t.Fatal(err.Error())
 			}
 
-			res, err := PrepareImport(dir, "")
+			res, err := PrepareImport(dir, DUMMY_BATCHKEY)
 			expected := FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}}
 			if assert.NoError(t, err) {
 				assert.Equal(t, expected, res["files"])
@@ -80,7 +82,7 @@ func TestPrepareImport(t *testing.T) {
 
 	t.Run("should return list of unsupported files", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"unsupported-file.csv"})
-		_, err := PrepareImport(dir, "")
+		_, err := PrepareImport(dir, DUMMY_BATCHKEY)
 		var e *UnsupportedFilesError
 		if assert.Error(t, err) && errors.As(err, &e) {
 			assert.Equal(t, []string{"unsupported-file.csv"}, e.UnsupportedFiles)
@@ -90,7 +92,7 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("should fail if missing .info file", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"lonely.bin"})
 		assert.Panics(t, func() {
-			PrepareImport(dir, "")
+			PrepareImport(dir, DUMMY_BATCHKEY)
 		})
 	})
 }
@@ -99,7 +101,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, err := PopulateAdminObject([]DataFile{filename}, "")
+		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY)
 		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
@@ -118,7 +120,7 @@ func TestPopulateAdminObject(t *testing.T) {
 
 	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
 		filename := SimpleDataFile{"act_partielle_conso_depuis2014_FRANCE.csv"}
-		res, err := PopulateAdminObject([]DataFile{filename}, "")
+		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY)
 		expected := []ValidFileType{APCONSO}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
@@ -126,7 +128,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res, err := PopulateAdminObject([]DataFile{}, "")
+		res, err := PopulateAdminObject([]DataFile{}, DUMMY_BATCHKEY)
 		if assert.NoError(t, err) {
 			assert.Equal(t, FilesProperty{}, res["files"])
 		}
@@ -145,7 +147,7 @@ func TestPopulateAdminObject(t *testing.T) {
 		for _, file := range files {
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
-		res, err := PopulateAdminObject(augmentedFiles, "")
+		res, err := PopulateAdminObject(augmentedFiles, DUMMY_BATCHKEY)
 		if assert.NoError(t, err) {
 			resFilesProperty := res["files"].(FilesProperty)
 			resultingFiles := []string{}
