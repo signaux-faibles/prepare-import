@@ -43,7 +43,7 @@ func TestReadFilenames(t *testing.T) {
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"Sigfaibles_debits.csv"})
-		res, err := PrepareImport(dir)
+		res, err := PrepareImport(dir, "")
 		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
@@ -70,7 +70,7 @@ func TestPrepareImport(t *testing.T) {
 				t.Fatal(err.Error())
 			}
 
-			res, err := PrepareImport(dir)
+			res, err := PrepareImport(dir, "")
 			expected := FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}}
 			if assert.NoError(t, err) {
 				assert.Equal(t, expected, res["files"])
@@ -80,7 +80,7 @@ func TestPrepareImport(t *testing.T) {
 
 	t.Run("should return list of unsupported files", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"unsupported-file.csv"})
-		_, err := PrepareImport(dir)
+		_, err := PrepareImport(dir, "")
 		var e *UnsupportedFilesError
 		if assert.Error(t, err) && errors.As(err, &e) {
 			assert.Equal(t, []string{"unsupported-file.csv"}, e.UnsupportedFiles)
@@ -90,7 +90,7 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("should fail if missing .info file", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"lonely.bin"})
 		assert.Panics(t, func() {
-			PrepareImport(dir)
+			PrepareImport(dir, "")
 		})
 	})
 }

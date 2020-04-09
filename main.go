@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -15,8 +16,12 @@ import (
 // Implementation of the prepare-import command.
 func main() {
 	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
+	var batchKey = flag.String("batch", "", "Clé du batch qui va être importé")
 	flag.Parse()
-	adminObject, err := PrepareImport(*path)
+	if *batchKey == "" {
+		log.Fatal(errors.New("La clé du batch doit être spécifiée"))
+	}
+	adminObject, err := PrepareImport(*path, *batchKey)
 	if _, ok := err.(UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
@@ -106,7 +111,7 @@ func AugmentDataFile(file string, pathname string) DataFile {
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey string) (AdminObject, error) {
 	filenames, err := ReadFilenames(pathname)
 	if err != nil {
 		return nil, err
@@ -115,7 +120,7 @@ func PrepareImport(pathname string) (AdminObject, error) {
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PopulateAdminObject(augmentedFiles, "1802") // TODO: put a real batch key here
+	return PopulateAdminObject(augmentedFiles, batchKey)
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
