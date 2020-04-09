@@ -46,6 +46,7 @@ func main() {
 // AdminObject represents a document going to be stored in the Admin db collection.
 type AdminObject map[string]interface{}
 
+// IDProperty represents the "_id" property of an Admin object.
 type IDProperty struct {
 	Key  batchKeyType `json:"key"`
 	Type string       `json:"type"`
@@ -65,10 +66,12 @@ type SimpleDataFile struct {
 	filename string
 }
 
+// DetectFileType returns the type of that file (e.g. DEBIT).
 func (dataFile SimpleDataFile) DetectFileType() ValidFileType {
 	return ExtractFileTypeFromFilename(dataFile.filename)
 }
 
+// GetFilename returns the name as it will be stored in Admin.
 func (dataFile SimpleDataFile) GetFilename() string {
 	return dataFile.filename
 }
@@ -79,12 +82,14 @@ type UploadedDataFile struct {
 	path     string
 }
 
+// DetectFileType returns the type of that file (e.g. DEBIT).
 func (dataFile UploadedDataFile) DetectFileType() ValidFileType {
 	metaFilepath := filepath.Join(dataFile.path, strings.Replace(dataFile.filename, ".bin", ".info", 1))
 	fileinfo := LoadMetadata(metaFilepath)
 	return ExtractFileTypeFromMetadata(metaFilepath, fileinfo) // e.g. "Sigfaible_debits.csv"
 }
 
+// GetFilename returns the name as it will be stored in Admin.
 func (dataFile UploadedDataFile) GetFilename() string {
 	return dataFile.filename
 }
