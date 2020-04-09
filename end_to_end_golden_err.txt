@@ -1,2 +1,9 @@
 unsupported: unsupported.csv
 La clé du batch doit respecter le format requis AAMM
+
+Usage:
+  -batch string
+    	Clé du batch à importer au format AAMM (année + mois + suffixe optionnel)
+    	Exemple: 1802_1
+  -path string
+    	Chemin d'accès aux fichiers données (default ".")

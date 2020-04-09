@@ -24,15 +24,10 @@ func main() {
 			"Exemple: 1802_1",
 	)
 	flag.Parse()
-	if *batchKey == "" {
-		fmt.Fprintln(os.Stderr, errors.New("La clé du batch doit être spécifiée"))
-		fmt.Println("\nUsage:")
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
 	validBatchKey, err := BatchKey(*batchKey)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 	adminObject, err := PrepareImport(*path, validBatchKey)
