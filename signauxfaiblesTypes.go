@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// These constants represent types supported by our data integration process.
+// See https://github.com/signaux-faibles/documentation/blob/master/processus-traitement-donnees.md#sp%C3%A9cificit%C3%A9s-de-limport
 const (
 	ADMIN_URSSAF ValidFileType = "admin_urssaf"
 	APCONSO      ValidFileType = "apconso"
@@ -24,6 +26,7 @@ const (
 	SIRENE_UL    ValidFileType = "sirene_ul"
 )
 
+// ValidFileType is the type used by all constants like ADMIN_URSSAF, APCONSO, etc...
 type ValidFileType string
 
 var defaultCompleteTypes = []ValidFileType{
