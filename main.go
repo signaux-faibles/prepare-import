@@ -49,6 +49,17 @@ func main() {
 	fmt.Println(string(json))
 }
 
+type batchKeyType string
+
+// BatchKey instanciates a batchKeyType after validating its value.
+func BatchKey(key string) (batchKeyType, error) {
+	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
+	if !isValidBatchKey.MatchString(key) {
+		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
+	}
+	return batchKeyType(key), nil
+}
+
 // AdminObject represents a document going to be stored in the Admin db collection.
 type AdminObject map[string]interface{}
 
@@ -168,16 +179,6 @@ func PrepareImport(pathname string, batchKey batchKeyType, dateFinEffectif strin
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
 	return PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif)
-}
-
-type batchKeyType string
-
-func BatchKey(key string) (batchKeyType, error) {
-	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
-	if !isValidBatchKey.MatchString(key) {
-		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
-	}
-	return batchKeyType(key), nil
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
