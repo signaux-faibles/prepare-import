@@ -77,7 +77,7 @@ func (mongoDate *MongoDate) UnmarshalJSON(data []byte) error {
 
 // ParamProperty represents the "param" property of an Admin object.
 type ParamProperty struct {
-	DateDebug MongoDate `json:"date_debut"`
+	DateDebut MongoDate `json:"date_debut"`
 	DateFin   MongoDate `json:"date_fin"`
 }
 
