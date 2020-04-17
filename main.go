@@ -23,6 +23,12 @@ func main() {
 		"Clé du batch à importer au format AAMM (année + mois + suffixe optionnel)\n"+
 			"Exemple: 1802_1",
 	)
+	var dateFinEffectif = flag.String(
+		"date-fin-effectif",
+		"",
+		"Date de fin des données \"effectif\" fournies, au format AAAA-MM-JJ (année + mois + jour)\n"+
+			"Exemple: 2014-01-01",
+	) // TODO: introduce and use a valid type, like for validBatchKey
 	flag.Parse()
 	validBatchKey, err := BatchKey(*batchKey)
 	if err != nil {
@@ -30,7 +36,7 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	adminObject, err := PrepareImport(*path, validBatchKey)
+	adminObject, err := PrepareImport(*path, validBatchKey, *dateFinEffectif)
 	if _, ok := err.(UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
@@ -77,8 +83,9 @@ func (mongoDate *MongoDate) UnmarshalJSON(data []byte) error {
 
 // ParamProperty represents the "param" property of an Admin object.
 type ParamProperty struct {
-	DateDebut MongoDate `json:"date_debut"`
-	DateFin   MongoDate `json:"date_fin"`
+	DateDebut       MongoDate `json:"date_debut"`
+	DateFin         MongoDate `json:"date_fin"`
+	DateFinEffectif MongoDate `json:"date_fin_effectif"`
 }
 
 // DataFile represents a Data File to be imported, and allows to determine its type and name.
@@ -151,7 +158,7 @@ func AugmentDataFile(file string, pathname string) DataFile {
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey batchKeyType) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey batchKeyType, dateFinEffectif string) (AdminObject, error) {
 	filenames, err := ReadFilenames(pathname)
 	if err != nil {
 		return nil, err
@@ -160,7 +167,7 @@ func PrepareImport(pathname string, batchKey batchKeyType) (AdminObject, error) 
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PopulateAdminObject(augmentedFiles, batchKey)
+	return PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif)
 }
 
 type batchKeyType string
@@ -174,7 +181,7 @@ func BatchKey(key string) (batchKeyType, error) {
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType) (AdminObject, error) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType, dateFinEffectif string) (AdminObject, error) {
 
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
@@ -190,8 +197,9 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType) (
 	// { "date_debut" : { "$date" : "2014-01-01T00:00:00.000+0000" }, "date_fin" : { "$date" : "2018-12-01T00:00:00.000+0000" }, "date_fin_effectif" : { "$date" : "2018-06-01T00:00:00.000+0000" } }
 
 	paramProperty := ParamProperty{
-		MongoDate{"2014-01-01T00:00:00.000+0000"},
-		MongoDate{"20" + string(batchKey)[0:2] + "-" + string(batchKey)[2:4] + "-01T00:00:00.000+0000"},
+		DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
+		DateFin:         MongoDate{"20" + string(batchKey)[0:2] + "-" + string(batchKey)[2:4] + "-01T00:00:00.000+0000"},
+		DateFinEffectif: MongoDate{dateFinEffectif + "T00:00:00.000+0000"},
 	}
 
 	return AdminObject{
