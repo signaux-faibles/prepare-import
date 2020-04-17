@@ -28,7 +28,7 @@ func main() {
 		"",
 		"Date de fin des données \"effectif\" fournies, au format AAAA-MM-JJ (année + mois + jour)\n"+
 			"Exemple: 2014-01-01",
-	) // TODO: introduce and use a valid type, like for validBatchKey
+	)
 	flag.Parse()
 	validBatchKey, err := BatchKey(*batchKey)
 	if err != nil {
@@ -36,7 +36,13 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	adminObject, err := PrepareImport(*path, validBatchKey, *dateFinEffectif)
+	validDateFinEffectif, err := DateFinEffectif(*dateFinEffectif)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+	adminObject, err := PrepareImport(*path, validBatchKey, validDateFinEffectif)
 	if _, ok := err.(UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
@@ -58,6 +64,17 @@ func BatchKey(key string) (batchKeyType, error) {
 		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
 	}
 	return batchKeyType(key), nil
+}
+
+type dateFinEffectifType string
+
+// DateFinEffectif instanciates a dateFinEffectifType after validating its value.
+func DateFinEffectif(date string) (dateFinEffectifType, error) {
+	var isDateFinEffectif = regexp.MustCompile(`^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$`)
+	if !isDateFinEffectif.MatchString(date) {
+		return dateFinEffectifType(""), errors.New("la date-fin-effectif doit respecter le format requis AAAA-MM-JJ")
+	}
+	return dateFinEffectifType(date), nil
 }
 
 // AdminObject represents a document going to be stored in the Admin db collection.
@@ -169,7 +186,7 @@ func AugmentDataFile(file string, pathname string) DataFile {
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey batchKeyType, dateFinEffectif string) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey batchKeyType, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
 	filenames, err := ReadFilenames(pathname)
 	if err != nil {
 		return nil, err
@@ -182,7 +199,7 @@ func PrepareImport(pathname string, batchKey batchKeyType, dateFinEffectif strin
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType, dateFinEffectif string) (AdminObject, error) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
 
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
@@ -200,7 +217,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType, d
 	paramProperty := ParamProperty{
 		DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
 		DateFin:         MongoDate{"20" + string(batchKey)[0:2] + "-" + string(batchKey)[2:4] + "-01T00:00:00.000+0000"},
-		DateFinEffectif: MongoDate{dateFinEffectif + "T00:00:00.000+0000"},
+		DateFinEffectif: MongoDate{string(dateFinEffectif) + "T00:00:00.000+0000"},
 	}
 
 	return AdminObject{

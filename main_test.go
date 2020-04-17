@@ -11,7 +11,7 @@ import (
 )
 
 const DUMMY_BATCHKEY batchKeyType = "1802"
-const DUMMY_DATE_FIN_EFFECTIF string = "2014-01-01"
+const DUMMY_DATE_FIN_EFFECTIF dateFinEffectifType = "2014-01-01"
 
 // Helper to create temporary files, and clean up after the execution of tests
 func createTempFiles(t *testing.T, filenames []string) string {
