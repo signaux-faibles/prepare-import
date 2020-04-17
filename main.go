@@ -146,22 +146,21 @@ func (b *batchKeyType) String() string {
 }
 
 // MarshalJSON will be called when serializing a BatchKey for MongoDB.
-func (key batchKeyType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(key.value)
+func (b batchKeyType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(b.value)
 }
 
 // UnmarshalJSON will parse a BatchKey from a MongoDB object.
-func (key *batchKeyType) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &(key.value)); err != nil {
-		return err
-	}
-	return nil
+func (b *batchKeyType) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &(b.value))
 }
 
+// BatchKey represents a valid batch key.
 type BatchKey interface {
 	String() string
 }
 
+// NewBatchKey constructs a valid batch key.
 func NewBatchKey(key string) (BatchKey, error) {
 	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
 	if !isValidBatchKey.MatchString(key) {
