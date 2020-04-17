@@ -180,7 +180,7 @@ func TestPopulateAdminObject(t *testing.T) {
 
 	t.Run("Should return a date_fin consistent with batch key", func(t *testing.T) {
 		res, err := PopulateAdminObject([]DataFile{}, "1912") // ~= 12/2019
-		expected := map[string]string{"$date": "2019-12-01T00:00:00.000+0000"}
+		expected := MongoDate{"2019-12-01T00:00:00.000+0000"}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["param"].(ParamProperty).DateFin)
 		}
