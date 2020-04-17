@@ -55,6 +55,15 @@ type IDProperty struct {
 // FilesProperty represents the "files" property of an Admin object.
 type FilesProperty map[ValidFileType][]string
 
+// ParamProperty represents the "param" property of an Admin object.
+type ParamProperty struct {
+	DateDebug map[string]string `json:"date_debut"`
+	DateFin   map[string]string `json:"date_fin"`
+}
+
+// TODO: the $date property of date_debut and date_fin should appear at
+// serialization/marshalling time, instead of being stored in a map.
+
 // DataFile represents a Data File to be imported, and allows to determine its type and name.
 type DataFile interface {
 	GetFilename() string           // the name as it will be stored in Admin
@@ -163,9 +172,9 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType) (
 	}
 	// { "date_debut" : { "$date" : "2014-01-01T00:00:00.000+0000" }, "date_fin" : { "$date" : "2018-12-01T00:00:00.000+0000" }, "date_fin_effectif" : { "$date" : "2018-06-01T00:00:00.000+0000" } }
 
-	paramProperty := map[string]map[string]string{
-		"date_debut": map[string]string{"$date": "2014-01-01T00:00:00.000+0000"},
-		"date_fin":   map[string]string{"$date": "20" + string(batchKey)[0:2] + "-" + string(batchKey)[2:4] + "-01T00:00:00.000+0000"},
+	paramProperty := ParamProperty{
+		map[string]string{"$date": "2014-01-01T00:00:00.000+0000"},
+		map[string]string{"$date": "20" + string(batchKey)[0:2] + "-" + string(batchKey)[2:4] + "-01T00:00:00.000+0000"},
 	}
 
 	return AdminObject{
