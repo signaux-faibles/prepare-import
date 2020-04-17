@@ -111,6 +111,19 @@ func TestBatchKey(t *testing.T) {
 	})
 }
 
+func TestDateFinEffectif(t *testing.T) {
+
+	t.Run("Should accept valid date-fin-effectif", func(t *testing.T) {
+		_, err := DateFinEffectif(string(DUMMY_DATE_FIN_EFFECTIF))
+		assert.NoError(t, err)
+	})
+
+	t.Run("Should fail if date-fin-effectif is invalid", func(t *testing.T) {
+		_, err := DateFinEffectif("2002")
+		assert.EqualError(t, err, "la date-fin-effectif doit respecter le format requis AAAA-MM-JJ")
+	})
+}
+
 func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
