@@ -38,8 +38,13 @@ func TestMain(t *testing.T) {
 		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
 
 		cmds := []*exec.Cmd{
-			exec.Command("./prepare-import", "--path", dir, "--batch", "1802"),
-			exec.Command("./prepare-import", "--path", dir, "--batch", "180"),
+			exec.Command(
+				"./prepare-import",
+				"--path", dir,
+				"--batch", "1802",
+				"--date-fin-effectif", "2014-01-01",
+			), // paramètres valides
+			exec.Command("./prepare-import", "--path", dir, "--batch", "180"), // nom de batch invalide
 		}
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer
