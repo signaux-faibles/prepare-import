@@ -24,7 +24,7 @@ func main() {
 			"Exemple: 1802_1",
 	)
 	flag.Parse()
-	validBatchKey, err := BatchKey(*batchKey)
+	validBatchKey, err := NewBatchKey(*batchKey)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
 		flag.PrintDefaults()
@@ -48,8 +48,8 @@ type AdminObject map[string]interface{}
 
 // IDProperty represents the "_id" property of an Admin object.
 type IDProperty struct {
-	Key  batchKeyType `json:"key"`
-	Type string       `json:"type"`
+	Key  BatchKey `json:"key"`
+	Type string   `json:"type"`
 }
 
 // FilesProperty represents the "files" property of an Admin object.
@@ -125,7 +125,7 @@ func AugmentDataFile(file string, pathname string) DataFile {
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey batchKeyType) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey BatchKey) (AdminObject, error) {
 	filenames, err := ReadFilenames(pathname)
 	if err != nil {
 		return nil, err
@@ -139,7 +139,17 @@ func PrepareImport(pathname string, batchKey batchKeyType) (AdminObject, error) 
 
 type batchKeyType string
 
-func BatchKey(key string) (batchKeyType, error) {
+func (b batchKeyType) String() string {
+	return string(b)
+}
+
+// BatchKey represents a valid batch key.
+type BatchKey interface {
+	String() string
+}
+
+// NewBatchKey constructs a valid batch key.
+func NewBatchKey(key string) (BatchKey, error) {
 	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
 	if !isValidBatchKey.MatchString(key) {
 		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
@@ -148,7 +158,7 @@ func BatchKey(key string) (batchKeyType, error) {
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType) (AdminObject, error) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey) (AdminObject, error) {
 
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
@@ -165,7 +175,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey batchKeyType) (
 
 	paramProperty := map[string]map[string]string{
 		"date_debut": map[string]string{"$date": "2014-01-01T00:00:00.000+0000"},
-		"date_fin":   map[string]string{"$date": "20" + string(batchKey)[0:2] + "-" + string(batchKey)[2:4] + "-01T00:00:00.000+0000"},
+		"date_fin":   map[string]string{"$date": "20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
 	}
 
 	return AdminObject{
