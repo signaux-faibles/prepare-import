@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,7 +11,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const DUMMY_BATCHKEY batchKeyType = "1802"
+func newSafeBatchKey(key string) BatchKey {
+	batchKey, err := NewBatchKey(key)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return batchKey
+}
+
+var DUMMY_BATCHKEY = newSafeBatchKey("1802")
 const DUMMY_DATE_FIN_EFFECTIF dateFinEffectifType = "2014-01-01"
 
 // Helper to create temporary files, and clean up after the execution of tests
@@ -101,12 +110,12 @@ func TestPrepareImport(t *testing.T) {
 func TestBatchKey(t *testing.T) {
 
 	t.Run("Should accept valid batch key", func(t *testing.T) {
-		_, err := BatchKey("1802")
+		_, err := NewBatchKey("1802")
 		assert.NoError(t, err)
 	})
 
 	t.Run("Should fail if batch key is invalid", func(t *testing.T) {
-		_, err := BatchKey("")
+		_, err := NewBatchKey("")
 		assert.EqualError(t, err, "la clé du batch doit respecter le format requis AAMM")
 	})
 }
@@ -186,14 +195,14 @@ func TestPopulateAdminObject(t *testing.T) {
 	})
 
 	t.Run("Should return an _id property", func(t *testing.T) {
-		res, err := PopulateAdminObject([]DataFile{}, "1802", DUMMY_DATE_FIN_EFFECTIF)
+		res, err := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1802"), DUMMY_DATE_FIN_EFFECTIF)
 		if assert.NoError(t, err) {
-			assert.Equal(t, IDProperty{"1802", "batch"}, res["_id"])
+			assert.Equal(t, IDProperty{newSafeBatchKey("1802"), "batch"}, res["_id"])
 		}
 	})
 
 	t.Run("Should return a date_fin consistent with batch key", func(t *testing.T) {
-		res, err := PopulateAdminObject([]DataFile{}, "1912", DUMMY_DATE_FIN_EFFECTIF) // ~= 12/2019
+		res, err := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1912"), DUMMY_DATE_FIN_EFFECTIF) // ~= 12/2019
 		expected := MongoDate{"2019-12-01T00:00:00.000+0000"}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["param"].(ParamProperty).DateFin)
