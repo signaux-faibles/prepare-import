@@ -23,6 +23,12 @@ func main() {
 		"Clé du batch à importer au format AAMM (année + mois + suffixe optionnel)\n"+
 			"Exemple: 1802_1",
 	)
+	var dateFinEffectif = flag.String(
+		"date-fin-effectif",
+		"",
+		"Date de fin des données \"effectif\" fournies, au format AAAA-MM-JJ (année + mois + jour)\n"+
+			"Exemple: 2014-01-01",
+	)
 	flag.Parse()
 	validBatchKey, err := NewBatchKey(*batchKey)
 	if err != nil {
@@ -30,7 +36,13 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	adminObject, err := PrepareImport(*path, validBatchKey)
+	validDateFinEffectif, err := DateFinEffectif(*dateFinEffectif)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+	adminObject, err := PrepareImport(*path, validBatchKey, validDateFinEffectif)
 	if _, ok := err.(UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
@@ -41,6 +53,37 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(string(json))
+}
+
+type batchKeyType string
+
+func (b batchKeyType) String() string {
+	return string(b)
+}
+
+// BatchKey represents a valid batch key.
+type BatchKey interface {
+	String() string
+}
+
+// NewBatchKey constructs a valid batch key.
+func NewBatchKey(key string) (BatchKey, error) {
+	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
+	if !isValidBatchKey.MatchString(key) {
+		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
+	}
+	return batchKeyType(key), nil
+}
+
+type dateFinEffectifType string
+
+// DateFinEffectif instanciates a dateFinEffectifType after validating its value.
+func DateFinEffectif(date string) (dateFinEffectifType, error) {
+	var isDateFinEffectif = regexp.MustCompile(`^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$`)
+	if !isDateFinEffectif.MatchString(date) {
+		return dateFinEffectifType(""), errors.New("la date-fin-effectif doit respecter le format requis AAAA-MM-JJ")
+	}
+	return dateFinEffectifType(date), nil
 }
 
 // AdminObject represents a document going to be stored in the Admin db collection.
@@ -54,6 +97,33 @@ type IDProperty struct {
 
 // FilesProperty represents the "files" property of an Admin object.
 type FilesProperty map[ValidFileType][]string
+
+// MongoDate represents a date that can be serialized for MongoDB.
+type MongoDate struct {
+	date string
+}
+
+// MarshalJSON will be called when serializing a date for MongoDB.
+func (mongoDate MongoDate) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]string{"$date": mongoDate.date})
+}
+
+// UnmarshalJSON will parse a MongoDate from a MongoDB date object.
+func (mongoDate *MongoDate) UnmarshalJSON(data []byte) error {
+	var dateObj map[string]string
+	if err := json.Unmarshal(data, &dateObj); err != nil {
+		return err
+	}
+	mongoDate.date = dateObj["$date"]
+	return nil
+}
+
+// ParamProperty represents the "param" property of an Admin object.
+type ParamProperty struct {
+	DateDebut       MongoDate `json:"date_debut"`
+	DateFin         MongoDate `json:"date_fin"`
+	DateFinEffectif MongoDate `json:"date_fin_effectif"`
+}
 
 // DataFile represents a Data File to be imported, and allows to determine its type and name.
 type DataFile interface {
@@ -125,7 +195,7 @@ func AugmentDataFile(file string, pathname string) DataFile {
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey BatchKey) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
 	filenames, err := ReadFilenames(pathname)
 	if err != nil {
 		return nil, err
@@ -134,31 +204,11 @@ func PrepareImport(pathname string, batchKey BatchKey) (AdminObject, error) {
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
 	}
-	return PopulateAdminObject(augmentedFiles, batchKey)
-}
-
-type batchKeyType string
-
-func (b batchKeyType) String() string {
-	return string(b)
-}
-
-// BatchKey represents a valid batch key.
-type BatchKey interface {
-	String() string
-}
-
-// NewBatchKey constructs a valid batch key.
-func NewBatchKey(key string) (BatchKey, error) {
-	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
-	if !isValidBatchKey.MatchString(key) {
-		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
-	}
-	return batchKeyType(key), nil
+	return PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif)
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey) (AdminObject, error) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
 
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
 	var err error
@@ -173,9 +223,10 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey) (Admi
 	}
 	// { "date_debut" : { "$date" : "2014-01-01T00:00:00.000+0000" }, "date_fin" : { "$date" : "2018-12-01T00:00:00.000+0000" }, "date_fin_effectif" : { "$date" : "2018-06-01T00:00:00.000+0000" } }
 
-	paramProperty := map[string]map[string]string{
-		"date_debut": map[string]string{"$date": "2014-01-01T00:00:00.000+0000"},
-		"date_fin":   map[string]string{"$date": "20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
+	paramProperty := ParamProperty{
+		DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
+		DateFin:         MongoDate{"20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
+		DateFinEffectif: MongoDate{string(dateFinEffectif) + "T00:00:00.000+0000"},
 	}
 
 	return AdminObject{

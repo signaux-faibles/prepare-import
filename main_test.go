@@ -20,6 +20,7 @@ func newSafeBatchKey(key string) BatchKey {
 }
 
 var DUMMY_BATCHKEY = newSafeBatchKey("1802")
+const DUMMY_DATE_FIN_EFFECTIF dateFinEffectifType = "2014-01-01"
 
 // Helper to create temporary files, and clean up after the execution of tests
 func createTempFiles(t *testing.T, filenames []string) string {
@@ -54,7 +55,7 @@ func TestReadFilenames(t *testing.T) {
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"Sigfaibles_debits.csv"})
-		res, err := PrepareImport(dir, DUMMY_BATCHKEY)
+		res, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
@@ -81,7 +82,7 @@ func TestPrepareImport(t *testing.T) {
 				t.Fatal(err.Error())
 			}
 
-			res, err := PrepareImport(dir, DUMMY_BATCHKEY)
+			res, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 			expected := FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}}
 			if assert.NoError(t, err) {
 				assert.Equal(t, expected, res["files"])
@@ -91,7 +92,7 @@ func TestPrepareImport(t *testing.T) {
 
 	t.Run("should return list of unsupported files", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"unsupported-file.csv"})
-		_, err := PrepareImport(dir, DUMMY_BATCHKEY)
+		_, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		var e *UnsupportedFilesError
 		if assert.Error(t, err) && errors.As(err, &e) {
 			assert.Equal(t, []string{"unsupported-file.csv"}, e.UnsupportedFiles)
@@ -101,7 +102,7 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("should fail if missing .info file", func(t *testing.T) {
 		dir := createTempFiles(t, []string{"lonely.bin"})
 		assert.Panics(t, func() {
-			PrepareImport(dir, DUMMY_BATCHKEY)
+			PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		})
 	})
 }
@@ -115,7 +116,20 @@ func TestBatchKey(t *testing.T) {
 
 	t.Run("Should fail if batch key is invalid", func(t *testing.T) {
 		_, err := NewBatchKey("")
-		assert.Error(t, err, "la clé du batch doit respecter le format requis AAMM")
+		assert.EqualError(t, err, "la clé du batch doit respecter le format requis AAMM")
+	})
+}
+
+func TestDateFinEffectif(t *testing.T) {
+
+	t.Run("Should accept valid date-fin-effectif", func(t *testing.T) {
+		_, err := DateFinEffectif(string(DUMMY_DATE_FIN_EFFECTIF))
+		assert.NoError(t, err)
+	})
+
+	t.Run("Should fail if date-fin-effectif is invalid", func(t *testing.T) {
+		_, err := DateFinEffectif("2002")
+		assert.EqualError(t, err, "la date-fin-effectif doit respecter le format requis AAAA-MM-JJ")
 	})
 }
 
@@ -123,7 +137,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY)
+		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
@@ -133,7 +147,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return an empty complete_types property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY)
+		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		expected := []ValidFileType{}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
@@ -142,7 +156,7 @@ func TestPopulateAdminObject(t *testing.T) {
 
 	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
 		filename := SimpleDataFile{"act_partielle_conso_depuis2014_FRANCE.csv"}
-		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY)
+		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		expected := []ValidFileType{APCONSO}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["complete_types"])
@@ -150,7 +164,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res, err := PopulateAdminObject([]DataFile{}, DUMMY_BATCHKEY)
+		res, err := PopulateAdminObject([]DataFile{}, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		if assert.NoError(t, err) {
 			assert.Equal(t, FilesProperty{}, res["files"])
 		}
@@ -169,7 +183,7 @@ func TestPopulateAdminObject(t *testing.T) {
 		for _, file := range files {
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
-		res, err := PopulateAdminObject(augmentedFiles, DUMMY_BATCHKEY)
+		res, err := PopulateAdminObject(augmentedFiles, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		if assert.NoError(t, err) {
 			resFilesProperty := res["files"].(FilesProperty)
 			resultingFiles := []string{}
@@ -181,17 +195,17 @@ func TestPopulateAdminObject(t *testing.T) {
 	})
 
 	t.Run("Should return an _id property", func(t *testing.T) {
-		res, err := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1802"))
+		res, err := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1802"), DUMMY_DATE_FIN_EFFECTIF)
 		if assert.NoError(t, err) {
 			assert.Equal(t, IDProperty{newSafeBatchKey("1802"), "batch"}, res["_id"])
 		}
 	})
 
 	t.Run("Should return a date_fin consistent with batch key", func(t *testing.T) {
-		res, err := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1912")) // ~= 12/2019
-		expected := map[string]string{"$date": "2019-12-01T00:00:00.000+0000"}
+		res, err := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1912"), DUMMY_DATE_FIN_EFFECTIF) // ~= 12/2019
+		expected := MongoDate{"2019-12-01T00:00:00.000+0000"}
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected, res["param"].(map[string]map[string]string)["date_fin"])
+			assert.Equal(t, expected, res["param"].(ParamProperty).DateFin)
 		}
 	})
 }
