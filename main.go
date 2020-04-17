@@ -137,22 +137,10 @@ func PrepareImport(pathname string, batchKey BatchKey) (AdminObject, error) {
 	return PopulateAdminObject(augmentedFiles, batchKey)
 }
 
-type batchKeyType struct {
-	value string
-}
+type batchKeyType string
 
-func (b *batchKeyType) String() string {
-	return b.value
-}
-
-// MarshalJSON will be called when serializing a BatchKey for MongoDB.
-func (b batchKeyType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(b.value)
-}
-
-// UnmarshalJSON will parse a BatchKey from a MongoDB object.
-func (b *batchKeyType) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &(b.value))
+func (b batchKeyType) String() string {
+	return string(b)
 }
 
 // BatchKey represents a valid batch key.
@@ -164,9 +152,9 @@ type BatchKey interface {
 func NewBatchKey(key string) (BatchKey, error) {
 	var isValidBatchKey = regexp.MustCompile(`^[0-9]{4}`)
 	if !isValidBatchKey.MatchString(key) {
-		return &batchKeyType{""}, errors.New("la clé du batch doit respecter le format requis AAMM")
+		return batchKeyType(""), errors.New("la clé du batch doit respecter le format requis AAMM")
 	}
-	return &batchKeyType{key}, nil
+	return batchKeyType(key), nil
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
