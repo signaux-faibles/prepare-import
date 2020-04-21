@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"io/ioutil"
 )
@@ -36,13 +37,13 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	validDateFinEffectif, err := DateFinEffectif(*dateFinEffectif)
+	validDateFinEffectif, err := time.Parse("2006-01-02", *dateFinEffectif)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	adminObject, err := PrepareImport(*path, validBatchKey, validDateFinEffectif)
+	adminObject, err := PrepareImport(*path, validBatchKey, dateFinEffectifType(validDateFinEffectif))
 	if _, ok := err.(UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
@@ -75,16 +76,7 @@ func NewBatchKey(key string) (BatchKey, error) {
 	return batchKeyType(key), nil
 }
 
-type dateFinEffectifType string
-
-// DateFinEffectif instanciates a dateFinEffectifType after validating its value.
-func DateFinEffectif(date string) (dateFinEffectifType, error) {
-	var isDateFinEffectif = regexp.MustCompile(`^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$`)
-	if !isDateFinEffectif.MatchString(date) {
-		return dateFinEffectifType(""), errors.New("la date-fin-effectif doit respecter le format requis AAAA-MM-JJ")
-	}
-	return dateFinEffectifType(date), nil
-}
+type dateFinEffectifType time.Time
 
 // AdminObject represents a document going to be stored in the Admin db collection.
 type AdminObject map[string]interface{}
@@ -226,7 +218,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateF
 	paramProperty := ParamProperty{
 		DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
 		DateFin:         MongoDate{"20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
-		DateFinEffectif: MongoDate{string(dateFinEffectif) + "T00:00:00.000+0000"},
+		DateFinEffectif: MongoDate{strings.Replace(time.Time(dateFinEffectif).Format(time.RFC3339), "Z", ".000+0000", 1)},
 	}
 
 	return AdminObject{
