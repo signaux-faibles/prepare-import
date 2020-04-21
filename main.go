@@ -218,7 +218,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateF
 	paramProperty := ParamProperty{
 		DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
 		DateFin:         MongoDate{"20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
-		DateFinEffectif: MongoDate{strings.Replace(time.Time(dateFinEffectif).Format(time.RFC3339Nano), "Z", ".000+0000", 1)},
+		DateFinEffectif: MongoDate{strings.Replace(time.Time(dateFinEffectif).Format(time.RFC3339), "Z", ".000+0000", 1)},
 	}
 
 	return AdminObject{
