@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,8 @@ func newSafeBatchKey(key string) BatchKey {
 }
 
 var DUMMY_BATCHKEY = newSafeBatchKey("1802")
-const DUMMY_DATE_FIN_EFFECTIF dateFinEffectifType = "2014-01-01"
+
+var DUMMY_DATE_FIN_EFFECTIF = dateFinEffectifType(time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)) // "2014-01-01"
 
 // Helper to create temporary files, and clean up after the execution of tests
 func createTempFiles(t *testing.T, filenames []string) string {
@@ -117,19 +119,6 @@ func TestBatchKey(t *testing.T) {
 	t.Run("Should fail if batch key is invalid", func(t *testing.T) {
 		_, err := NewBatchKey("")
 		assert.EqualError(t, err, "la clé du batch doit respecter le format requis AAMM")
-	})
-}
-
-func TestDateFinEffectif(t *testing.T) {
-
-	t.Run("Should accept valid date-fin-effectif", func(t *testing.T) {
-		_, err := DateFinEffectif(string(DUMMY_DATE_FIN_EFFECTIF))
-		assert.NoError(t, err)
-	})
-
-	t.Run("Should fail if date-fin-effectif is invalid", func(t *testing.T) {
-		_, err := DateFinEffectif("2002")
-		assert.EqualError(t, err, "la date-fin-effectif doit respecter le format requis AAAA-MM-JJ")
 	})
 }
 
