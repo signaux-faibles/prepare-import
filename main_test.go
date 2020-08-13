@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 	"time"
@@ -25,7 +26,7 @@ var DUMMY_BATCHKEY = newSafeBatchKey("1802")
 var DUMMY_DATE_FIN_EFFECTIF = dateFinEffectifType(time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)) // "2014-01-01"
 
 // Helper to create a temporary directory with a batch of files, and clean up after the execution of tests
-func createTempFiles(t *testing.T, batchkey BatchKey, filenames []string) (string, string) {
+func createTempFiles(t *testing.T, batchkey BatchKey, filenames []string) string {
 	t.Helper()
 	parentDir, err := ioutil.TempDir(os.TempDir(), "example")
 	if err != nil {
@@ -43,13 +44,13 @@ func createTempFiles(t *testing.T, batchkey BatchKey, filenames []string) (strin
 		}
 	}
 
-	return batchDir, parentDir
+	return parentDir
 }
 
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
-		dir, _ := createTempFiles(t, DUMMY_BATCHKEY, []string{"tmpfile"})
-		filenames, err := ReadFilenames(dir)
+		dir := createTempFiles(t, DUMMY_BATCHKEY, []string{"tmpfile"})
+		filenames, err := ReadFilenames(path.Join(dir, DUMMY_BATCHKEY.String()))
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -59,7 +60,7 @@ func TestReadFilenames(t *testing.T) {
 
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
-		dir, _ := createTempFiles(t, DUMMY_BATCHKEY, []string{"Sigfaibles_debits.csv"})
+		dir := createTempFiles(t, DUMMY_BATCHKEY, []string{"Sigfaibles_debits.csv"})
 		res, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		expected := FilesProperty{DEBIT: []string{DUMMY_BATCHKEY.Path() + "Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
@@ -79,16 +80,16 @@ func TestPrepareImport(t *testing.T) {
 
 	for _, testCase := range cases {
 		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+string(testCase.filetype), func(t *testing.T) {
-			dir, _ := createTempFiles(t, DUMMY_BATCHKEY, []string{testCase.id + ".bin"})
+			dir := createTempFiles(t, DUMMY_BATCHKEY, []string{testCase.id + ".bin"})
 
-			tmpFilename := filepath.Join(dir, testCase.id+".info")
+			tmpFilename := filepath.Join(dir, DUMMY_BATCHKEY.String(), testCase.id+".info")
 			content := []byte("{\"MetaData\":{\"filename\":\"" + DUMMY_BATCHKEY.Path() + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
 			if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
 				t.Fatal(err.Error())
 			}
 
 			res, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
-			expected := FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}}
+			expected := FilesProperty{testCase.filetype: []string{DUMMY_BATCHKEY.Path() + testCase.id + ".bin"}}
 			if assert.NoError(t, err) {
 				assert.Equal(t, expected, res["files"])
 			}
@@ -96,7 +97,7 @@ func TestPrepareImport(t *testing.T) {
 	}
 
 	t.Run("should return list of unsupported files", func(t *testing.T) {
-		dir, _ := createTempFiles(t, DUMMY_BATCHKEY, []string{"unsupported-file.csv"})
+		dir := createTempFiles(t, DUMMY_BATCHKEY, []string{"unsupported-file.csv"})
 		_, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		var e *UnsupportedFilesError
 		if assert.Error(t, err) && errors.As(err, &e) {
@@ -105,7 +106,7 @@ func TestPrepareImport(t *testing.T) {
 	})
 
 	t.Run("should fail if missing .info file", func(t *testing.T) {
-		dir, _ := createTempFiles(t, DUMMY_BATCHKEY, []string{"lonely.bin"})
+		dir := createTempFiles(t, DUMMY_BATCHKEY, []string{"lonely.bin"})
 		assert.Panics(t, func() {
 			PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		})
@@ -130,7 +131,7 @@ func TestPopulateAdminObject(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
 		res, err := PopulateAdminObject([]DataFile{filename}, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
-		expected := FilesProperty{DEBIT: []string{"Sigfaibles_debits.csv"}}
+		expected := FilesProperty{DEBIT: []string{DUMMY_BATCHKEY.Path() + "Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
 		}
@@ -171,8 +172,10 @@ func TestPopulateAdminObject(t *testing.T) {
 			"sireneUL.csv",                    // --> SIRENE_UL
 			"StockEtablissement_utf8_geo.csv", // --> SIRENE
 		}
+		expectedFiles := []string{}
 		augmentedFiles := []DataFile{}
 		for _, file := range files {
+			expectedFiles = append(expectedFiles, DUMMY_BATCHKEY.Path()+file)
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
 		res, err := PopulateAdminObject(augmentedFiles, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
@@ -182,7 +185,7 @@ func TestPopulateAdminObject(t *testing.T) {
 			for _, filenames := range resFilesProperty {
 				resultingFiles = append(resultingFiles, filenames...)
 			}
-			assert.Subset(t, resultingFiles, files)
+			assert.Subset(t, resultingFiles, expectedFiles)
 		}
 	})
 
@@ -204,34 +207,34 @@ func TestPopulateAdminObject(t *testing.T) {
 
 func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
-		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}})
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}}, DUMMY_BATCHKEY.Path())
 		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []string{"Sigfaibles_effectif_siret.csv"}, filesProperty[EFFECTIF])
+			assert.Equal(t, []string{DUMMY_BATCHKEY.Path() + "Sigfaibles_effectif_siret.csv"}, filesProperty[EFFECTIF])
 		}
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
-		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}})
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}}, DUMMY_BATCHKEY.Path())
 		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []string{"Sigfaibles_debits.csv"}, filesProperty[DEBIT])
+			assert.Equal(t, []string{DUMMY_BATCHKEY.Path() + "Sigfaibles_debits.csv"}, filesProperty[DEBIT])
 		}
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
-		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}})
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}}, DUMMY_BATCHKEY.Path())
 		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []string{"Sigfaibles_debits.csv", "Sigfaibles_debits2.csv"}, filesProperty[DEBIT])
+			assert.Equal(t, []string{DUMMY_BATCHKEY.Path() + "Sigfaibles_debits.csv", DUMMY_BATCHKEY.Path() + "Sigfaibles_debits2.csv"}, filesProperty[DEBIT])
 		}
 	})
 
 	t.Run("Should not include unsupported files", func(t *testing.T) {
-		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}}, DUMMY_BATCHKEY.Path())
 		assert.Len(t, unsupportedFiles, 1)
 		assert.Equal(t, FilesProperty{}, filesProperty)
 	})
 	t.Run("Should report unsupported files", func(t *testing.T) {
-		_, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}})
-		assert.Equal(t, []string{"coco.csv"}, unsupportedFiles)
+		_, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"coco.csv"}}, DUMMY_BATCHKEY.Path())
+		assert.Equal(t, []string{DUMMY_BATCHKEY.Path() + "coco.csv"}, unsupportedFiles)
 	})
 }
 
