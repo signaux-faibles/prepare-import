@@ -8,7 +8,7 @@
   ],
   "files": {
     "bdf": [
-      "abcdef.bin"
+      "abcdef"
     ],
     "debit": [
       "Sigfaibles_debits.csv"
