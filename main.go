@@ -62,9 +62,14 @@ func (b batchKeyType) String() string {
 	return string(b)
 }
 
+func (b batchKeyType) Path() string {
+	return "/" + string(b) + "/"
+}
+
 // BatchKey represents a valid batch key.
 type BatchKey interface {
 	String() string
+	Path() string
 }
 
 // NewBatchKey constructs a valid batch key.

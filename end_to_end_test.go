@@ -32,7 +32,11 @@ var updateGoldenFile = flag.Bool("update", false, "Update the expected test valu
 func TestMain(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
 
-		dir := createTempFiles(t, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef.bin", "unsupported.csv"})
+		batch := "1802"
+
+		batchKey, _ := NewBatchKey(batch)
+
+		dir, parentDir := createTempFiles(t, batchKey, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef.bin", "unsupported.csv"})
 
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
@@ -40,11 +44,11 @@ func TestMain(t *testing.T) {
 		cmds := []*exec.Cmd{
 			exec.Command(
 				"./prepare-import",
-				"--path", dir,
-				"--batch", "1802",
+				"--path", parentDir,
+				"--batch", batch,
 				"--date-fin-effectif", "2014-01-01",
 			), // paramètres valides
-			exec.Command("./prepare-import", "--path", dir, "--batch", "180"), // nom de batch invalide
+			exec.Command("./prepare-import", "--path", parentDir, "--batch", "180"), // nom de batch invalide
 		}
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer
