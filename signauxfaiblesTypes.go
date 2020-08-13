@@ -51,7 +51,7 @@ type UploadedFileMeta struct {
 	MetaData MetadataProperty
 }
 
-// ExtractFileTypeFromMetadata returns the type of a .bin file, based on the contents of the associated .info file.
+// ExtractFileTypeFromMetadata returns the type of a bin file (without extension), based on the contents of the associated .info file.
 func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) ValidFileType {
 	metadata := fileinfo.MetaData
 	if metadata["goup-path"] == "bdf" {
