@@ -8,7 +8,7 @@
   ],
   "files": {
     "bdf": [
-      "/1802/abcdef.bin"
+      "/1802/abcdef"
     ],
     "debit": [
       "/1802/Sigfaibles_debits.csv"

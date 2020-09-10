@@ -36,7 +36,8 @@ func TestMain(t *testing.T) {
 
 		batchKey, _ := NewBatchKey(batch)
 
-		parentDir := createTempFiles(t, batchKey, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef.bin", "unsupported.csv"})
+		parentDir := createTempFiles(t, batchKey, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef", "unsupported.csv"})
+
 
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(parentDir, batch, "abcdef.info"), content, 0644)
