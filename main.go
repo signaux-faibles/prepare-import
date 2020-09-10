@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -62,9 +63,14 @@ func (b batchKeyType) String() string {
 	return string(b)
 }
 
+func (b batchKeyType) Path() string {
+	return "/" + string(b) + "/"
+}
+
 // BatchKey represents a valid batch key.
 type BatchKey interface {
 	String() string
+	Path() string
 }
 
 // NewBatchKey constructs a valid batch key.
@@ -188,13 +194,14 @@ func AugmentDataFile(file string, pathname string) DataFile {
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
 func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
-	filenames, err := ReadFilenames(pathname)
+	batchPath := path.Join(pathname, batchKey.String())
+	filenames, err := ReadFilenames(batchPath)
 	if err != nil {
 		return nil, err
 	}
 	augmentedFiles := []DataFile{}
 	for _, file := range filenames {
-		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, pathname))
+		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
 	}
 	return PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif)
 }
@@ -202,7 +209,7 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif dateFinEf
 // PopulateAdminObject populates an AdminObject, given a list of data files.
 func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
 
-	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames)
+	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames, batchKey.Path())
 	var err error
 	if len(unsupportedFiles) > 0 {
 		err = UnsupportedFilesError{unsupportedFiles}
@@ -249,7 +256,7 @@ func LoadMetadata(filepath string) UploadedFileMeta {
 }
 
 // PopulateFilesProperty populates the "files" property of an Admin object, given a list of Data files.
-func PopulateFilesProperty(filenames []DataFile) (FilesProperty, []string) {
+func PopulateFilesProperty(filenames []DataFile, prefix string) (FilesProperty, []string) {
 	filesProperty := FilesProperty{}
 	unsupportedFiles := []string{}
 	for _, filename := range filenames {
@@ -257,14 +264,14 @@ func PopulateFilesProperty(filenames []DataFile) (FilesProperty, []string) {
 
 		if filetype == "" {
 			if !strings.HasSuffix(filename.GetFilename(), ".info") {
-				unsupportedFiles = append(unsupportedFiles, filename.GetFilename())
+				unsupportedFiles = append(unsupportedFiles, prefix+filename.GetFilename())
 			}
 			continue
 		}
 		if _, exists := filesProperty[filetype]; !exists {
 			filesProperty[filetype] = []string{}
 		}
-		filesProperty[filetype] = append(filesProperty[filetype], filename.GetFilename())
+		filesProperty[filetype] = append(filesProperty[filetype], prefix+filename.GetFilename())
 	}
 	return filesProperty, unsupportedFiles
 }

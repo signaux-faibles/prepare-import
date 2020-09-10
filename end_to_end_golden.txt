@@ -8,13 +8,13 @@
   ],
   "files": {
     "bdf": [
-      "abcdef"
+      "/1802/abcdef"
     ],
     "debit": [
-      "Sigfaibles_debits.csv"
+      "/1802/Sigfaibles_debits.csv"
     ],
     "effectif": [
-      "Sigfaibles_effectif_siret.csv"
+      "/1802/Sigfaibles_effectif_siret.csv"
     ]
   },
   "param": {
