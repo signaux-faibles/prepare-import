@@ -76,7 +76,7 @@ func TestPrepareImport(t *testing.T) {
 
 	for _, testCase := range cases {
 		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+string(testCase.filetype), func(t *testing.T) {
-			dir := createTempFiles(t, []string{testCase.id + ".bin"})
+			dir := createTempFiles(t, []string{testCase.id})
 
 			tmpFilename := filepath.Join(dir, testCase.id+".info")
 			content := []byte("{\"MetaData\":{\"filename\":\"" + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
@@ -85,7 +85,7 @@ func TestPrepareImport(t *testing.T) {
 			}
 
 			res, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
-			expected := FilesProperty{testCase.filetype: []string{testCase.id + ".bin"}}
+			expected := FilesProperty{testCase.filetype: []string{testCase.id}}
 			if assert.NoError(t, err) {
 				assert.Equal(t, expected, res["files"])
 			}
@@ -102,7 +102,7 @@ func TestPrepareImport(t *testing.T) {
 	})
 
 	t.Run("should fail if missing .info file", func(t *testing.T) {
-		dir := createTempFiles(t, []string{"lonely.bin"})
+		dir := createTempFiles(t, []string{"lonely"})
 		assert.Panics(t, func() {
 			PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		})
@@ -239,7 +239,7 @@ func MakeMetadata(metadataFields MetadataProperty) UploadedFileMeta {
 func TestExtractFileTypeFromMetadata(t *testing.T) {
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
-		got := ExtractFileTypeFromMetadata("9a047825d8173684b69994428449302f.bin", MakeMetadata(MetadataProperty{
+		got := ExtractFileTypeFromMetadata("9a047825d8173684b69994428449302f", MakeMetadata(MetadataProperty{
 			"filename":  "Sigfaible_debits.csv",
 			"goup-path": "urssaf",
 		}))
@@ -247,7 +247,7 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 	})
 
 	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
-		got := ExtractFileTypeFromMetadata("60d1bd320523904d8b8b427efbbd3928.bin", MakeMetadata(MetadataProperty{
+		got := ExtractFileTypeFromMetadata("60d1bd320523904d8b8b427efbbd3928", MakeMetadata(MetadataProperty{
 			"filename":  "FICHIER_SF_2020_02.csv",
 			"goup-path": "bdf",
 		}))
@@ -255,7 +255,7 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 	})
 
 	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
-		got := ExtractFileTypeFromMetadata("ab8613ab66ebddb2db21e36b92fc5b70.bin", MakeMetadata(MetadataProperty{
+		got := ExtractFileTypeFromMetadata("ab8613ab66ebddb2db21e36b92fc5b70", MakeMetadata(MetadataProperty{
 			"filename":  "tab_19m10.sas7bdat",
 			"goup-path": "dgefp",
 		}))

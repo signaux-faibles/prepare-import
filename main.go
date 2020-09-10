@@ -146,7 +146,7 @@ type UploadedDataFile struct {
 
 // DetectFileType returns the type of that file (e.g. DEBIT).
 func (dataFile UploadedDataFile) DetectFileType() ValidFileType {
-	metaFilepath := filepath.Join(dataFile.path, strings.Replace(dataFile.filename, ".bin", ".info", 1))
+	metaFilepath := filepath.Join(dataFile.path, dataFile.filename+".info")
 	fileinfo := LoadMetadata(metaFilepath)
 	return ExtractFileTypeFromMetadata(metaFilepath, fileinfo) // e.g. "Sigfaible_debits.csv"
 }
@@ -180,7 +180,7 @@ func ReadFilenames(path string) ([]string, error) {
 
 // AugmentDataFile returns a SimpleDataFile or UploadedDataFile (if metadata had to be loaded).
 func AugmentDataFile(file string, pathname string) DataFile {
-	if strings.HasSuffix(file, ".bin") {
+	if !strings.Contains(file, ".") { // "bin" files have no extension => no dot in their filename
 		return UploadedDataFile{file, pathname}
 	}
 	return SimpleDataFile{file}
@@ -229,7 +229,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateF
 	}, err
 }
 
-// LoadMetadata returns the metadata of a .bin file, by reading the given .info file.
+// LoadMetadata returns the metadata of a bin file (without extension), by reading the given .info file.
 func LoadMetadata(filepath string) UploadedFileMeta {
 
 	// read file

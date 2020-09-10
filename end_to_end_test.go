@@ -32,7 +32,7 @@ var updateGoldenFile = flag.Bool("update", false, "Update the expected test valu
 func TestMain(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
 
-		dir := createTempFiles(t, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef.bin", "unsupported.csv"})
+		dir := createTempFiles(t, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef", "unsupported.csv"})
 
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(dir, "abcdef.info"), content, 0644)
