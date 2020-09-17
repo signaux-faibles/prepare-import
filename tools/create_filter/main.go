@@ -137,5 +137,5 @@ func guessLastNMissingFromReader(r *csv.Reader, nIgnoredRecords int) int {
 			}
 		}
 	}
-	return recordLength - 1 - nIgnoredRecords - lastNonMissing
+	return recordLength - 1 - nIgnoredRecords - lastNonMissing // index
 }

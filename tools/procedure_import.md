@@ -45,6 +45,14 @@ cd `batch`
 == Télécharger le fichier Siren ==
 
 
+En local: `ssh -R 8888:localhost:8888 stockage`
+Service tinyproxy tourne sur 8888 en local. 
+`systemctl restart tinyproxy`
+
+Sur le serveur: 
+`export http_proxy = "http://localhost:8888"`
+`export https_proxy = "https://localhost:8888"`
+
 Donner accès à internet à stockage (avec tinyproxy, tunnel ssh + export
 http_proxy etc)
 Changer les liens ci-dessous:
