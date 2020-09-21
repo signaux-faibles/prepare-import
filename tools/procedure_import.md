@@ -2,25 +2,25 @@
 
 ## Mettre les nouveaux fichiers dans un répertoire spécifique
 
-`ssh stockage`:
+Depuis `ssh stockage`:
 
 ```sh
 sudo su
 cd /var/lib/goup_base/public
 mkdir _<batch>_
-/!\ Attention commande suivante non fonctionnelle !
+# /!\ Attention commande suivante non fonctionnelle !
 find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 ```
 
 ## Nettoyer les fichiers de l'urssaf
 
-Marche uniquement pour du UTF-8... convertir avant...
+Convertir les fichiers en encodage UTF-8 avant l'usage de `filter_unprintable.sh`:
 
 ```sh
 iconv -f ISO_8859-1 -t UTF-8
 ```
 
-`ssh labtenant`:
+Afficher puis supprimer les lignes illisibles, depuis `ssh labtenant`:
 
 ```sh
 cd _<batch>_
@@ -30,13 +30,12 @@ sh /home/centos/goup_transfert/public/tools/filter_unprintable.sh -p *
 sh /home/centos/goup_transfert/public/tools/filter_unprintable.sh -r *
 ```
 
-(Paramètre -p pour afficher les lignes avant des les effacer)
 ## Créer le filtre basé sur le fichier effectif
 
 Afin d'importer les données, il faut commencer par créer le périmètre des
 entreprises intéressantes à partir du fichier effectif de l'ACOSS.
 
-`ssh stockage`:
+Depuis `ssh stockage`:
 
 ```sh
 cd `batch`
@@ -64,15 +63,14 @@ wget https://www.data.gouv.fr/fr/datasets/r/c63c91ec-7659-490b-baac-98ee599ece37
 
 ## Télécharger le fichier Diane
 
-Se connecter sur le site Diane+
-https://diane.bvdinfo.com
+1. Se connecter sur le site [Diane+](https://diane.bvdinfo.com)
 
-_Créer un fichier de filtrage à partir du fichier effectif._
+2. _Créer un fichier de filtrage à partir du fichier effectif._
 Regarder le numéro de la nouvelle variable à importer (le suivant du dernier
 numéro déjà importé dans:
 _Mes données_ > _Données importées_ > _Importer nouvelle variable_
 
-Changer le fichier `filter_to_diane.awk`
+3. Changer le fichier `filter_to_diane.awk`
 pour mettre à jour le numéro de variable.
 Par exemple si le dernier est CF00011 dans diane+ alors il faut mettre CF00012
 dans le script.
@@ -80,11 +78,11 @@ dans le script.
 département est décommentée, il faut changer l'encodage et le séparateur de la
 commande suivante non commentée (options -e et -d) /!\
 
-Créer la nouvelle variable en indiquant qu'il s'agit d'un champs `identifiant d'entreprise`
+4. Créer la nouvelle variable en indiquant qu'il s'agit d'un champs `identifiant d'entreprise`
 Récupérer le fichier sur l'ordinateur local, le transformer en fichier excel,
 et le soumettre sur diane+ dans l'interface _importer nouvelle variable_
 
-Sélectionner la nouvelle variable dans:
+5. Sélectionner la nouvelle variable dans:
 _Mes données_ > _Données importées_ > _Entreprises avec une donnée importée_
 
 > _Autres ..._
@@ -92,18 +90,14 @@ _Mes données_ > _Données importées_ > _Entreprises avec une donnée importée
 Cette sélection peut-être complétée avec:
 _Entreprises mises à jour_ > _Données financières et descriptives_
 
-```
 ## Créer un objet admin pour l'intégration des données
 
-```
+Utiliser `prepare-import`.
 
-
-Utiliser prepare-import.
-
-`ssh stockage`:
+Depuis `ssh stockage`:
 
 ```sh
-~/scripts/prepare-import -batch "<BATCH>" -date-fin-effectif "<DATE>" -path "../goup/public"
+~/prepare-import/prepare-import -batch "<BATCH>" -date-fin-effectif "<DATE>" -path "../goup/public"
 ```
 
 - Ne pas oublier le fichier filter !
