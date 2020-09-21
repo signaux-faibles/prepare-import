@@ -15,10 +15,11 @@ find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 
 == Nettoyer les fichiers de l'urssaf ==
 
-Les scripts sont dans `/home/centos/scripts/`
-
 Marche uniquement pour du UTF-8... convertir avant...
+
+```sh
 iconv -f ISO_8859-1 -t UTF-8
+```
 
 `ssh labtenant`:
 
@@ -41,7 +42,7 @@ entreprises intéressantes à partir du fichier effectif de l'ACOSS.
 
 ```sh
 cd `batch`
-
+create_filter --path ./effectif.csv
 ```
 
 == Télécharger le fichier Siren ==
@@ -73,7 +74,7 @@ Regarder le numéro de la nouvelle variable à importer (le suivant du dernier
 numéro déjà importé dans:
 _Mes données_ > _Données importées_ > _Importer nouvelle variable_
 
-Changer le fichier `/home/centos/scripts/extract_siret_from_effectif_diane.sh`
+Changer le fichier `filter_to_diane.awk`
 pour mettre à jour le numéro de variable.
 Par exemple si le dernier est CF00011 dans diane+ alors il faut mettre CF00012
 dans le script.

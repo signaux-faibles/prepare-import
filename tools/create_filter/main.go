@@ -12,6 +12,8 @@ import (
 	"strconv"
 )
 
+// Usage: $ ./create_filter --path test_data.csv
+
 // Implementation of the prepare-import command.
 func main() {
 
