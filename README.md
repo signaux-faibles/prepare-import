@@ -16,8 +16,8 @@ make test # Exécute les tests
 ./prepare-import . # Retourne la définition du batch au format JSON, depuis le répertoire courant
 ```
 
-Après toute modification du rendu de prepare-import, penser à mettre à jour le 
-golden file avec la commande: 
+Après toute modification du rendu de prepare-import, penser à mettre à jour le
+golden file avec la commande:
 
 ```sh
 go test --update
