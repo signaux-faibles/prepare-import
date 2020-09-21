@@ -109,20 +109,64 @@ Utiliser `prepare-import` depuis `ssh stockage`:
 
 - Et enfin changer le nom du batch en langage naturel: ex "Février 2020".
 
+## (Re)lancer le serveur API `dbmongo` (optionnel)
+
+Depuis `ssh centos@labtenant -t tmux att`:
+
+```sh
+killall dbmongo
+cd opensignauxfaibles/dbmongo
+git pull
+go build
+./dbmongo
+```
+
+## Vérifier la validité des fichiers à importer
+
+Depuis `ssh stockage -t tmux att`:
+
+```sh
+export http_proxy="";
+http :3000/api/data/check batch="2002_1"
+```
+
+Vérifier dans les logs que les fichiers sont bien valides. Corriger le batch si nécéssaire.
+
 ## Lancer l'import
 
 Depuis `ssh stockage -t tmux att`:
 
 ```sh
-export http_proxy=""; http :3000/api/data/import batch="2002_1"
+export http_proxy="";
+http :3000/api/data/import batch="2002_1"
 ```
 
-Vérifier les logs que l'import s'est bien passé.
+## Vérifier la validité des données importées
+
+Lancer la validation depuis `ssh stockage -t tmux att`:
+
+```sh
+export http_proxy="";
+http :3000/api/data/validate collection="ImportedData"
+# prendre note du nom de fichier retourné par l'API, pour l'étape suivante
+```
+
+Afficher les entrées de données invalides depuis `ssh centos@labtenant -t tmux att`:
+
+```sh
+cd opensignauxfaibles/dbmongo
+zcat <nom_du_fichier_retourné_par_API>
+```
+
+Puis, si besoin, supprimer les entrées de la collection `ImportedData` que vous ne souhaitez pas importer, avant de lancer le compactage.
 
 ## Lancer le compactage
+
+Le compactage va intégrer dans la collection `RawData` les données du batch qui viennent d'être importées dans la collection `ImportedData`.
 
 Depuis `ssh stockage -t tmux att`:
 
 ```sh
-export http_proxy=""; http :3000/api/data/compact batch="2002_1"
+export http_proxy="";
+http :3000/api/data/compact batch="2002_1"
 ```
