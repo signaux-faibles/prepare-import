@@ -34,6 +34,11 @@ jobs:
       - name: Build
         run: go build -v .
 
+      - name: Check formatting
+        run: |
+          make format format-doc
+          exit $(git diff | wc -l) # Return a non-zero error code if any output file has changed
+
       - name: Test
         run: go test -v -coverprofile=coverage.out
 
