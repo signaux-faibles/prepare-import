@@ -96,9 +96,7 @@ _Entreprises mises à jour_ > _Données financières et descriptives_
 
 ## Créer un objet admin pour l'intégration des données
 
-Utiliser `prepare-import`.
-
-Depuis `ssh stockage`:
+Utiliser `prepare-import` depuis `ssh stockage`:
 
 ```sh
 ~/prepare-import/prepare-import -batch "<BATCH>" -date-fin-effectif "<DATE>" -path "../goup/public"
@@ -112,7 +110,7 @@ Depuis `ssh stockage`:
 
 ## Lancer l'import
 
-`ssh stockage -t tmux att`:
+Depuis `ssh stockage -t tmux att`:
 
 ```sh
 export http_proxy=""; http :3000/api/data/import batch="2002_1"
@@ -122,7 +120,7 @@ Vérifier les logs que l'import s'est bien passé.
 
 ## Lancer le compactage
 
-`ssh stockage -t tmux att`:
+Depuis `ssh stockage -t tmux att`:
 
 ```sh
 export http_proxy=""; http :3000/api/data/compact batch="2002_1"
