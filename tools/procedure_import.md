@@ -70,24 +70,24 @@ Note: penser à mettre les URLs à jour.
 1. Se connecter sur le site [Diane+](https://diane.bvdinfo.com)
 
 2. _Créer un fichier de filtrage à partir du fichier effectif._
-Regarder le numéro de la nouvelle variable à importer (le suivant du dernier
-numéro déjà importé dans:
-_Mes données_ > _Données importées_ > _Importer nouvelle variable_
+   Regarder le numéro de la nouvelle variable à importer (le suivant du dernier
+   numéro déjà importé dans:
+   _Mes données_ > _Données importées_ > _Importer nouvelle variable_
 
 3. Changer le fichier `filter_to_diane.awk`
-pour mettre à jour le numéro de variable.
-Par exemple si le dernier est CF00011 dans diane+ alors il faut mettre CF00012
-dans le script.
-/!\ Attention, le script n'est pas robuste, par exemple si la sélection de
-département est décommentée, il faut changer l'encodage et le séparateur de la
-commande suivante non commentée (options -e et -d) /!\
+   pour mettre à jour le numéro de variable.
+   Par exemple si le dernier est CF00011 dans diane+ alors il faut mettre CF00012
+   dans le script.
+   /!\ Attention, le script n'est pas robuste, par exemple si la sélection de
+   département est décommentée, il faut changer l'encodage et le séparateur de la
+   commande suivante non commentée (options -e et -d) /!\
 
 4. Créer la nouvelle variable en indiquant qu'il s'agit d'un champs `identifiant d'entreprise`
-Récupérer le fichier sur l'ordinateur local, le transformer en fichier excel,
-et le soumettre sur diane+ dans l'interface _importer nouvelle variable_
+   Récupérer le fichier sur l'ordinateur local, le transformer en fichier excel,
+   et le soumettre sur diane+ dans l'interface _importer nouvelle variable_
 
 5. Sélectionner la nouvelle variable dans:
-_Mes données_ > _Données importées_ > _Entreprises avec une donnée importée_
+   _Mes données_ > _Données importées_ > _Entreprises avec une donnée importée_
 
 > _Autres ..._
 
