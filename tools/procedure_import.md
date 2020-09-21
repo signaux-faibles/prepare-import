@@ -26,10 +26,11 @@ find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 
 ## Nettoyer les fichiers de l'urssaf
 
-Convertir les fichiers en encodage UTF-8 avant l'usage de `filter_unprintable.sh`:
+S'assurer que les fichiers sont encodés en UTF-8 avant l'usage de `filter_unprintable.sh`:
 
 ```sh
-iconv -f ISO_8859-1 -t UTF-8
+file --mime-encoding <ficher> # pour détecter l'encodage actuel
+iconv -f ISO_8859-1 -t UTF-8 <fichier> # pour convertir de ISO_8859-1 en UTF-8
 ```
 
 Afficher puis supprimer les lignes illisibles, depuis `ssh stockage`:
