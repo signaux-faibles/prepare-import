@@ -32,7 +32,7 @@ Convertir les fichiers en encodage UTF-8 avant l'usage de `filter_unprintable.sh
 iconv -f ISO_8859-1 -t UTF-8
 ```
 
-Afficher puis supprimer les lignes illisibles, depuis `ssh labtenant`:
+Afficher puis supprimer les lignes illisibles, depuis `ssh stockage`:
 
 ```sh
 cd _<batch>_
@@ -112,7 +112,7 @@ Depuis `ssh stockage`:
 
 ## Lancer l'import
 
-`ssh labtenant -t tmux att`:
+`ssh stockage -t tmux att`:
 
 ```sh
 export http_proxy=""; http :3000/api/data/import batch="2002_1"
@@ -122,7 +122,7 @@ Vérifier les logs que l'import s'est bien passé.
 
 ## Lancer le compactage
 
-`ssh labtenant -t tmux att`:
+`ssh stockage -t tmux att`:
 
 ```sh
 export http_proxy=""; http :3000/api/data/compact batch="2002_1"
