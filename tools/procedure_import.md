@@ -1,7 +1,6 @@
-= Procédure pour importer les données mensuelles =
-:signaux_faibles:
+# Procédure pour importer les données mensuelles
 
-== Mettre les nouveaux fichiers dans un répertoire spécifique ==
+## Mettre les nouveaux fichiers dans un répertoire spécifique
 
 `ssh stockage`:
 
@@ -13,7 +12,7 @@ mkdir _<batch>_
 find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 ```
 
-== Nettoyer les fichiers de l'urssaf ==
+## Nettoyer les fichiers de l'urssaf
 
 Marche uniquement pour du UTF-8... convertir avant...
 
@@ -32,8 +31,7 @@ sh /home/centos/goup_transfert/public/tools/filter_unprintable.sh -r *
 ```
 
 (Paramètre -p pour afficher les lignes avant des les effacer)
-
-== Créer le filtre basé sur le fichier effectif. ==
+## Créer le filtre basé sur le fichier effectif
 
 Afin d'importer les données, il faut commencer par créer le périmètre des
 entreprises intéressantes à partir du fichier effectif de l'ACOSS.
@@ -45,7 +43,7 @@ cd `batch`
 create_filter --path ./effectif.csv
 ```
 
-== Télécharger le fichier Siren ==
+## Télécharger le fichier Siren
 
 En local: `ssh -R 8888:localhost:8888 stockage`
 Service tinyproxy tourne sur 8888 en local.
@@ -64,7 +62,7 @@ wget http://data.cquest.org/geo_sirene/v2019/last/StockEtablissement_utf8_geo.cs
 wget https://www.data.gouv.fr/fr/datasets/r/c63c91ec-7659-490b-baac-98ee599ece37
 ```
 
-== Télécharger le fichier Diane ==
+## Télécharger le fichier Diane
 
 Se connecter sur le site Diane+
 https://diane.bvdinfo.com
@@ -95,10 +93,10 @@ Cette sélection peut-être complétée avec:
 _Entreprises mises à jour_ > _Données financières et descriptives_
 
 ```
+## Créer un objet admin pour l'intégration des données
 
 ```
 
-== Créer un objet admin pour l'intégration des données ==
 
 Utiliser prepare-import.
 
@@ -114,7 +112,8 @@ Utiliser prepare-import.
 
 - Et enfin changer le nom du batch en langage naturel: ex "Février 2020".
 
-== Lancer l'import ==
+## Lancer l'import
+
 `ssh labtenant -t tmux att`:
 
 ```sh
@@ -123,7 +122,8 @@ export http_proxy=""; http :3000/api/data/import batch="2002_1"
 
 Vérifier les logs que l'import s'est bien passé.
 
-== Lancer le compactage ==
+## Lancer le compactage
+
 `ssh labtenant -t tmux att`:
 
 ```sh
