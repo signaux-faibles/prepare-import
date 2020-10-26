@@ -147,8 +147,8 @@ Lancer la validation depuis `ssh stockage -t tmux att`:
 
 ```sh
 export http_proxy="";
-http :3000/api/data/validate collection="ImportedData"
-# prendre note du nom de fichier retourné par l'API, pour l'étape suivante
+http :3000/api/data/validate collection="ImportedData" # valider les données importées
+http :3000/api/data/validate collection="RawData"      # valider les données déjà en bdd (recommandé)
 ```
 
 Afficher les entrées de données invalides depuis `ssh centos@labtenant -t tmux att`:
@@ -158,7 +158,7 @@ cd opensignauxfaibles/dbmongo
 zcat <nom_du_fichier_retourné_par_API>
 ```
 
-Puis, si besoin, supprimer les entrées de la collection `ImportedData` que vous ne souhaitez pas importer, avant de lancer le compactage.
+Puis, avant de lancer le compactage, corriger ou supprimer les entrées invalides éventuellement trouvées dans les collections `ImportedData` et/ou `Rawdata`.
 
 ## Lancer le compactage
 
