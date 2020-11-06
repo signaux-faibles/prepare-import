@@ -17,7 +17,7 @@ type MetadataProperty map[string]string
 func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) ValidFileType {
 	metadata := fileinfo.MetaData
 	if metadata["goup-path"] == "bdf" {
-		return BDF
+		return bdf
 	}
 	return ExtractFileTypeFromFilename(metadata["filename"])
 }

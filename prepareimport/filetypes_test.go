@@ -14,29 +14,29 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 		category ValidFileType
 	}{
 		// guessed from urssaf files found on stockage/goub server
-		{"Sigfaible_debits.csv", DEBIT},
-		{"Sigfaible_cotisdues.csv", COTISATION},
-		{"Sigfaible_pcoll.csv", PROCOL},
-		{"Sigfaible_etablissement_utf8.csv", ADMIN_URSSAF},
-		{"Sigfaible_effectif_siret.csv", EFFECTIF},
-		{"Sigfaible_effectif_siren.csv", EFFECTIF_ENT},
-		{"Sigfaible_delais.csv", DELAI},
-		{"Sigfaible_ccsf.csv", CCSF},
+		{"Sigfaible_debits.csv", debit},
+		{"Sigfaible_cotisdues.csv", cotisation},
+		{"Sigfaible_pcoll.csv", procol},
+		{"Sigfaible_etablissement_utf8.csv", adminUrssaf},
+		{"Sigfaible_effectif_siret.csv", effectif},
+		{"Sigfaible_effectif_siren.csv", effectifEnt},
+		{"Sigfaible_delais.csv", delai},
+		{"Sigfaible_ccsf.csv", ccsf},
 
 		// guessed from dgefp files
-		{"act_partielle_conso_depuis2014_FRANCE.csv", APCONSO},
-		{"act_partielle_ddes_depuis2015_FRANCE.csv", APDEMANDE},
+		{"act_partielle_conso_depuis2014_FRANCE.csv", apconso},
+		{"act_partielle_ddes_depuis2015_FRANCE.csv", apdemande},
 
 		// others
-		{"Diane_Export_4.txt", DIANE},
-		{"Sigfaibles_debits.csv", DEBIT},
-		{"Sigfaibles_debits2.csv", DEBIT},
-		{"diane_req_2002.csv", DIANE},
-		{"diane_req_dom_2002.csv", DIANE},
-		{"effectif_dom.csv", EFFECTIF},
-		{"filter_siren_2002.csv", FILTER},
-		{"sireneUL.csv", SIRENE_UL},
-		{"StockEtablissement_utf8_geo.csv", SIRENE},
+		{"Diane_Export_4.txt", diane},
+		{"Sigfaibles_debits.csv", debit},
+		{"Sigfaibles_debits2.csv", debit},
+		{"diane_req_2002.csv", diane},
+		{"diane_req_dom_2002.csv", diane},
+		{"effectif_dom.csv", effectif},
+		{"filter_siren_2002.csv", filter},
+		{"sireneUL.csv", sireneUl},
+		{"StockEtablissement_utf8_geo.csv", sirene},
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+string(testCase.category)+" for file "+testCase.name, func(t *testing.T) {

@@ -53,10 +53,10 @@ func (err UnsupportedFilesError) Error() string {
 }
 
 var defaultCompleteTypes = []ValidFileType{
-	APCONSO,
-	APDEMANDE,
-	EFFECTIF,
-	EFFECTIF_ENT,
-	SIRENE,
-	SIRENE_UL,
+	apconso,
+	apdemande,
+	effectif,
+	effectifEnt,
+	sirene,
+	sireneUl,
 }

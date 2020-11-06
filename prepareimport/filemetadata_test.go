@@ -13,7 +13,7 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 			"filename":  "Sigfaible_debits.csv",
 			"goup-path": "urssaf",
 		}))
-		assert.Equal(t, DEBIT, got)
+		assert.Equal(t, debit, got)
 	})
 
 	t.Run("should return \"bdf\" for bin file which came from bdf", func(t *testing.T) {
@@ -21,7 +21,7 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 			"filename":  "FICHIER_SF_2020_02.csv",
 			"goup-path": "bdf",
 		}))
-		assert.Equal(t, BDF, got)
+		assert.Equal(t, bdf, got)
 	})
 
 	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
@@ -29,6 +29,6 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 			"filename":  "tab_19m10.sas7bdat",
 			"goup-path": "dgefp",
 		}))
-		assert.Equal(t, INTERIM, got)
+		assert.Equal(t, interim, got)
 	})
 }
