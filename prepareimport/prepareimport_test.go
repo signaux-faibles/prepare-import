@@ -22,7 +22,7 @@ func newSafeBatchKey(key string) BatchKey {
 
 var DUMMY_BATCHKEY = newSafeBatchKey("1802")
 
-var DUMMY_DATE_FIN_EFFECTIF = dateFinEffectifType(time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)) // "2014-01-01"
+var DUMMY_DATE_FIN_EFFECTIF = NewDateFinEffectif(time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)) // "2014-01-01"
 
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
