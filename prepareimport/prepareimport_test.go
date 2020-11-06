@@ -1,10 +1,9 @@
-package main
+package prepareimport
 
 import (
 	"errors"
 	"io/ioutil"
 	"log"
-	"os"
 	"path"
 	"path/filepath"
 	"testing"
@@ -25,31 +24,9 @@ var DUMMY_BATCHKEY = newSafeBatchKey("1802")
 
 var DUMMY_DATE_FIN_EFFECTIF = dateFinEffectifType(time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)) // "2014-01-01"
 
-// Helper to create a temporary directory with a batch of files, and clean up after the execution of tests
-func createTempFiles(t *testing.T, batchkey BatchKey, filenames []string) string {
-	t.Helper()
-	parentDir, err := ioutil.TempDir(os.TempDir(), "example")
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-	t.Cleanup(func() { os.RemoveAll(parentDir) })
-
-	batchDir := filepath.Join(parentDir, batchkey.String())
-	os.Mkdir(batchDir, 0777)
-
-	for _, filename := range filenames {
-		tmpFilename := filepath.Join(batchDir, filename)
-		if err := ioutil.WriteFile(tmpFilename, []byte{}, 0666); err != nil {
-			t.Fatal(err.Error())
-		}
-	}
-
-	return parentDir
-}
-
 func TestReadFilenames(t *testing.T) {
 	t.Run("Should return filenames in a directory", func(t *testing.T) {
-		dir := createTempFiles(t, DUMMY_BATCHKEY, []string{"tmpfile"})
+		dir := CreateTempFiles(t, DUMMY_BATCHKEY, []string{"tmpfile"})
 		filenames, err := ReadFilenames(path.Join(dir, DUMMY_BATCHKEY.String()))
 		if err != nil {
 			t.Fatal(err.Error())
@@ -60,7 +37,7 @@ func TestReadFilenames(t *testing.T) {
 
 func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
-		dir := createTempFiles(t, DUMMY_BATCHKEY, []string{"Sigfaibles_debits.csv"})
+		dir := CreateTempFiles(t, DUMMY_BATCHKEY, []string{"Sigfaibles_debits.csv"})
 		res, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		expected := FilesProperty{DEBIT: []string{DUMMY_BATCHKEY.Path() + "Sigfaibles_debits.csv"}}
 		if assert.NoError(t, err) {
@@ -81,7 +58,7 @@ func TestPrepareImport(t *testing.T) {
 	for _, testCase := range cases {
 		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+string(testCase.filetype), func(t *testing.T) {
 
-			dir := createTempFiles(t, DUMMY_BATCHKEY, []string{testCase.id})
+			dir := CreateTempFiles(t, DUMMY_BATCHKEY, []string{testCase.id})
 
 			tmpFilename := filepath.Join(dir, DUMMY_BATCHKEY.String(), testCase.id+".info")
 			content := []byte("{\"MetaData\":{\"filename\":\"" + DUMMY_BATCHKEY.Path() + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
@@ -98,7 +75,7 @@ func TestPrepareImport(t *testing.T) {
 	}
 
 	t.Run("should return list of unsupported files", func(t *testing.T) {
-		dir := createTempFiles(t, DUMMY_BATCHKEY, []string{"unsupported-file.csv"})
+		dir := CreateTempFiles(t, DUMMY_BATCHKEY, []string{"unsupported-file.csv"})
 		_, err := PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		var e *UnsupportedFilesError
 		if assert.Error(t, err) && errors.As(err, &e) {
@@ -107,7 +84,7 @@ func TestPrepareImport(t *testing.T) {
 	})
 
 	t.Run("should fail if missing .info file", func(t *testing.T) {
-		dir := createTempFiles(t, DUMMY_BATCHKEY, []string{"lonely"})
+		dir := CreateTempFiles(t, DUMMY_BATCHKEY, []string{"lonely"})
 		assert.Panics(t, func() {
 			PrepareImport(dir, DUMMY_BATCHKEY, DUMMY_DATE_FIN_EFFECTIF)
 		})

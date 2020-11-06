@@ -1,4 +1,4 @@
-package main
+package prepareimport
 
 import (
 	"encoding/json"
@@ -7,19 +7,30 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/signaux-faibles/prepare-import/common"
 )
 
-type dateFinEffectifType time.Time
+type dateFinEffectifType struct {
+	time.Time
+}
+
+// MongoDate converts a dateFinEffectif to a MongoDate value.
+func (dateFinEffectif *dateFinEffectifType) MongoDate() MongoDate {
+	return MongoDate{strings.Replace(dateFinEffectif.Format(time.RFC3339), "Z", ".000+0000", 1)}
+}
+
+// NewDateFinEffectif creates a valid dateFinEffectif.
+func NewDateFinEffectif(date time.Time) dateFinEffectifType {
+	// TODO: validate the value
+	return dateFinEffectifType{date}
+}
 
 // AdminObject represents a document going to be stored in the Admin db collection.
 type AdminObject map[string]interface{}
 
 // IDProperty represents the "_id" property of an Admin object.
 type IDProperty struct {
-	Key  common.BatchKey `json:"key"`
-	Type string          `json:"type"`
+	Key  BatchKey `json:"key"`
+	Type string   `json:"type"`
 }
 
 // FilesProperty represents the "files" property of an Admin object.
@@ -122,7 +133,7 @@ func AugmentDataFile(file string, pathname string) DataFile {
 }
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey common.BatchKey, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
 	batchPath := path.Join(pathname, batchKey.String())
 	filenames, err := ReadFilenames(batchPath)
 	if err != nil {
@@ -136,7 +147,7 @@ func PrepareImport(pathname string, batchKey common.BatchKey, dateFinEffectif da
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey common.BatchKey, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateFinEffectif dateFinEffectifType) (AdminObject, error) {
 
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames, batchKey.Path())
 	var err error
@@ -154,7 +165,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey common.BatchKey
 	paramProperty := ParamProperty{
 		DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
 		DateFin:         MongoDate{"20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
-		DateFinEffectif: MongoDate{strings.Replace(time.Time(dateFinEffectif).Format(time.RFC3339), "Z", ".000+0000", 1)},
+		DateFinEffectif: dateFinEffectif.MongoDate(),
 	}
 
 	return AdminObject{

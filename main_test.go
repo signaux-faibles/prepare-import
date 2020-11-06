@@ -9,8 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"./src/common.go"
-
+	"github.com/signaux-faibles/prepare-import/prepareimport"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,9 +35,9 @@ func TestMain(t *testing.T) {
 
 		batch := "1802"
 
-		batchKey, _ := common.NewBatchKey(batch)
+		batchKey, _ := prepareimport.NewBatchKey(batch)
 
-		parentDir := createTempFiles(t, batchKey, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef", "unsupported.csv"})
+		parentDir := prepareimport.CreateTempFiles(t, batchKey, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef", "unsupported.csv"})
 
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(parentDir, batch, "abcdef.info"), content, 0644)
