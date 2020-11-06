@@ -24,25 +24,6 @@ mkdir _<batch>_
 find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 ```
 
-## Nettoyer les fichiers de l'urssaf
-
-S'assurer que les fichiers sont encodés en UTF-8 avant l'usage de `filter_unprintable.sh`:
-
-```sh
-file --mime-encoding <ficher> # pour détecter l'encodage actuel
-iconv -f ISO_8859-1 -t UTF-8 <fichier> # pour convertir de ISO_8859-1 en UTF-8
-```
-
-Afficher puis supprimer les lignes illisibles, depuis `ssh stockage`:
-
-```sh
-cd _<batch>_
-# Print
-sh /home/centos/goup_transfert/public/tools/filter_unprintable.sh -p *
-# Replace
-sh /home/centos/goup_transfert/public/tools/filter_unprintable.sh -r *
-```
-
 ## Créer le filtre basé sur le fichier effectif
 
 Afin d'importer les données, il faut commencer par créer le périmètre des
