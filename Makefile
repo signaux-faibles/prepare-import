@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := prepare-import
 
-prepare-import: *.go
+prepare-import: *.go prepareimport/*.go createfilter/*.go
 	@make install
 	@go build
 
