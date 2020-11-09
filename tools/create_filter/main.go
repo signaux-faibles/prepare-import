@@ -39,8 +39,13 @@ func main() {
 	)
 	flag.Parse()
 
-	last := guessLastNMissing(*path, *nIgnoredRecords)
-	outputPerimeterStdout(*path, *nbMois, *minEffectif, *nIgnoredRecords+last)
+	CreateFilter(*path, *nbMois, *minEffectif, *nIgnoredRecords)
+}
+
+// CreateFilter generates a "filter" from "effectif" and "effectif_ent" files.
+func CreateFilter(path string, nbMois, minEffectif int, nIgnoredRecords int) {
+	last := guessLastNMissing(path, nIgnoredRecords)
+	outputPerimeterStdout(path, nbMois, minEffectif, nIgnoredRecords+last)
 }
 
 func initializeEffectifReader(f *os.File) *csv.Reader {
