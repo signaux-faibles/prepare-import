@@ -37,25 +37,33 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 }
 
 func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
+	// make sure that there is only one effectif file
+	if len(filesProperty["effectif"]) != 1 {
+		return errors.New("warning: filter generation requires just 1 effectif file")
+	}
+	// create the filter file, if it does not already exist
 	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
 	filterFilePath := path.Join(pathname, filterFileName)
-	// make sure that file does not already exist
 	if fileExists(filterFilePath) {
 		return errors.New("warning: about to overwrite existing filter file: " + filterFilePath)
 	}
-	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
 	filterWriter, err := os.Create(filterFilePath)
 	if err != nil {
 		return err
 	}
-	// TODO: make sure that there is only one effectif file
-	return createfilter.CreateFilter(
+	// populate the filter file and the "filter" property of the AdminObject
+	err = createfilter.CreateFilter(
 		filterWriter,
 		path.Join(pathname, filesProperty["effectif"][0]), // effectifFileName
 		createfilter.DefaultNbMois,
 		createfilter.DefaultMinEffectif,
 		createfilter.DefaultNbIgnoredRecords,
 	)
+	if err != nil {
+		return err
+	}
+	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
+	return nil
 }
 
 // ReadFilenames returns the name of files found at the provided path.
