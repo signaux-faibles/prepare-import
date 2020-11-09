@@ -20,32 +20,38 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
 	}
 	adminObject, unsupportedFiles := PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif)
-	if len(unsupportedFiles) > 0 {
-		err = UnsupportedFilesError{unsupportedFiles}
-	}
 
 	filesProperty := adminObject["files"].(FilesProperty)
 	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
-		filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
-		filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
-		// TODO: make sure that file does not already exist
-		filterWriter, err := os.Create(path.Join(pathname, filterFileName))
-		if err != nil {
-			return nil, err
-		}
-		// TODO: make sure that there is only one effectif file
-		err = createfilter.CreateFilter(
-			filterWriter,
-			path.Join(pathname, filesProperty["effectif"][0]), // effectifFileName
-			createfilter.DefaultNbMois,
-			createfilter.DefaultMinEffectif,
-			createfilter.DefaultNbIgnoredRecords,
-		)
+		err = createAndAppendFilter(filesProperty, batchKey, pathname)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return adminObject, err
+	if len(unsupportedFiles) > 0 {
+		return adminObject, UnsupportedFilesError{unsupportedFiles}
+	} else {
+		return adminObject, nil
+	}
+}
+
+func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
+	effectifFileName := filesProperty["effectif"][0]
+	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
+	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
+	// TODO: make sure that file does not already exist
+	filterWriter, err := os.Create(path.Join(pathname, filterFileName))
+	if err != nil {
+		return err
+	}
+	// TODO: make sure that there is only one effectif file
+	return createfilter.CreateFilter(
+		filterWriter,
+		path.Join(pathname, effectifFileName),
+		createfilter.DefaultNbMois,
+		createfilter.DefaultMinEffectif,
+		createfilter.DefaultNbIgnoredRecords,
+	)
 }
 
 // ReadFilenames returns the name of files found at the provided path.
