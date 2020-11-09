@@ -39,13 +39,23 @@ func main() {
 	)
 	flag.Parse()
 
-	CreateFilter(*path, *nbMois, *minEffectif, *nIgnoredRecords)
+	err := CreateFilter(os.Stdout, *path, *nbMois, *minEffectif, *nIgnoredRecords)
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
-// CreateFilter generates a "filter" from "effectif" and "effectif_ent" files.
-func CreateFilter(path string, nbMois, minEffectif int, nIgnoredRecords int) {
-	last := guessLastNMissing(path, nIgnoredRecords)
-	outputPerimeterStdout(path, nbMois, minEffectif, nIgnoredRecords+last)
+// CreateFilter generates a "filter" from an "effectif" file.
+func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif int, nIgnoredRecords int) error {
+	last := guessLastNMissing(effectifFileName, nIgnoredRecords)
+	f, err := os.Open(effectifFileName)
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+	r := initializeEffectifReader(f)
+	outputPerimeter(r, writer, nbMois, minEffectif, nIgnoredRecords+last)
+	return nil
 }
 
 func initializeEffectifReader(f *os.File) *csv.Reader {
@@ -53,16 +63,6 @@ func initializeEffectifReader(f *os.File) *csv.Reader {
 	r.LazyQuotes = true
 	r.Comma = ';'
 	return r
-}
-
-func outputPerimeterStdout(path string, nbMois, minEffectif int, nIgnoredRecords int) {
-	f, err := os.Open(path)
-	defer f.Close()
-	if err != nil {
-		log.Panic(err)
-	}
-	r := initializeEffectifReader(f)
-	outputPerimeter(r, os.Stdout, nbMois, minEffectif, nIgnoredRecords)
 }
 
 func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredRecords int) {
