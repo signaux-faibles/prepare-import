@@ -31,9 +31,8 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 	}
 	if len(unsupportedFiles) > 0 {
 		return adminObject, UnsupportedFilesError{unsupportedFiles}
-	} else {
-		return adminObject, nil
 	}
+	return adminObject, nil
 }
 
 func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
