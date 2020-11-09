@@ -4,29 +4,17 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
-	"log"
 	"os/exec"
 	"path/filepath"
 	"testing"
 
+	"github.com/signaux-faibles/prepare-import/createfilter"
 	"github.com/signaux-faibles/prepare-import/prepareimport"
 	"github.com/stretchr/testify/assert"
 )
 
 var outGoldenFile = "end_to_end_golden.txt"
 var errGoldenFile = "end_to_end_golden_err.txt"
-
-func diffWithGoldenFile(filename string, updateGoldenFile bool, cmdOutput bytes.Buffer) []byte {
-
-	if updateGoldenFile {
-		ioutil.WriteFile(filename, cmdOutput.Bytes(), 0644)
-	}
-	expected, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return expected
-}
 
 var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
 
@@ -71,8 +59,8 @@ func TestMain(t *testing.T) {
 			}
 		}
 
-		expectedOutput := diffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
-		expectedError := diffWithGoldenFile(errGoldenFile, *updateGoldenFile, cmdError)
+		expectedOutput := createfilter.DiffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
+		expectedError := createfilter.DiffWithGoldenFile(errGoldenFile, *updateGoldenFile, cmdError)
 
 		assert.Equal(t, string(expectedOutput), cmdOutput.String())
 		assert.Equal(t, string(expectedError), cmdError.String())
