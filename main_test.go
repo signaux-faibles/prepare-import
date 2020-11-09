@@ -37,7 +37,16 @@ func TestMain(t *testing.T) {
 
 		batchKey, _ := prepareimport.NewBatchKey(batch)
 
-		parentDir := prepareimport.CreateTempFiles(t, batchKey, []string{"Sigfaibles_effectif_siret.csv", "Sigfaibles_debits.csv", "abcdef", "unsupported.csv"})
+		effectifData, err := ioutil.ReadFile("./createfilter/test_data.csv")
+		if err != nil {
+			t.Fatal(err)
+		}
+		parentDir := prepareimport.CreateTempFilesWithContent(t, batchKey, map[string][]byte{
+			"Sigfaibles_effectif_siret.csv": effectifData,
+			"Sigfaibles_debits.csv":         {},
+			"abcdef":                        {},
+			"unsupported.csv":               {},
+		})
 
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
 		ioutil.WriteFile(filepath.Join(parentDir, batch, "abcdef.info"), content, 0644)
