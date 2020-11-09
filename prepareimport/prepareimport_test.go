@@ -3,7 +3,6 @@ package prepareimport
 import (
 	"errors"
 	"io/ioutil"
-	"os"
 	"path"
 	"path/filepath"
 	"testing"
@@ -97,12 +96,4 @@ func TestPrepareImport(t *testing.T) {
 		filterFilePath := path.Join(dir, filterFileName)
 		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 	})
-}
-
-func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return true
 }

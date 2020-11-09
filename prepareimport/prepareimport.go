@@ -1,6 +1,7 @@
 package prepareimport
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path"
@@ -36,18 +37,21 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 }
 
 func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
-	effectifFileName := filesProperty["effectif"][0]
 	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
+	filterFilePath := path.Join(pathname, filterFileName)
+	// make sure that file does not already exist
+	if fileExists(filterFilePath) {
+		return errors.New("warning: about to overwrite existing filter file: " + filterFilePath)
+	}
 	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
-	// TODO: make sure that file does not already exist
-	filterWriter, err := os.Create(path.Join(pathname, filterFileName))
+	filterWriter, err := os.Create(filterFilePath)
 	if err != nil {
 		return err
 	}
 	// TODO: make sure that there is only one effectif file
 	return createfilter.CreateFilter(
 		filterWriter,
-		path.Join(pathname, effectifFileName),
+		path.Join(pathname, filesProperty["effectif"][0]), // effectifFileName
 		createfilter.DefaultNbMois,
 		createfilter.DefaultMinEffectif,
 		createfilter.DefaultNbIgnoredRecords,
@@ -65,4 +69,12 @@ func ReadFilenames(path string) ([]string, error) {
 		files = append(files, file.Name())
 	}
 	return files, nil
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
