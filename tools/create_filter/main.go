@@ -14,27 +14,28 @@ import (
 
 // Usage: $ ./create_filter --path test_data.csv
 
+const defaultNbMois = 100
+const defaultMinEffectif = 10
+const defaultNbIgnoredRecords = 2
+
 // Implementation of the prepare-import command.
 func main() {
 
 	var path = flag.String("path", "", "Chemin d'accès au fichier effectif")
 	var nbMois = flag.Int(
 		"nbMois",
-		100,
-		"Nombre de mois observés (avec effectif connu) pour déterminer si l'entreprise dépasse 10 salariés\n"+
-			"Défaut: 100",
+		defaultNbMois,
+		"Nombre de mois observés (avec effectif connu) pour déterminer si l'entreprise dépasse 10 salariés",
 	)
 	var minEffectif = flag.Int(
 		"minEffectif",
-		10,
-		"Si une entreprise atteint ou dépasse 'minEffectif' dans les 'nbMois' derniers mois, elle est inclue dans le périmètre du filtre.\n"+
-			"Défaut: 10",
+		defaultMinEffectif,
+		"Si une entreprise atteint ou dépasse 'minEffectif' dans les 'nbMois' derniers mois, elle est inclue dans le périmètre du filtre.",
 	)
 	var nIgnoredRecords = flag.Int(
 		"nIgnoredRecords",
-		2,
-		"Nombre de colonnes à ignorer à la fin du fichier effectif\n"+
-			"Défaut: 2",
+		defaultNbIgnoredRecords,
+		"Nombre de colonnes à ignorer à la fin du fichier effectif",
 	)
 	flag.Parse()
 
