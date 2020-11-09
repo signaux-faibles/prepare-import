@@ -24,18 +24,6 @@ mkdir _<batch>_
 find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 ```
 
-## Créer le filtre basé sur le fichier effectif
-
-Afin d'importer les données, il faut commencer par créer le périmètre des
-entreprises intéressantes à partir du fichier effectif de l'ACOSS.
-
-Depuis `ssh stockage`:
-
-```sh
-cd `batch`
-create_filter --path ./effectif.csv
-```
-
 ## Télécharger le fichier Siren
 
 Depuis `ssh stockage -R 1080` (avec partage de connexion internet de l'hôte via le port `1080`):
