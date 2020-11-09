@@ -20,6 +20,10 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
 	}
 	adminObject, unsupportedFiles := PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif)
+	if len(unsupportedFiles) > 0 {
+		err = UnsupportedFilesError{unsupportedFiles}
+	}
+
 	filesProperty := adminObject["files"].(FilesProperty)
 	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
 		filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
@@ -41,7 +45,7 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 			return nil, err
 		}
 	}
-	return adminObject, unsupportedFiles
+	return adminObject, err
 }
 
 // ReadFilenames returns the name of files found at the provided path.

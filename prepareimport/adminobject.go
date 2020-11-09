@@ -14,7 +14,7 @@ type IDProperty struct {
 }
 
 // PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateFinEffectif DateFinEffectif) (AdminObject, UnsupportedFilesError) {
+func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateFinEffectif DateFinEffectif) (AdminObject /*UnsupportedFiles*/, []string) {
 
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames, batchKey.Path())
 	var completeTypes = []ValidFileType{}
@@ -36,7 +36,7 @@ func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateF
 		"files":          filesProperty,
 		"complete_types": completeTypes,
 		"param":          paramProperty,
-	}, UnsupportedFilesError{unsupportedFiles}
+	}, unsupportedFiles
 }
 
 // UnsupportedFilesError is an Error object that lists files that were not supported.
