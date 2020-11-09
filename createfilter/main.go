@@ -14,8 +14,13 @@ import (
 
 // Usage: $ ./create_filter --path test_data.csv
 
+// DefaultNbMois is the default number of the most recent months during which the effectif of the company must reach the threshold.
 const DefaultNbMois = 100
+
+// DefaultMinEffectif is the default effectif threshold, expressed in number of employees.
 const DefaultMinEffectif = 10
+
+// DefaultNbIgnoredRecords is the default number of most recent months to ignore from the effectif file.
 const DefaultNbIgnoredRecords = 2
 
 // Implementation of the prepare-import command.
