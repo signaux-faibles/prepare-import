@@ -21,7 +21,7 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 	}
 	adminObject, err := PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif)
 	if err != nil {
-		return nil, err
+		return adminObject, err
 	}
 	filesProperty := adminObject["files"].(FilesProperty)
 	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
@@ -30,7 +30,7 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 		// TODO: make sure that file does not already exist
 		filterWriter, err := os.Create(path.Join(pathname, filterFileName))
 		if err != nil {
-			return nil, err
+			return adminObject, err
 		}
 		// TODO: make sure that there is only one effectif file
 		err = createfilter.CreateFilter(
@@ -41,7 +41,7 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 			createfilter.DefaultNbIgnoredRecords,
 		)
 		if err != nil {
-			return nil, err
+			return adminObject, err
 		}
 	}
 	return adminObject, nil
