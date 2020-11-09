@@ -29,6 +29,9 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 			return nil, err
 		}
 	}
+	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
+		return nil, errors.New("filter is missing: please include a filter or an effectif file")
+	}
 	if len(unsupportedFiles) > 0 {
 		return adminObject, UnsupportedFilesError{unsupportedFiles}
 	}
