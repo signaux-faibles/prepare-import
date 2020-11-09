@@ -39,13 +39,13 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
 	// make sure that there is only one effectif file
 	if len(filesProperty["effectif"]) != 1 {
-		return errors.New("warning: filter generation requires just 1 effectif file")
+		return errors.New("filter generation requires just 1 effectif file")
 	}
 	// create the filter file, if it does not already exist
 	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
 	filterFilePath := path.Join(pathname, filterFileName)
 	if fileExists(filterFilePath) {
-		return errors.New("warning: about to overwrite existing filter file: " + filterFilePath)
+		return errors.New("about to overwrite existing filter file: " + filterFilePath)
 	}
 	filterWriter, err := os.Create(filterFilePath)
 	if err != nil {
