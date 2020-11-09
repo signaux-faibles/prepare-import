@@ -3,6 +3,7 @@ package prepareimport
 import (
 	"errors"
 	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"testing"
@@ -82,13 +83,24 @@ func TestPrepareImport(t *testing.T) {
 			"Sigfaible_effectif_siren.csv": {},
 		})
 		res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
+		filterFileName := dummyBatchKey.Path() + "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expected := FilesProperty{
 			"effectif":     []string{dummyBatchKey.Path() + "Sigfaible_effectif_siret.csv"},
 			"effectif_ent": []string{dummyBatchKey.Path() + "Sigfaible_effectif_siren.csv"},
-			"filter":       []string{dummyBatchKey.Path() + "filter_siren_" + dummyBatchKey.String() + ".csv"},
+			"filter":       []string{filterFileName},
 		}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
 		}
+		filterFilePath := path.Join(dir, filterFileName)
+		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 	})
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
