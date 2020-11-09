@@ -75,4 +75,20 @@ func TestPrepareImport(t *testing.T) {
 			PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
 		})
 	})
+
+	t.Run("should create filter file if a effectif files are present", func(t *testing.T) {
+		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
+			"Sigfaible_effectif_siret.csv": {},
+			"Sigfaible_effectif_siren.csv": {},
+		})
+		res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
+		expected := FilesProperty{
+			"effectif":     []string{dummyBatchKey.Path() + "Sigfaible_effectif_siret.csv"},
+			"effectif_ent": []string{dummyBatchKey.Path() + "Sigfaible_effectif_siren.csv"},
+			"filter":       []string{dummyBatchKey.Path() + "filter_siren_" + dummyBatchKey.String() + ".csv"},
+		}
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected, res["files"])
+		}
+	})
 }
