@@ -2,7 +2,10 @@ package prepareimport
 
 import (
 	"io/ioutil"
+	"os"
 	"path"
+
+	"github.com/signaux-faibles/prepare-import/createfilter"
 )
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
@@ -21,9 +24,25 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 		return nil, err
 	}
 	filesProperty := adminObject["files"].(FilesProperty)
-	if filesProperty["effectif"] != nil && filesProperty["effectif_ent"] != nil {
-		filterFile := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
-		filesProperty["filter"] = append(filesProperty["filter"], filterFile)
+	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
+		filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
+		filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
+		// TODO: make sure that file does not already exist
+		filterWriter, err := os.Create(path.Join(pathname, filterFileName))
+		if err != nil {
+			return nil, err
+		}
+		// TODO: make sure that there is only one effectif file
+		err = createfilter.CreateFilter(
+			filterWriter,
+			path.Join(pathname, filesProperty["effectif"][0]), // effectifFileName
+			createfilter.DefaultNbMois,
+			createfilter.DefaultMinEffectif,
+			createfilter.DefaultNbIgnoredRecords,
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return adminObject, nil
 }
