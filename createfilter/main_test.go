@@ -1,13 +1,38 @@
 package createfilter
 
 import (
+	"bytes"
 	"encoding/csv"
+	"flag"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var outGoldenFile = "test_golden.txt"
+var errGoldenFile = "test_golden_err.txt"
+
+var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
+
+func TestCreateFilter(t *testing.T) {
+	t.Run("create_filter golden file", func(t *testing.T) {
+
+		var cmdOutput bytes.Buffer
+		var cmdError bytes.Buffer = *bytes.NewBufferString("") // default: no error
+		err := CreateFilter(&cmdOutput, "test_data.csv", DefaultNbMois, DefaultMinEffectif, DefaultNbIgnoredRecords)
+		if err != nil {
+			cmdError = *bytes.NewBufferString(err.Error())
+		}
+
+		expectedOutput := DiffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
+		expectedError := DiffWithGoldenFile(errGoldenFile, *updateGoldenFile, cmdError)
+
+		assert.Equal(t, string(expectedOutput), cmdOutput.String())
+		assert.Equal(t, string(expectedError), cmdError.String())
+	})
+}
 
 func TestIsInsidePerimeter(t *testing.T) {
 	nbMois := 3
