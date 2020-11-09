@@ -89,7 +89,7 @@ go build
 ./dbmongo
 ```
 
-> Documentation de référence: [API servie par Golang](https://github.com/signaux-faibles/documentation/blob/master/processus-traitement-donnees.md#lapi-servie-par-golang) et 
+> Documentation de référence: [API servie par Golang](https://github.com/signaux-faibles/documentation/blob/master/processus-traitement-donnees.md#lapi-servie-par-golang)
 
 ## Lancer l'import
 
