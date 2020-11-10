@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 
 	"github.com/signaux-faibles/prepare-import/createfilter"
 )
@@ -28,6 +29,12 @@ func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEf
 		if err != nil {
 			return nil, err
 		}
+		// if dateFinEffectif == nil { // TODO
+		validDateFinEffectif := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC) // TODO: detect from file
+		params := adminObject["param"].(ParamProperty)
+		params.DateFinEffectif = NewDateFinEffectif(validDateFinEffectif).MongoDate()
+		adminObject["param"] = params
+		// }
 	}
 	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
 		return nil, errors.New("filter is missing: please include a filter or an effectif file")
