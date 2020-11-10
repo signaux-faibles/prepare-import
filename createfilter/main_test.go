@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -32,6 +33,17 @@ func TestCreateFilter(t *testing.T) {
 		assert.Equal(t, string(expectedOutput), cmdOutput.String())
 		assert.Equal(t, string(expectedError), cmdError.String())
 	})
+}
+
+func TestDetectDateFinEffectif(t *testing.T) {
+	expectedPeriod := Periode{
+		Start: time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC),
+		End:   time.Date(2020, time.Month(2), 1, 0, 0, 0, 0, time.UTC),
+	}
+	actualPeriod, err := detectDateFinEffectif("test_data.csv", DefaultNbIgnoredCols) // => col name: "eff202011"
+	if assert.NoError(t, err) {
+		assert.Equal(t, expectedPeriod, actualPeriod)
+	}
 }
 
 func TestIsInsidePerimeter(t *testing.T) {
