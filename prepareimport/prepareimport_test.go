@@ -30,6 +30,13 @@ func TestPrepareImport(t *testing.T) {
 		assert.Equal(t, expected, err.Error())
 	})
 
+	t.Run("Should warn if no date_fin_effectif is provided", func(t *testing.T) {
+		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
+		_, err := PrepareImport(dir, dummyBatchKey, "")
+		expected := "date_fin_effectif is missing or invalid: "
+		assert.Equal(t, expected, err.Error())
+	})
+
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
 		res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
