@@ -135,8 +135,8 @@ func guessLastNMissing(path string, nIgnoredCols int) int {
 // guessLastNMissingFromReader returns the number of rightmost columns
 // (on top of nIgnoredCols columns) that never have a value.
 func guessLastNMissingFromReader(r *csv.Reader, nIgnoredCols int) int {
-	lastColWithValue := -1 // index of the rightmost column number which has at least one value
-	var recordLength int   // number of columns of the last read row
+	var lastConsideredCol int // index of the rightmost column of the last read row
+	lastColWithValue := -1    // index of the rightmost column which had a value at least once
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -144,13 +144,13 @@ func guessLastNMissingFromReader(r *csv.Reader, nIgnoredCols int) int {
 		} else if err != nil {
 			log.Panic(err)
 		}
-		recordLength = len(record)
-		for i := len(record) - 1 - nIgnoredCols; i > lastColWithValue; i-- {
+		lastConsideredCol = len(record) - 1 - nIgnoredCols
+		for i := lastConsideredCol; i > lastColWithValue; i-- {
 			if record[i] != "" {
 				lastColWithValue = i
 				continue
 			}
 		}
 	}
-	return recordLength - 1 - nIgnoredCols - lastColWithValue // index
+	return lastConsideredCol - lastColWithValue // => index
 }
