@@ -63,10 +63,11 @@ func UrssafToPeriod(urssaf string) (Periode, error) {
 	return period, nil
 }
 
-func effectifColNameToPeriod(colName string) (periode Periode, err error) {
+func effectifColNameToDate(colName string) (time.Time, error) {
 	if colName[0:3] != "eff" {
-		return periode, errors.New("this column is not a valid period: " + colName)
+		return time.Time{}, errors.New("this column is not a valid period: " + colName)
 	}
 	urssafPeriode := colName[3:9]
-	return UrssafToPeriod(urssafPeriode)
+	periode, err := UrssafToPeriod(urssafPeriode)
+	return periode.Start, err
 }
