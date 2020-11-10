@@ -19,7 +19,8 @@ func newSafeBatchKey(key string) BatchKey {
 
 var dummyBatchKey = newSafeBatchKey("1802")
 
-var dummyDateFinEffectif = NewDateFinEffectif(time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)) // "2014-01-01"
+var dummyDateFinEffectif = "2014-01-01"
+var validDateFinEffectif = NewDateFinEffectif(time.Date(2014, time.January, 1, 0, 0, 0, 0, time.UTC)) // "2014-01-01"
 
 // CreateTempFiles creates a temporary directory with a batch of files, and clean up after the execution of tests
 func CreateTempFiles(t *testing.T, batchkey BatchKey, filenames []string) string {

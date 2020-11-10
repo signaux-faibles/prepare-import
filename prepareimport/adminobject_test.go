@@ -10,7 +10,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return the filename in the debit property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, dummyDateFinEffectif)
+		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, validDateFinEffectif)
 		expected := FilesProperty{debit: []string{dummyBatchKey.Path() + "Sigfaibles_debits.csv"}}
 		assert.Len(t, unsupported, 0)
 		assert.Equal(t, expected, res["files"])
@@ -19,7 +19,7 @@ func TestPopulateAdminObject(t *testing.T) {
 	t.Run("Should return an empty complete_types property", func(t *testing.T) {
 		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
 
-		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, dummyDateFinEffectif)
+		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, validDateFinEffectif)
 		expected := []ValidFileType{}
 		assert.Len(t, unsupported, 0)
 		assert.Equal(t, expected, res["complete_types"])
@@ -27,14 +27,14 @@ func TestPopulateAdminObject(t *testing.T) {
 
 	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
 		filename := SimpleDataFile{"act_partielle_conso_depuis2014_FRANCE.csv"}
-		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, dummyDateFinEffectif)
+		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, validDateFinEffectif)
 		expected := []ValidFileType{apconso}
 		assert.Len(t, unsupported, 0)
 		assert.Equal(t, expected, res["complete_types"])
 	})
 
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
-		res, unsupported := PopulateAdminObject([]DataFile{}, dummyBatchKey, dummyDateFinEffectif)
+		res, unsupported := PopulateAdminObject([]DataFile{}, dummyBatchKey, validDateFinEffectif)
 		assert.Len(t, unsupported, 0)
 		assert.Equal(t, FilesProperty{}, res["files"])
 	})
@@ -54,7 +54,7 @@ func TestPopulateAdminObject(t *testing.T) {
 			expectedFiles = append(expectedFiles, dummyBatchKey.Path()+file)
 			augmentedFiles = append(augmentedFiles, SimpleDataFile{file})
 		}
-		res, unsupported := PopulateAdminObject(augmentedFiles, dummyBatchKey, dummyDateFinEffectif)
+		res, unsupported := PopulateAdminObject(augmentedFiles, dummyBatchKey, validDateFinEffectif)
 		assert.Len(t, unsupported, 0)
 		resFilesProperty := res["files"].(FilesProperty)
 		resultingFiles := []string{}
@@ -65,15 +65,16 @@ func TestPopulateAdminObject(t *testing.T) {
 	})
 
 	t.Run("Should return an _id property", func(t *testing.T) {
-		res, unsupported := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1802"), dummyDateFinEffectif)
+		res, unsupported := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1802"), validDateFinEffectif)
 		assert.Len(t, unsupported, 0)
 		assert.Equal(t, IDProperty{newSafeBatchKey("1802"), "batch"}, res["_id"])
 	})
+}
 
+func TestPopulateParamProperty(t *testing.T) {
 	t.Run("Should return a date_fin consistent with batch key", func(t *testing.T) {
-		res, unsupported := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1912"), dummyDateFinEffectif) // ~= 12/2019
+		res := populateParamProperty(newSafeBatchKey("1912"), validDateFinEffectif)
 		expected := MongoDate{"2019-12-01T00:00:00.000+0000"}
-		assert.Len(t, unsupported, 0)
-		assert.Equal(t, expected, res["param"].(ParamProperty).DateFin)
+		assert.Equal(t, expected, res.DateFin)
 	})
 }

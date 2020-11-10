@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/signaux-faibles/prepare-import/prepareimport"
 )
@@ -33,13 +32,7 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	validDateFinEffectif, err := time.Parse("2006-01-02", *dateFinEffectif)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
-	adminObject, err := prepareimport.PrepareImport(*path, validBatchKey, prepareimport.NewDateFinEffectif(validDateFinEffectif))
+	adminObject, err := prepareimport.PrepareImport(*path, validBatchKey, *dateFinEffectif)
 	if _, ok := err.(prepareimport.UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {

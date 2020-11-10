@@ -40,7 +40,7 @@ jobs:
           exit $(git diff | wc -l) # Return a non-zero error code if any output file has changed
 
       - name: Test
-        run: go test -v -coverprofile=coverage.out
+        run: go test ./... -v -coverprofile=coverage.out
 
       - name: Upload coverage to codacy
         run: |

@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -26,6 +27,13 @@ func TestPrepareImport(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"Sigfaibles_debits.csv"})
 		_, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
 		expected := "filter is missing: please include a filter or an effectif file"
+		assert.Equal(t, expected, err.Error())
+	})
+
+	t.Run("Should warn if neither effectif and date_fin_effectif are provided", func(t *testing.T) {
+		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
+		_, err := PrepareImport(dir, dummyBatchKey, "")
+		expected := "date_fin_effectif is missing or invalid: "
 		assert.Equal(t, expected, err.Error())
 	})
 
@@ -83,7 +91,7 @@ func TestPrepareImport(t *testing.T) {
 		})
 	})
 
-	t.Run("should create filter file if a effectif files are present", func(t *testing.T) {
+	t.Run("should create filter file and fill date_fin_effectif if an effectif file is present", func(t *testing.T) {
 		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
 		if err != nil {
 			t.Fatal(err)
@@ -91,16 +99,23 @@ func TestPrepareImport(t *testing.T) {
 		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			"Sigfaible_effectif_siret.csv": data,
 		})
-		res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
+		adminObject, err := PrepareImport(dir, dummyBatchKey, "")
 		filterFileName := dummyBatchKey.Path() + "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expected := FilesProperty{
 			"effectif": []string{dummyBatchKey.Path() + "Sigfaible_effectif_siret.csv"},
 			"filter":   []string{filterFileName},
 		}
+		// check that the filter is listed in the "files" property
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected, res["files"])
+			assert.Equal(t, expected, adminObject["files"])
 		}
+		// check that the filter file exists
 		filterFilePath := path.Join(dir, filterFileName)
 		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
+		// check that date_fin_effectif was detected from the effectif file
+		validDateFinEffectif := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
+		expectedDateFinEffectif := NewDateFinEffectif(validDateFinEffectif).MongoDate()
+		actualDateFinEffectif := adminObject["param"].(ParamProperty).DateFinEffectif
+		assert.Equal(t, expectedDateFinEffectif, actualDateFinEffectif)
 	})
 }
