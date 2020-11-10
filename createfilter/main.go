@@ -20,7 +20,7 @@ const DefaultNbMois = 100
 // DefaultMinEffectif is the default effectif threshold, expressed in number of employees.
 const DefaultMinEffectif = 10
 
-// DefaultNbIgnoredRecords is the default number of most recent months to ignore from the effectif file.
+// DefaultNbIgnoredRecords is the default number of rightmost columns that don't contain effectif data.
 const DefaultNbIgnoredRecords = 2
 
 // Implementation of the create_filter command.
