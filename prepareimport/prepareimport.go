@@ -11,13 +11,7 @@ import (
 )
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey BatchKey, _dateFinEffectif string) (AdminObject, error) {
-
-	validDateFinEffectif, err := time.Parse("2006-01-02", _dateFinEffectif)
-	if err != nil {
-		return nil, errors.New("date_fin_effectif is missing or invalid: " + _dateFinEffectif)
-	}
-	dateFinEffectif := NewDateFinEffectif(validDateFinEffectif)
+func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
 
 	batchPath := path.Join(pathname, batchKey.String())
 	filenames, err := ReadFilenames(batchPath)
@@ -28,24 +22,47 @@ func PrepareImport(pathname string, batchKey BatchKey, _dateFinEffectif string) 
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
 	}
-	adminObject, unsupportedFiles := PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif)
 
-	filesProperty := adminObject["files"].(FilesProperty)
+	// adminObject, unsupportedFiles := PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif) // TODO: de-duplicate code
+	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFiles, batchKey.Path())
+	var completeTypes = []ValidFileType{}
+	for _, typeName := range defaultCompleteTypes {
+		if _, ok := filesProperty[typeName]; ok {
+			completeTypes = append(completeTypes, typeName)
+		}
+	}
+
+	var dateFinEffectif time.Time
 	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
 		err = createAndAppendFilter(filesProperty, batchKey, pathname)
 		if err != nil {
 			return nil, err
 		}
-		// if dateFinEffectif == nil { // TODO
-		validDateFinEffectif := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC) // TODO: detect from file
-		params := adminObject["param"].(ParamProperty)
-		params.DateFinEffectif = NewDateFinEffectif(validDateFinEffectif).MongoDate()
-		adminObject["param"] = params
-		// }
+		dateFinEffectif = time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC) // TODO: detect from file
 	}
+
 	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
 		return nil, errors.New("filter is missing: please include a filter or an effectif file")
 	}
+
+	if dateFinEffectif.IsZero() {
+		dateFinEffectif, err = time.Parse("2006-01-02", providedDateFinEffectif)
+		if err != nil {
+			return nil, errors.New("date_fin_effectif is missing or invalid: " + providedDateFinEffectif)
+		}
+	}
+
+	adminObject := AdminObject{
+		"_id":            IDProperty{batchKey, "batch"},
+		"files":          filesProperty,
+		"complete_types": completeTypes,
+		"param": ParamProperty{
+			DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
+			DateFin:         MongoDate{"20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
+			DateFinEffectif: NewDateFinEffectif(dateFinEffectif).MongoDate(),
+		},
+	}
+
 	if len(unsupportedFiles) > 0 {
 		return adminObject, UnsupportedFilesError{unsupportedFiles}
 	}
