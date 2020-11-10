@@ -168,5 +168,5 @@ func guessLastNMissingFromReader(r *csv.Reader, nIgnoredCols int) int {
 			}
 		}
 	}
-	return lastConsideredCol - lastColWithValue // => index
+	return lastConsideredCol - lastColWithValue
 }
