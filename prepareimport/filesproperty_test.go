@@ -7,6 +7,12 @@ import (
 )
 
 func TestPopulateFilesProperty(t *testing.T) {
+	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
+		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{}, dummyBatchKey.Path())
+		assert.Len(t, unsupportedFiles, 0)
+		assert.Equal(t, FilesProperty{}, filesProperty)
+	})
+
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
 		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}}, dummyBatchKey.Path())
 		if assert.Len(t, unsupportedFiles, 0) {
@@ -26,6 +32,30 @@ func TestPopulateFilesProperty(t *testing.T) {
 		if assert.Len(t, unsupportedFiles, 0) {
 			assert.Equal(t, []string{dummyBatchKey.Path() + "Sigfaibles_debits.csv", dummyBatchKey.Path() + "Sigfaibles_debits2.csv"}, filesProperty[debit])
 		}
+	})
+
+	t.Run("Should support multiple types of csv files", func(t *testing.T) {
+		type File struct {
+			Type     ValidFileType
+			Filename string
+		}
+		files := []File{
+			{"diane", "diane_req_2002.csv"},               // --> DIANE
+			{"diane", "diane_req_dom_2002.csv"},           // --> DIANE
+			{"effectif", "effectif_dom.csv"},              // --> EFFECTIF
+			{"filter", "filter_siren_2002.csv"},           // --> FILTER
+			{"sirene_ul", "sireneUL.csv"},                 // --> SIRENE_UL
+			{"sirene", "StockEtablissement_utf8_geo.csv"}, // --> SIRENE
+		}
+		expectedFiles := FilesProperty{}
+		inputFiles := []DataFile{}
+		for _, file := range files {
+			expectedFiles[file.Type] = append(expectedFiles[file.Type], dummyBatchKey.Path()+file.Filename)
+			inputFiles = append(inputFiles, SimpleDataFile{file.Filename})
+		}
+		resFilesProperty, unsupportedFiles := PopulateFilesProperty(inputFiles, dummyBatchKey.Path())
+		assert.Len(t, unsupportedFiles, 0)
+		assert.Equal(t, expectedFiles, resFilesProperty)
 	})
 
 	t.Run("Should not include unsupported files", func(t *testing.T) {
