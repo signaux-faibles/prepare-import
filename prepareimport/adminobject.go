@@ -17,13 +17,7 @@ type IDProperty struct {
 func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateFinEffectif DateFinEffectif) (AdminObject /*UnsupportedFiles*/, []string) {
 
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames, batchKey.Path())
-	var completeTypes = []ValidFileType{}
-	for _, typeName := range defaultCompleteTypes {
-		if _, ok := filesProperty[typeName]; ok {
-			completeTypes = append(completeTypes, typeName)
-		}
-	}
-	// { "date_debut" : { "$date" : "2014-01-01T00:00:00.000+0000" }, "date_fin" : { "$date" : "2018-12-01T00:00:00.000+0000" }, "date_fin_effectif" : { "$date" : "2018-06-01T00:00:00.000+0000" } }
+	completeTypes := populateCompleteTypesProperty(filesProperty)
 
 	paramProperty := ParamProperty{
 		DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
@@ -46,6 +40,16 @@ type UnsupportedFilesError struct {
 
 func (err UnsupportedFilesError) Error() string {
 	return "unsupported: " + strings.Join(err.UnsupportedFiles, ", ")
+}
+
+func populateCompleteTypesProperty(filesProperty FilesProperty) []ValidFileType {
+	completeTypes := []ValidFileType{}
+	for _, typeName := range defaultCompleteTypes {
+		if _, ok := filesProperty[typeName]; ok {
+			completeTypes = append(completeTypes, typeName)
+		}
+	}
+	return completeTypes
 }
 
 var defaultCompleteTypes = []ValidFileType{

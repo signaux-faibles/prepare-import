@@ -25,12 +25,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 
 	// adminObject, unsupportedFiles := PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif) // TODO: de-duplicate code
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFiles, batchKey.Path())
-	var completeTypes = []ValidFileType{}
-	for _, typeName := range defaultCompleteTypes {
-		if _, ok := filesProperty[typeName]; ok {
-			completeTypes = append(completeTypes, typeName)
-		}
-	}
+	completeTypes := populateCompleteTypesProperty(filesProperty)
 
 	var dateFinEffectif time.Time
 	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
