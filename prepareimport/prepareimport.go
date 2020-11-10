@@ -23,7 +23,6 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
 	}
 
-	// adminObject, unsupportedFiles := PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif) // TODO: de-duplicate code
 	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFiles, batchKey.Path())
 	completeTypes := populateCompleteTypesProperty(filesProperty)
 
