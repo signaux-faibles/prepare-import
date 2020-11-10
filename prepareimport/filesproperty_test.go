@@ -22,9 +22,9 @@ func TestPopulateFilesProperty(t *testing.T) {
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
 		filesProperty, unsupportedFiles := PopulateFilesProperty([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}}, dummyBatchKey.Path())
-		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []string{dummyBatchKey.Path() + "Sigfaibles_debits.csv"}, filesProperty[debit])
-		}
+		expected := FilesProperty{debit: []string{dummyBatchKey.Path() + "Sigfaibles_debits.csv"}}
+		assert.Len(t, unsupportedFiles, 0)
+		assert.Equal(t, expected, filesProperty)
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
