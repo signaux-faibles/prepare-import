@@ -3,7 +3,6 @@ package prepareimport
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"time"
@@ -85,19 +84,6 @@ func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathn
 	}
 	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
 	return nil
-}
-
-// ReadFilenames returns the name of files found at the provided path.
-func ReadFilenames(path string) ([]string, error) {
-	var files []string
-	fileInfo, err := ioutil.ReadDir(path)
-	if err != nil {
-		return files, err
-	}
-	for _, file := range fileInfo {
-		files = append(files, file.Name())
-	}
-	return files, nil
 }
 
 func fileExists(filename string) bool {

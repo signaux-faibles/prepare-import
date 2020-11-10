@@ -1,6 +1,7 @@
 package prepareimport
 
 import (
+	"io/ioutil"
 	"path"
 	"strings"
 )
@@ -41,9 +42,15 @@ func PopulateFilesPropertyFromDataFiles(filenames []DataFile, prefix string) (Fi
 	return filesProperty, unsupportedFiles
 }
 
-// ParamProperty represents the "param" property of an Admin object.
-type ParamProperty struct {
-	DateDebut       MongoDate `json:"date_debut"`
-	DateFin         MongoDate `json:"date_fin"`
-	DateFinEffectif MongoDate `json:"date_fin_effectif"`
+// ReadFilenames returns the name of files found at the provided path.
+func ReadFilenames(path string) ([]string, error) {
+	var files []string
+	fileInfo, err := ioutil.ReadDir(path)
+	if err != nil {
+		return files, err
+	}
+	for _, file := range fileInfo {
+		files = append(files, file.Name())
+	}
+	return files, nil
 }
