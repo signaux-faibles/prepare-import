@@ -11,7 +11,14 @@ import (
 )
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey BatchKey, dateFinEffectif DateFinEffectif) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey BatchKey, _dateFinEffectif string) (AdminObject, error) {
+
+	validDateFinEffectif, err := time.Parse("2006-01-02", _dateFinEffectif)
+	if err != nil {
+		return nil, errors.New("date_fin_effectif is missing or invalid: " + _dateFinEffectif)
+	}
+	dateFinEffectif := NewDateFinEffectif(validDateFinEffectif)
+
 	batchPath := path.Join(pathname, batchKey.String())
 	filenames, err := ReadFilenames(batchPath)
 	if err != nil {
