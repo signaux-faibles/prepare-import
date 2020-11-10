@@ -30,7 +30,7 @@ func TestPrepareImport(t *testing.T) {
 		assert.Equal(t, expected, err.Error())
 	})
 
-	t.Run("Should warn if no date_fin_effectif is provided", func(t *testing.T) {
+	t.Run("Should warn if neither effectif and date_fin_effectif are provided", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
 		_, err := PrepareImport(dir, dummyBatchKey, "")
 		expected := "date_fin_effectif is missing or invalid: "
@@ -99,7 +99,7 @@ func TestPrepareImport(t *testing.T) {
 		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			"Sigfaible_effectif_siret.csv": data,
 		})
-		adminObject, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
+		adminObject, err := PrepareImport(dir, dummyBatchKey, "")
 		filterFileName := dummyBatchKey.Path() + "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expected := FilesProperty{
 			"effectif": []string{dummyBatchKey.Path() + "Sigfaible_effectif_siret.csv"},
