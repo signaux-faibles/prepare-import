@@ -6,32 +6,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPopulateAdminObject(t *testing.T) {
-	t.Run("Should return the filename in the debit property", func(t *testing.T) {
-		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
-
-		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, validDateFinEffectif)
-		expected := FilesProperty{debit: []string{dummyBatchKey.Path() + "Sigfaibles_debits.csv"}}
-		assert.Len(t, unsupported, 0)
-		assert.Equal(t, expected, res["files"])
-	})
-
-	t.Run("Should return an empty complete_types property", func(t *testing.T) {
-		filename := SimpleDataFile{"Sigfaibles_debits.csv"}
-
-		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, validDateFinEffectif)
+func TestPopulateCompleteTypesProperty(t *testing.T) {
+	t.Run("Should not return a debit file as a complete_type", func(t *testing.T) {
+		res := populateCompleteTypesProperty(FilesProperty{"debit": {"Sigfaibles_debits.csv"}})
 		expected := []ValidFileType{}
-		assert.Len(t, unsupported, 0)
-		assert.Equal(t, expected, res["complete_types"])
+		assert.Equal(t, expected, res)
 	})
 
 	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
-		filename := SimpleDataFile{"act_partielle_conso_depuis2014_FRANCE.csv"}
-		res, unsupported := PopulateAdminObject([]DataFile{filename}, dummyBatchKey, validDateFinEffectif)
+		res := populateCompleteTypesProperty(FilesProperty{"apconso": {"act_partielle_conso_depuis2014_FRANCE.csv"}})
 		expected := []ValidFileType{apconso}
-		assert.Len(t, unsupported, 0)
-		assert.Equal(t, expected, res["complete_types"])
+		assert.Equal(t, expected, res)
 	})
+
+}
+
+func TestPopulateAdminObject(t *testing.T) {
 
 	t.Run("Should return an _id property", func(t *testing.T) {
 		res, unsupported := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1802"), validDateFinEffectif)
