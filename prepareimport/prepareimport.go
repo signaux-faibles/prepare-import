@@ -51,11 +51,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		"_id":            IDProperty{batchKey, "batch"},
 		"files":          filesProperty,
 		"complete_types": completeTypes,
-		"param": ParamProperty{
-			DateDebut:       MongoDate{"2014-01-01T00:00:00.000+0000"},
-			DateFin:         MongoDate{"20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
-			DateFinEffectif: NewDateFinEffectif(dateFinEffectif).MongoDate(),
-		},
+		"param":          populateParamProperty(batchKey, NewDateFinEffectif(dateFinEffectif)),
 	}
 
 	if len(unsupportedFiles) > 0 {

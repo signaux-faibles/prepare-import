@@ -69,11 +69,12 @@ func TestPopulateAdminObject(t *testing.T) {
 		assert.Len(t, unsupported, 0)
 		assert.Equal(t, IDProperty{newSafeBatchKey("1802"), "batch"}, res["_id"])
 	})
+}
 
+func TestPopulateParamProperty(t *testing.T) {
 	t.Run("Should return a date_fin consistent with batch key", func(t *testing.T) {
-		res, unsupported := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1912"), validDateFinEffectif) // ~= 12/2019
+		res := populateParamProperty(newSafeBatchKey("1912"), validDateFinEffectif)
 		expected := MongoDate{"2019-12-01T00:00:00.000+0000"}
-		assert.Len(t, unsupported, 0)
-		assert.Equal(t, expected, res["param"].(ParamProperty).DateFin)
+		assert.Equal(t, expected, res.DateFin)
 	})
 }
