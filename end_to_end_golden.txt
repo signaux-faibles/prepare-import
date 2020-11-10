@@ -15,6 +15,9 @@
     ],
     "effectif": [
       "/1802/Sigfaibles_effectif_siret.csv"
+    ],
+    "filter": [
+      "/1802/filter_siren_1802.csv"
     ]
   },
   "param": {

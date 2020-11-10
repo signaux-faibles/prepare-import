@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := prepare-import
 
-prepare-import: *.go
+prepare-import: *.go prepareimport/*.go createfilter/*.go
 	@make install
 	@go build
 
@@ -9,7 +9,7 @@ install: ## Install dependencies (including development/testing dependencies)
 
 test: ## Run tests, including end-to-end binary tests
 	@make prepare-import
-	@go test
+	@go test ./... -test.count=1 # prevent cache
 
 format: ## Fix the formatting of .go files
 	@go fmt

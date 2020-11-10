@@ -23,6 +23,15 @@ var dummyDateFinEffectif = NewDateFinEffectif(time.Date(2014, time.January, 1, 0
 
 // CreateTempFiles creates a temporary directory with a batch of files, and clean up after the execution of tests
 func CreateTempFiles(t *testing.T, batchkey BatchKey, filenames []string) string {
+	contentPerFile := map[string][]byte{}
+	for _, filename := range filenames {
+		contentPerFile[filename] = []byte{}
+	}
+	return CreateTempFilesWithContent(t, batchkey, contentPerFile)
+}
+
+// CreateTempFilesWithContent creates a temporary directory with a batch of files, and clean up after the execution of tests
+func CreateTempFilesWithContent(t *testing.T, batchkey BatchKey, contentPerFile map[string][]byte) string {
 	t.Helper()
 	parentDir, err := ioutil.TempDir(os.TempDir(), "example")
 	if err != nil {
@@ -33,9 +42,9 @@ func CreateTempFiles(t *testing.T, batchkey BatchKey, filenames []string) string
 	batchDir := filepath.Join(parentDir, batchkey.String())
 	os.Mkdir(batchDir, 0777)
 
-	for _, filename := range filenames {
+	for filename := range contentPerFile {
 		tmpFilename := filepath.Join(batchDir, filename)
-		if err := ioutil.WriteFile(tmpFilename, []byte{}, 0666); err != nil {
+		if err := ioutil.WriteFile(tmpFilename, contentPerFile[filename], 0666); err != nil {
 			t.Fatal(err.Error())
 		}
 	}

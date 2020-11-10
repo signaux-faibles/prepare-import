@@ -24,18 +24,6 @@ mkdir _<batch>_
 find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 ```
 
-## Créer le filtre basé sur le fichier effectif
-
-Afin d'importer les données, il faut commencer par créer le périmètre des
-entreprises intéressantes à partir du fichier effectif de l'ACOSS.
-
-Depuis `ssh stockage`:
-
-```sh
-cd `batch`
-create_filter --path ./effectif.csv
-```
-
 ## Télécharger le fichier Siren
 
 Depuis `ssh stockage -R 1080` (avec partage de connexion internet de l'hôte via le port `1080`):
@@ -84,9 +72,8 @@ Utiliser `prepare-import` depuis `ssh stockage`:
 ~/prepare-import/prepare-import -batch "<BATCH>" -date-fin-effectif "<DATE>" -path "../goup/public"
 ```
 
-- Ne pas oublier le fichier filter !
 - Il faut également aller consulter à la main la dernière colonne non vide du
-  fichier effectif et renseigner sa valeur dans le fichier admin.
+  fichier effectif et renseigner sa valeur dans le fichier admin. (TODO)
 
 - Et enfin changer le nom du batch en langage naturel: ex "Février 2020".
 
@@ -102,7 +89,9 @@ go build
 ./dbmongo
 ```
 
-## Vérifier la validité des fichiers à importer
+> Documentation de référence: [API servie par Golang](https://github.com/signaux-faibles/documentation/blob/master/processus-traitement-donnees.md#lapi-servie-par-golang)
+
+## Lancer l'import
 
 Depuis `ssh stockage -t tmux att`:
 
@@ -113,18 +102,19 @@ http :3000/api/data/check batch="2002_1"
 
 Vérifier dans les logs que les fichiers sont bien valides. Corriger le batch si nécéssaire.
 
-## Lancer l'import
-
-Depuis `ssh stockage -t tmux att`:
+Puis, toujours depuis `ssh stockage -t tmux att`:
 
 ```sh
-export http_proxy="";
 http :3000/api/data/import batch="2002_1"
 ```
 
-## Vérifier la validité des données importées
+> Documentation de référence: [Spécificités de l'import](https://github.com/signaux-faibles/documentation/blob/master/processus-traitement-donnees.md#sp%C3%A9cificit%C3%A9s-de-limport)
 
-Lancer la validation depuis `ssh stockage -t tmux att`:
+## Lancer le compactage
+
+Le compactage consiste à intégrer dans la collection `RawData` les données du batch qui viennent d'être importées dans la collection `ImportedData`.
+
+Commencer par vérifier la validité des données importées, depuis `ssh stockage -t tmux att`:
 
 ```sh
 export http_proxy="";
@@ -141,13 +131,14 @@ zcat <nom_du_fichier_retourné_par_API>
 
 Puis, avant de lancer le compactage, corriger ou supprimer les entrées invalides éventuellement trouvées dans les collections `ImportedData` et/ou `Rawdata`.
 
-## Lancer le compactage
-
-Le compactage va intégrer dans la collection `RawData` les données du batch qui viennent d'être importées dans la collection `ImportedData`.
-
-Depuis `ssh stockage -t tmux att`:
+Une fois les données validées, toujours depuis `ssh stockage -t tmux att`:
 
 ```sh
-export http_proxy="";
 http :3000/api/data/compact batch="2002_1"
 ```
+
+> Documentation de référence: [Spécificités du compactage](https://github.com/signaux-faibles/documentation/blob/master/processus-traitement-donnees.md#sp%C3%A9cificit%C3%A9s-du-compactage)
+
+## Calcul des variables et génération de la liste de detection
+
+> Documentation de référence: [Exécution des calculs pour populer la collection `Features`](https://github.com/signaux-faibles/documentation/blob/master/prise-en-main.md#5-ex%C3%A9cution-des-calculs-pour-populer-la-collection-features)

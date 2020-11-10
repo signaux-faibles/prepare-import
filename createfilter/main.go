@@ -1,4 +1,4 @@
-package main
+package createfilter
 
 import (
 	"bufio"
@@ -14,32 +14,53 @@ import (
 
 // Usage: $ ./create_filter --path test_data.csv
 
-// Implementation of the prepare-import command.
+// DefaultNbMois is the default number of the most recent months during which the effectif of the company must reach the threshold.
+const DefaultNbMois = 100
+
+// DefaultMinEffectif is the default effectif threshold, expressed in number of employees.
+const DefaultMinEffectif = 10
+
+// DefaultNbIgnoredRecords is the default number of rightmost columns that don't contain effectif data.
+const DefaultNbIgnoredRecords = 2
+
+// Implementation of the create_filter command.
 func main() {
 
 	var path = flag.String("path", "", "Chemin d'accès au fichier effectif")
 	var nbMois = flag.Int(
 		"nbMois",
-		100,
-		"Nombre de mois observés (avec effectif connu) pour déterminer si l'entreprise dépasse 10 salariés\n"+
-			"Défaut: 100",
+		DefaultNbMois,
+		"Nombre de mois observés (avec effectif connu) pour déterminer si l'entreprise dépasse 10 salariés",
 	)
 	var minEffectif = flag.Int(
 		"minEffectif",
-		10,
-		"Si une entreprise atteint ou dépasse 'minEffectif' dans les 'nbMois' derniers mois, elle est inclue dans le périmètre du filtre.\n"+
-			"Défaut: 10",
+		DefaultMinEffectif,
+		"Si une entreprise atteint ou dépasse 'minEffectif' dans les 'nbMois' derniers mois, elle est inclue dans le périmètre du filtre.",
 	)
 	var nIgnoredRecords = flag.Int(
 		"nIgnoredRecords",
-		2,
-		"Nombre de colonnes à ignorer à la fin du fichier effectif\n"+
-			"Défaut: 2",
+		DefaultNbIgnoredRecords,
+		"Nombre de colonnes à ignorer à la fin du fichier effectif",
 	)
 	flag.Parse()
 
-	last := guessLastNMissing(*path, *nIgnoredRecords)
-	outputPerimeterStdout(*path, *nbMois, *minEffectif, *nIgnoredRecords+last)
+	err := CreateFilter(os.Stdout, *path, *nbMois, *minEffectif, *nIgnoredRecords)
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
+// CreateFilter generates a "filter" from an "effectif" file.
+func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif int, nIgnoredRecords int) error {
+	last := guessLastNMissing(effectifFileName, nIgnoredRecords)
+	f, err := os.Open(effectifFileName)
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+	r := initializeEffectifReader(f)
+	outputPerimeter(r, writer, nbMois, minEffectif, nIgnoredRecords+last)
+	return nil
 }
 
 func initializeEffectifReader(f *os.File) *csv.Reader {
@@ -47,16 +68,6 @@ func initializeEffectifReader(f *os.File) *csv.Reader {
 	r.LazyQuotes = true
 	r.Comma = ';'
 	return r
-}
-
-func outputPerimeterStdout(path string, nbMois, minEffectif int, nIgnoredRecords int) {
-	f, err := os.Open(path)
-	defer f.Close()
-	if err != nil {
-		log.Panic(err)
-	}
-	r := initializeEffectifReader(f)
-	outputPerimeter(r, os.Stdout, nbMois, minEffectif, nIgnoredRecords)
 }
 
 func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredRecords int) {

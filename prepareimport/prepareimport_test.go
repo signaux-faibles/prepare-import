@@ -22,10 +22,17 @@ func TestReadFilenames(t *testing.T) {
 }
 
 func TestPrepareImport(t *testing.T) {
-	t.Run("Should return a json with one file", func(t *testing.T) {
+	t.Run("Should warn if no filter is provided", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"Sigfaibles_debits.csv"})
+		_, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
+		expected := "filter is missing: please include a filter or an effectif file"
+		assert.Equal(t, expected, err.Error())
+	})
+
+	t.Run("Should return a json with one file", func(t *testing.T) {
+		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
 		res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
-		expected := FilesProperty{debit: []string{dummyBatchKey.Path() + "Sigfaibles_debits.csv"}}
+		expected := FilesProperty{filter: []string{dummyBatchKey.Path() + "filter_2002.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
 		}
@@ -44,7 +51,7 @@ func TestPrepareImport(t *testing.T) {
 	for _, testCase := range cases {
 		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+string(testCase.filetype), func(t *testing.T) {
 
-			dir := CreateTempFiles(t, dummyBatchKey, []string{testCase.id})
+			dir := CreateTempFiles(t, dummyBatchKey, []string{testCase.id, "filter_2002.csv"})
 
 			tmpFilename := filepath.Join(dir, dummyBatchKey.String(), testCase.id+".info")
 			content := []byte("{\"MetaData\":{\"filename\":\"" + dummyBatchKey.Path() + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
@@ -53,9 +60,9 @@ func TestPrepareImport(t *testing.T) {
 			}
 
 			res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
-			expected := FilesProperty{testCase.filetype: []string{dummyBatchKey.Path() + testCase.id}}
+			expected := []string{dummyBatchKey.Path() + testCase.id}
 			if assert.NoError(t, err) {
-				assert.Equal(t, expected, res["files"])
+				assert.Equal(t, expected, res["files"].(FilesProperty)[testCase.filetype])
 			}
 		})
 	}
@@ -74,5 +81,26 @@ func TestPrepareImport(t *testing.T) {
 		assert.Panics(t, func() {
 			PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
 		})
+	})
+
+	t.Run("should create filter file if a effectif files are present", func(t *testing.T) {
+		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
+		if err != nil {
+			t.Fatal(err)
+		}
+		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
+			"Sigfaible_effectif_siret.csv": data,
+		})
+		res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
+		filterFileName := dummyBatchKey.Path() + "filter_siren_" + dummyBatchKey.String() + ".csv"
+		expected := FilesProperty{
+			"effectif": []string{dummyBatchKey.Path() + "Sigfaible_effectif_siret.csv"},
+			"filter":   []string{filterFileName},
+		}
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected, res["files"])
+		}
+		filterFilePath := path.Join(dir, filterFileName)
+		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 	})
 }
