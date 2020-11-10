@@ -148,7 +148,6 @@ func guessLastNMissingFromReader(r *csv.Reader, nIgnoredCols int) int {
 		for i := lastConsideredCol; i > lastColWithValue; i-- {
 			if record[i] != "" {
 				lastColWithValue = i
-				continue
 			}
 		}
 	}
