@@ -59,7 +59,7 @@ func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathn
 		path.Join(pathname, filesProperty["effectif"][0]), // effectifFileName
 		createfilter.DefaultNbMois,
 		createfilter.DefaultMinEffectif,
-		createfilter.DefaultNbIgnoredRecords,
+		createfilter.DefaultNbIgnoredCols,
 	)
 	if err != nil {
 		return err

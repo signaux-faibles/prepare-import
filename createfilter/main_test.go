@@ -21,7 +21,7 @@ func TestCreateFilter(t *testing.T) {
 
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer = *bytes.NewBufferString("") // default: no error
-		err := CreateFilter(&cmdOutput, "test_data.csv", DefaultNbMois, DefaultMinEffectif, DefaultNbIgnoredRecords)
+		err := CreateFilter(&cmdOutput, "test_data.csv", DefaultNbMois, DefaultMinEffectif, DefaultNbIgnoredCols)
 		if err != nil {
 			cmdError = *bytes.NewBufferString(err.Error())
 		}

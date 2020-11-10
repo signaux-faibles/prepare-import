@@ -20,8 +20,8 @@ const DefaultNbMois = 100
 // DefaultMinEffectif is the default effectif threshold, expressed in number of employees.
 const DefaultMinEffectif = 10
 
-// DefaultNbIgnoredRecords is the default number of rightmost columns that don't contain effectif data.
-const DefaultNbIgnoredRecords = 2
+// DefaultNbIgnoredCols is the default number of rightmost columns that don't contain effectif data.
+const DefaultNbIgnoredCols = 2
 
 // Implementation of the create_filter command.
 func main() {
@@ -37,29 +37,29 @@ func main() {
 		DefaultMinEffectif,
 		"Si une entreprise atteint ou dépasse 'minEffectif' dans les 'nbMois' derniers mois, elle est inclue dans le périmètre du filtre.",
 	)
-	var nIgnoredRecords = flag.Int(
-		"nIgnoredRecords",
-		DefaultNbIgnoredRecords,
+	var nIgnoredCols = flag.Int(
+		"nIgnoredCols",
+		DefaultNbIgnoredCols,
 		"Nombre de colonnes à ignorer à la fin du fichier effectif",
 	)
 	flag.Parse()
 
-	err := CreateFilter(os.Stdout, *path, *nbMois, *minEffectif, *nIgnoredRecords)
+	err := CreateFilter(os.Stdout, *path, *nbMois, *minEffectif, *nIgnoredCols)
 	if err != nil {
 		log.Panic(err)
 	}
 }
 
 // CreateFilter generates a "filter" from an "effectif" file.
-func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif int, nIgnoredRecords int) error {
-	last := guessLastNMissing(effectifFileName, nIgnoredRecords)
+func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif int, nIgnoredCols int) error {
+	last := guessLastNMissing(effectifFileName, nIgnoredCols)
 	f, err := os.Open(effectifFileName)
 	defer f.Close()
 	if err != nil {
 		return err
 	}
 	r := initializeEffectifReader(f)
-	outputPerimeter(r, writer, nbMois, minEffectif, nIgnoredRecords+last)
+	outputPerimeter(r, writer, nbMois, minEffectif, nIgnoredCols+last)
 	return nil
 }
 
@@ -70,7 +70,7 @@ func initializeEffectifReader(f *os.File) *csv.Reader {
 	return r
 }
 
-func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredRecords int) {
+func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCols int) {
 	perimeter := []string{}
 	_, err := r.Read() // en tête
 	if err != nil {
@@ -86,7 +86,7 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredRe
 			log.Panic(err)
 		}
 		shouldKeep := len(record[1]) == 14 &&
-			isInsidePerimeter(record[0:len(record)-nIgnoredRecords], nbMois, minEffectif)
+			isInsidePerimeter(record[0:len(record)-nIgnoredCols], nbMois, minEffectif)
 
 		if shouldKeep {
 			perimeter = append(perimeter, record[1])
@@ -118,7 +118,7 @@ func isInsidePerimeter(record []string, nbMois, minEffectif int) bool {
 	return false
 }
 
-func guessLastNMissing(path string, nIgnoredRecords int) int {
+func guessLastNMissing(path string, nIgnoredCols int) int {
 	f, err := os.Open(path)
 	defer f.Close()
 	if err != nil {
@@ -129,12 +129,14 @@ func guessLastNMissing(path string, nIgnoredRecords int) int {
 	if err != nil {
 		log.Panic(err)
 	}
-	return guessLastNMissingFromReader(r, nIgnoredRecords)
+	return guessLastNMissingFromReader(r, nIgnoredCols)
 }
 
-func guessLastNMissingFromReader(r *csv.Reader, nIgnoredRecords int) int {
-	lastNonMissing := -1
-	var recordLength int
+// guessLastNMissingFromReader returns the number of rightmost columns
+// (on top of nIgnoredCols columns) that never have a value.
+func guessLastNMissingFromReader(r *csv.Reader, nIgnoredCols int) int {
+	lastNonMissing := -1 // index of the rightmost column number which has at least one value
+	var recordLength int // number of columns of the last read row
 	for {
 		record, err := r.Read()
 		if err == io.EOF {
@@ -143,12 +145,12 @@ func guessLastNMissingFromReader(r *csv.Reader, nIgnoredRecords int) int {
 			log.Panic(err)
 		}
 		recordLength = len(record)
-		for i := len(record) - 1 - nIgnoredRecords; i > lastNonMissing; i-- {
+		for i := len(record) - 1 - nIgnoredCols; i > lastNonMissing; i-- {
 			if record[i] != "" {
 				lastNonMissing = i
 				continue
 			}
 		}
 	}
-	return recordLength - 1 - nIgnoredRecords - lastNonMissing // index
+	return recordLength - 1 - nIgnoredCols - lastNonMissing // index
 }
