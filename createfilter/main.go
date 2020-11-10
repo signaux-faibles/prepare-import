@@ -118,6 +118,23 @@ func isInsidePerimeter(record []string, nbMois, minEffectif int) bool {
 	return false
 }
 
+func detectDateFinEffectif(path string, nIgnoredCols int) (period Periode, err error) {
+	f, err := os.Open(path)
+	defer f.Close()
+	if err != nil {
+		return period, err
+	}
+	r := initializeEffectifReader(f)
+	header, err := r.Read() // en tête
+	if err != nil {
+		return period, err
+	}
+	nbColsToExclude := guessLastNMissingFromReader(r, nIgnoredCols)
+	lastColWithValue := len(header) - 1 - nbColsToExclude - nIgnoredCols
+	lastPeriodWithValue := header[lastColWithValue]
+	return effectifColNameToPeriod(lastPeriodWithValue)
+}
+
 func guessLastNMissing(path string, nIgnoredCols int) int {
 	f, err := os.Open(path)
 	defer f.Close()
