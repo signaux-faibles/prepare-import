@@ -23,7 +23,7 @@ const DefaultMinEffectif = 10
 // DefaultNbIgnoredRecords is the default number of most recent months to ignore from the effectif file.
 const DefaultNbIgnoredRecords = 2
 
-// Implementation of the prepare-import command.
+// Implementation of the create_filter command.
 func main() {
 
 	var path = flag.String("path", "", "Chemin d'accès au fichier effectif")
