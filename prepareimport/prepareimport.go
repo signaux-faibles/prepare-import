@@ -2,6 +2,7 @@ package prepareimport
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -28,11 +29,13 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 
 	var dateFinEffectif time.Time
 	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
+		if len(filesProperty["effectif"]) != 1 {
+			return nil, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
+		}
 		err = createAndAppendFilter(filesProperty, batchKey, pathname)
 		if err != nil {
 			return nil, err
 		}
-		// TODO: make sure there is only one effectif file
 		effectifFile := path.Join(pathname, filesProperty["effectif"][0])
 		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFile, createfilter.DefaultNbIgnoredCols)
 		if err != nil {
