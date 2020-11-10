@@ -13,18 +13,8 @@ import (
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
 func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
-
-	batchPath := path.Join(pathname, batchKey.String())
-	filenames, err := ReadFilenames(batchPath)
-	if err != nil {
-		return nil, err
-	}
-	augmentedFiles := []DataFile{}
-	for _, file := range filenames {
-		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
-	}
-
-	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFiles, batchKey.Path())
+	var err error
+	filesProperty, unsupportedFiles := PopulateFilesProperty(pathname, batchKey)
 	completeTypes := populateCompleteTypesProperty(filesProperty)
 
 	var dateFinEffectif time.Time
