@@ -32,7 +32,12 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		if err != nil {
 			return nil, err
 		}
-		dateFinEffectif = time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC) // TODO: detect from file
+		// TODO: make sure there is only one effectif file
+		effectifFile := path.Join(pathname, filesProperty["effectif"][0])
+		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFile, createfilter.DefaultNbIgnoredCols)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
