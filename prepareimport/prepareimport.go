@@ -14,26 +14,10 @@ import (
 func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
 	var err error
 	filesProperty, unsupportedFiles := PopulateFilesProperty(pathname, batchKey)
-	completeTypes := populateCompleteTypesProperty(filesProperty)
 
-	var dateFinEffectif time.Time
-	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
-		if len(filesProperty["effectif"]) != 1 {
-			return nil, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
-		}
-		err = createAndAppendFilter(filesProperty, batchKey, pathname)
-		if err != nil {
-			return nil, err
-		}
-		effectifFile := path.Join(pathname, filesProperty["effectif"][0])
-		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFile, createfilter.DefaultNbIgnoredCols)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
-		return nil, errors.New("filter is missing: please include a filter or an effectif file")
+	dateFinEffectif, err := checkOrCreateFilterFromEffectif(filesProperty, batchKey, pathname)
+	if err != nil {
+		return nil, err
 	}
 
 	if dateFinEffectif.IsZero() {
@@ -43,17 +27,38 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		}
 	}
 
-	adminObject := AdminObject{
-		"_id":            IDProperty{batchKey, "batch"},
-		"files":          filesProperty,
-		"complete_types": completeTypes,
-		"param":          populateParamProperty(batchKey, NewDateFinEffectif(dateFinEffectif)),
+	if len(unsupportedFiles) > 0 {
+		err = UnsupportedFilesError{unsupportedFiles}
 	}
 
-	if len(unsupportedFiles) > 0 {
-		return adminObject, UnsupportedFilesError{unsupportedFiles}
+	return AdminObject{
+		"_id":            IDProperty{batchKey, "batch"},
+		"files":          filesProperty,
+		"complete_types": populateCompleteTypesProperty(filesProperty),
+		"param":          populateParamProperty(batchKey, NewDateFinEffectif(dateFinEffectif)),
+	}, err
+}
+
+func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey BatchKey, pathname string) (dateFinEffectif time.Time, err error) {
+	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
+		if len(filesProperty["effectif"]) != 1 {
+			return dateFinEffectif, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
+		}
+		err = createAndAppendFilter(filesProperty, batchKey, pathname)
+		if err != nil {
+			return dateFinEffectif, err
+		}
+		effectifFile := path.Join(pathname, filesProperty["effectif"][0])
+		// TODO: éviter de lire le fichier Effectif deux fois
+		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFile, createfilter.DefaultNbIgnoredCols)
+		if err != nil {
+			return dateFinEffectif, err
+		}
 	}
-	return adminObject, nil
+	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
+		err = errors.New("filter is missing: please include a filter or an effectif file")
+	}
+	return dateFinEffectif, err
 }
 
 func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
