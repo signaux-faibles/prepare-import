@@ -46,6 +46,15 @@ func TestPrepareImport(t *testing.T) {
 		}
 	})
 
+	t.Run("Should return an _id property", func(t *testing.T) {
+		batch := newSafeBatchKey("1802")
+		dir := CreateTempFiles(t, batch, []string{"filter_2002.csv"})
+		res, err := PrepareImport(dir, batch, dummyDateFinEffectif)
+		if assert.NoError(t, err) {
+			assert.Equal(t, IDProperty{batch, "batch"}, res["_id"])
+		}
+	})
+
 	cases := []struct {
 		id       string
 		filename string

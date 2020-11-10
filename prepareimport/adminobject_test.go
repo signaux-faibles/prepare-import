@@ -21,15 +21,6 @@ func TestPopulateCompleteTypesProperty(t *testing.T) {
 
 }
 
-func TestPopulateAdminObject(t *testing.T) {
-
-	t.Run("Should return an _id property", func(t *testing.T) {
-		res, unsupported := PopulateAdminObject([]DataFile{}, newSafeBatchKey("1802"), validDateFinEffectif)
-		assert.Len(t, unsupported, 0)
-		assert.Equal(t, IDProperty{newSafeBatchKey("1802"), "batch"}, res["_id"])
-	})
-}
-
 func TestPopulateParamProperty(t *testing.T) {
 	t.Run("Should return a date_fin consistent with batch key", func(t *testing.T) {
 		res := populateParamProperty(newSafeBatchKey("1912"), validDateFinEffectif)
