@@ -69,13 +69,10 @@ _Entreprises mises à jour_ > _Données financières et descriptives_
 Utiliser `prepare-import` depuis `ssh stockage`:
 
 ```sh
-~/prepare-import/prepare-import -batch "<BATCH>" -date-fin-effectif "<DATE>" -path "../goup/public"
+~/prepare-import/prepare-import -batch "<BATCH>" -path "../goup/public"
 ```
 
-- Il faut également aller consulter à la main la dernière colonne non vide du
-  fichier effectif et renseigner sa valeur dans le fichier admin. (TODO)
-
-- Et enfin changer le nom du batch en langage naturel: ex "Février 2020".
+Penser à changer le nom du batch en langage naturel: ex "Février 2020".
 
 ## (Re)lancer le serveur API `dbmongo` (optionnel)
 
