@@ -14,6 +14,11 @@ func (fp FilesProperty) HasFilterFile() bool {
 	return fp["filter"] != nil && len(fp["filter"]) > 0
 }
 
+// HasEffectifFile returns true if an effectif file is specified.
+func (fp FilesProperty) HasEffectifFile() bool {
+	return fp["effectif"] != nil && len(fp["effectif"]) > 0
+}
+
 // PopulateFilesProperty populates the "files" property of an Admin object, given a path.
 func PopulateFilesProperty(pathname string, batchKey BatchKey) (FilesProperty, []string) {
 	batchPath := path.Join(pathname, batchKey.String())
