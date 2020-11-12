@@ -23,6 +23,15 @@ func TestReadFilenames(t *testing.T) {
 }
 
 func TestPrepareImport(t *testing.T) {
+	t.Run("Should warn if the name of the directory does not match the name of the batch", func(t *testing.T) {
+		batch := newSafeBatchKey("1803")
+		CreateTempFiles(t, batch, []string{})
+		wrongDir := CreateTempFiles(t, dummyBatchKey, []string{})
+		_, err := PrepareImport(wrongDir, batch, "")
+		expected := "the name of the directory does not match the name of the batch"
+		assert.Equal(t, expected, err.Error())
+	})
+
 	t.Run("Should warn if no filter is provided", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"Sigfaibles_debits.csv"})
 		_, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
