@@ -1,14 +1,22 @@
 package prepareimport
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"
 	"strings"
 )
 
+// BatchFile represents a file that is listed in a FilesProperty entry.
+type BatchFile interface {
+	FileName() string
+	FilePath() string
+	FilePathInParentBatch() string
+}
+
 // FilesProperty represents the "files" property of an Admin object.
-type FilesProperty map[ValidFileType][]string
+type FilesProperty map[ValidFileType][]BatchFile
 
 // HasFilterFile returns true if a filter file is specified.
 func (fp FilesProperty) HasFilterFile() bool {
@@ -16,9 +24,9 @@ func (fp FilesProperty) HasFilterFile() bool {
 }
 
 // GetEffectifFile returns the effectif file.
-func (fp FilesProperty) GetEffectifFile() (string, error) {
+func (fp FilesProperty) GetEffectifFile() (BatchFile, error) {
 	if fp["effectif"] == nil || len(fp["effectif"]) != 1 {
-		return "", fmt.Errorf("batch requires just 1 effectif file, found: %s", fp["effectif"])
+		return nil, fmt.Errorf("batch requires just 1 effectif file, found: %s", fp["effectif"])
 	}
 	return fp["effectif"][0], nil
 }
@@ -32,11 +40,11 @@ func PopulateFilesProperty(pathname string, batchKey BatchKey) (FilesProperty, [
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
 	}
 
-	return PopulateFilesPropertyFromDataFiles(augmentedFiles, batchKey.Path())
+	return PopulateFilesPropertyFromDataFiles(augmentedFiles, batchKey)
 }
 
 // PopulateFilesPropertyFromDataFiles populates the "files" property of an Admin object, given a list of Data files.
-func PopulateFilesPropertyFromDataFiles(filenames []DataFile, prefix string) (FilesProperty, []string) {
+func PopulateFilesPropertyFromDataFiles(filenames []DataFile, batchKey BatchKey) (FilesProperty, []string) {
 	filesProperty := FilesProperty{}
 	unsupportedFiles := []string{}
 	for _, filename := range filenames {
@@ -44,14 +52,14 @@ func PopulateFilesPropertyFromDataFiles(filenames []DataFile, prefix string) (Fi
 
 		if filetype == "" {
 			if !strings.HasSuffix(filename.GetFilename(), ".info") {
-				unsupportedFiles = append(unsupportedFiles, prefix+filename.GetFilename())
+				unsupportedFiles = append(unsupportedFiles, batchKey.Path()+filename.GetFilename())
 			}
 			continue
 		}
 		if _, exists := filesProperty[filetype]; !exists {
-			filesProperty[filetype] = []string{}
+			filesProperty[filetype] = []BatchFile{}
 		}
-		filesProperty[filetype] = append(filesProperty[filetype], prefix+filename.GetFilename())
+		filesProperty[filetype] = append(filesProperty[filetype], newBatchFile(batchKey, filename.GetFilename()))
 	}
 	return filesProperty, unsupportedFiles
 }
@@ -67,4 +75,33 @@ func ReadFilenames(path string) ([]string, error) {
 		files = append(files, file.Name())
 	}
 	return files, nil
+}
+
+func newBatchFile(batchKey BatchKey, filename string) BatchFile {
+	return batchFile{
+		BatchKey: batchKey,
+		Filename: filename,
+	}
+}
+
+type batchFile struct {
+	BatchKey BatchKey
+	Filename string
+}
+
+func (file batchFile) FileName() string {
+	return file.Filename
+}
+
+func (file batchFile) FilePath() string {
+	return file.BatchKey.Path() + file.Filename
+}
+
+func (file batchFile) FilePathInParentBatch() string {
+	return file.BatchKey.GetParentPath() + file.Filename
+}
+
+// MarshalJSON will be called when serializing the AdminObject.
+func (file batchFile) MarshalJSON() ([]byte, error) {
+	return json.Marshal(file.FilePath())
 }
