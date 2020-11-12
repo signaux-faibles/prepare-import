@@ -3,6 +3,7 @@ package prepareimport
 import (
 	"errors"
 	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"testing"
@@ -61,18 +62,22 @@ func TestPrepareImport(t *testing.T) {
 		assert.Equal(t, expected, err.Error())
 	})
 
-	/*
-		t.Run("Should detect the effectif file of the parent batch, given we are ", func(t *testing.T) {
-			dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
-			_, err := PrepareImport(dir, dummyBatchKey, "")
-			expected := "date_fin_effectif is missing or invalid: "
-			assert.Equal(t, expected, err.Error())
-		})
-	*/
-
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
 		res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
+		expected := FilesProperty{filter: []string{dummyBatchKey.Path() + "filter_2002.csv"}}
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected, res["files"])
+		}
+	})
+
+	t.Run("Should detect the effectif file of the parent batch, given we are generating a sub-batch", func(t *testing.T) {
+		subBatch := newSafeBatchKey("1803_01")
+		parentBatch := subBatch.GetParentBatch()
+		parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{"filter_2002.csv"})
+		subBatchDir := filepath.Join(parentDir, parentBatch, subBatch.String())
+		os.Mkdir(subBatchDir, 0777)
+		res, err := PrepareImport(parentDir, subBatch, "")
 		expected := FilesProperty{filter: []string{dummyBatchKey.Path() + "filter_2002.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
