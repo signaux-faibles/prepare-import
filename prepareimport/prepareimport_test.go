@@ -36,7 +36,7 @@ func TestPrepareImport(t *testing.T) {
 		parentBatch := newSafeBatchKey("1803")
 		parentDir := CreateTempFiles(t, parentBatch, []string{})
 		_, err := PrepareImport(parentDir, subBatch, "")
-		expected := "could not find directory 1803/01 in provided path"
+		expected := "could not find directory 1803/1803_01 in provided path"
 		assert.Equal(t, expected, err.Error())
 	})
 
@@ -60,6 +60,15 @@ func TestPrepareImport(t *testing.T) {
 		expected := "date_fin_effectif is missing or invalid: "
 		assert.Equal(t, expected, err.Error())
 	})
+
+	/*
+		t.Run("Should detect the effectif file of the parent batch, given we are ", func(t *testing.T) {
+			dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
+			_, err := PrepareImport(dir, dummyBatchKey, "")
+			expected := "date_fin_effectif is missing or invalid: "
+			assert.Equal(t, expected, err.Error())
+		})
+	*/
 
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})

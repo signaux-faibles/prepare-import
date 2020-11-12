@@ -14,9 +14,9 @@ import (
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
 func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
 
-	batchPath := path.Join(pathname, batchKey.String())
-	if _, err := ioutil.ReadDir(batchPath); err != nil {
-		return nil, fmt.Errorf("could not find directory %s in provided path", batchKey.String())
+	batchPath := getBatchPath(pathname, batchKey)
+	if _, err := ioutil.ReadDir(path.Join(pathname, batchPath)); err != nil {
+		return nil, fmt.Errorf("could not find directory %s in provided path", batchPath)
 	}
 
 	var err error
@@ -96,6 +96,13 @@ func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathn
 	}
 	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
 	return nil
+}
+
+func getBatchPath(pathname string, batchKey BatchKey) string {
+	if batchKey.IsSubBatch() {
+		return path.Join(batchKey.GetParentBatch(), batchKey.String())
+	}
+	return batchKey.String()
 }
 
 func fileExists(filename string) bool {
