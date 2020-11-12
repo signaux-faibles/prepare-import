@@ -65,7 +65,7 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("Should return a json with one file", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
 		res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
-		expected := FilesProperty{filter: []string{dummyBatchKey.Path() + "filter_2002.csv"}}
+		expected := FilesProperty{filter: {dummyBatchFile("filter_2002.csv")}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
 		}
@@ -78,7 +78,7 @@ func TestPrepareImport(t *testing.T) {
 		subBatchDir := filepath.Join(parentDir, parentBatch, subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
 		res, err := PrepareImport(parentDir, subBatch, "")
-		expected := FilesProperty{filter: []string{dummyBatchKey.Path() + "filter_2002.csv"}}
+		expected := FilesProperty{filter: {dummyBatchFile("filter_2002.csv")}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
 		}
@@ -115,7 +115,7 @@ func TestPrepareImport(t *testing.T) {
 			}
 
 			res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
-			expected := []string{dummyBatchKey.Path() + testCase.id}
+			expected := []BatchFile{dummyBatchFile(testCase.id)}
 			if assert.NoError(t, err) {
 				assert.Equal(t, expected, res["files"].(FilesProperty)[testCase.filetype])
 			}
@@ -147,17 +147,17 @@ func TestPrepareImport(t *testing.T) {
 			"Sigfaible_effectif_siret.csv": data,
 		})
 		adminObject, err := PrepareImport(dir, dummyBatchKey, "")
-		filterFileName := dummyBatchKey.Path() + "filter_siren_" + dummyBatchKey.String() + ".csv"
+		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expected := FilesProperty{
-			"effectif": []string{dummyBatchKey.Path() + "Sigfaible_effectif_siret.csv"},
-			"filter":   []string{filterFileName},
+			"effectif": {dummyBatchFile("Sigfaible_effectif_siret.csv")},
+			"filter":   {dummyBatchFile(filterFileName)},
 		}
 		// check that the filter is listed in the "files" property
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, adminObject["files"])
 		}
 		// check that the filter file exists
-		filterFilePath := path.Join(dir, filterFileName)
+		filterFilePath := path.Join(dir, dummyBatchKey.Path(), filterFileName)
 		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 		// check that date_fin_effectif was detected from the effectif file
 		validDateFinEffectif := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)

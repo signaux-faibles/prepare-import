@@ -33,13 +33,14 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		if err != nil {
 			return nil, errors.New("filter is missing: please include a filter or one effectif file")
 		}
-		effectifFilePath := path.Join(pathname, effectifFile)
-		filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
+		effectifFilePath := path.Join(pathname, effectifFile.FilePathInParentBatch())
+		filterFile := newBatchFile(batchKey, "filter_siren_"+batchKey.String()+".csv")
+		filterFileName := filterFile.FilePath()
 		err = createFilterFromEffectif(path.Join(pathname, filterFileName), effectifFilePath)
 		if err != nil {
 			return nil, err
 		}
-		filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
+		filesProperty["filter"] = append(filesProperty["filter"], filterFile)
 		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
 		if err != nil {
 			return nil, err
