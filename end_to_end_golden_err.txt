@@ -9,4 +9,4 @@ Usage:
     	Date de fin des données "effectif" fournies, au format AAAA-MM-JJ (année + mois + jour)
     	Exemple: 2014-01-01
   -path string
-    	Chemin d'accès aux fichiers données (default ".")
+    	Chemin d'accès au répertoire des batches (default ".")
