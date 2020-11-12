@@ -51,10 +51,12 @@ func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey Batch
 		if len(filesProperty["effectif"]) != 1 {
 			return dateFinEffectif, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
 		}
-		err = createAndAppendFilter(filesProperty, batchKey, pathname)
+		filterFileName, err := createFilterFile(filesProperty["effectif"], batchKey, pathname)
 		if err != nil {
 			return dateFinEffectif, err
 		}
+		filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
+
 		effectifFile := path.Join(pathname, filesProperty["effectif"][0])
 		// TODO: éviter de lire le fichier Effectif deux fois
 		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFile, createfilter.DefaultNbIgnoredCols)
@@ -68,34 +70,29 @@ func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey Batch
 	return dateFinEffectif, err
 }
 
-func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
+func createFilterFile(effectifFiles []string, batchKey BatchKey, pathname string) (string, error) {
 	// make sure that there is only one effectif file
-	if len(filesProperty["effectif"]) != 1 {
-		return errors.New("filter generation requires just 1 effectif file")
+	if len(effectifFiles) != 1 {
+		return "", errors.New("filter generation requires just 1 effectif file")
 	}
 	// create the filter file, if it does not already exist
 	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
 	filterFilePath := path.Join(pathname, filterFileName)
 	if fileExists(filterFilePath) {
-		return errors.New("about to overwrite existing filter file: " + filterFilePath)
+		return "", errors.New("about to overwrite existing filter file: " + filterFilePath)
 	}
 	filterWriter, err := os.Create(filterFilePath)
 	if err != nil {
-		return err
+		return "", err
 	}
-	// populate the filter file and the "filter" property of the AdminObject
 	err = createfilter.CreateFilter(
-		filterWriter,
-		path.Join(pathname, filesProperty["effectif"][0]), // effectifFileName
+		filterWriter,                          // output: the filter file
+		path.Join(pathname, effectifFiles[0]), // input: the effectif file
 		createfilter.DefaultNbMois,
 		createfilter.DefaultMinEffectif,
 		createfilter.DefaultNbIgnoredCols,
 	)
-	if err != nil {
-		return err
-	}
-	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
-	return nil
+	return filterFileName, err
 }
 
 func getBatchPath(pathname string, batchKey BatchKey) string {
