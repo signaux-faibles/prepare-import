@@ -23,12 +23,11 @@ func TestReadFilenames(t *testing.T) {
 }
 
 func TestPrepareImport(t *testing.T) {
-	t.Run("Should warn if the name of the directory does not match the name of the batch", func(t *testing.T) {
-		batch := newSafeBatchKey("1803")
-		CreateTempFiles(t, batch, []string{})
-		wrongDir := CreateTempFiles(t, dummyBatchKey, []string{})
-		_, err := PrepareImport(wrongDir, batch, "")
-		expected := "the name of the directory does not match the name of the batch"
+	t.Run("Should warn if the batch was not found in the specified directory", func(t *testing.T) {
+		wantedBatch := newSafeBatchKey("1803") // different of dummyBatchKey
+		parentDir := CreateTempFiles(t, dummyBatchKey, []string{})
+		_, err := PrepareImport(parentDir, wantedBatch, "")
+		expected := "could not find directory 1803 in provided path"
 		assert.Equal(t, expected, err.Error())
 	})
 

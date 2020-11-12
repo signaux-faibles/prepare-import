@@ -3,6 +3,7 @@ package prepareimport
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"time"
@@ -12,6 +13,12 @@ import (
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
 func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
+
+	batchPath := path.Join(pathname, batchKey.String())
+	if _, err := ioutil.ReadDir(batchPath); err != nil {
+		return nil, fmt.Errorf("could not find directory %s in provided path", batchKey.String())
+	}
+
 	var err error
 	filesProperty, unsupportedFiles := PopulateFilesProperty(pathname, batchKey)
 
