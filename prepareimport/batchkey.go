@@ -11,6 +11,7 @@ type BatchKey interface {
 	Path() string
 	IsSubBatch() bool
 	GetParentBatch() string
+	GetParentPath() string
 }
 
 // NewBatchKey constructs a valid batch key.
@@ -39,6 +40,12 @@ func (b batchKeyType) IsSubBatch() bool {
 }
 
 func (b batchKeyType) GetParentBatch() string {
-	matches := validSubBatchKey.FindStringSubmatch(string(b))
-	return matches[1]
+	if b.IsSubBatch() {
+		return validSubBatchKey.FindStringSubmatch(string(b))[1]
+	}
+	return b.String()
+}
+
+func (b batchKeyType) GetParentPath() string {
+	return "/" + b.GetParentBatch() + "/"
 }
