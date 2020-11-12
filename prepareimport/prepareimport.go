@@ -51,8 +51,14 @@ func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey Batch
 		if len(filesProperty["effectif"]) != 1 {
 			return dateFinEffectif, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
 		}
+
+		filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
+		filterFilePath := path.Join(pathname, filterFileName)
+		if fileExists(filterFilePath) {
+			return dateFinEffectif, errors.New("about to overwrite existing filter file: " + filterFilePath)
+		}
 		effectifFilePath := path.Join(pathname, filesProperty["effectif"][0])
-		filterFileName, err := createFilterFile(effectifFilePath, batchKey, pathname)
+		err := createFilterFile(filterFilePath, effectifFilePath)
 		if err != nil {
 			return dateFinEffectif, err
 		}
@@ -71,25 +77,18 @@ func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey Batch
 	return dateFinEffectif, err
 }
 
-func createFilterFile(effectifFilePath string, batchKey BatchKey, pathname string) (string, error) {
-	// create the filter file, if it does not already exist
-	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
-	filterFilePath := path.Join(pathname, filterFileName)
-	if fileExists(filterFilePath) {
-		return "", errors.New("about to overwrite existing filter file: " + filterFilePath)
-	}
+func createFilterFile(filterFilePath string, effectifFilePath string) error {
 	filterWriter, err := os.Create(filterFilePath)
 	if err != nil {
-		return "", err
+		return err
 	}
-	err = createfilter.CreateFilter(
+	return createfilter.CreateFilter(
 		filterWriter,     // output: the filter file
 		effectifFilePath, // input: the effectif file
 		createfilter.DefaultNbMois,
 		createfilter.DefaultMinEffectif,
 		createfilter.DefaultNbIgnoredCols,
 	)
-	return filterFileName, err
 }
 
 func getBatchPath(pathname string, batchKey BatchKey) string {
