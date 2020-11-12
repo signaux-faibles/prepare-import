@@ -51,7 +51,8 @@ func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey Batch
 		if len(filesProperty["effectif"]) != 1 {
 			return dateFinEffectif, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
 		}
-		filterFileName, err := createFilterFile(filesProperty["effectif"], batchKey, pathname)
+		effectifFilePath := path.Join(pathname, filesProperty["effectif"][0])
+		filterFileName, err := createFilterFile(effectifFilePath, batchKey, pathname)
 		if err != nil {
 			return dateFinEffectif, err
 		}
@@ -70,11 +71,7 @@ func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey Batch
 	return dateFinEffectif, err
 }
 
-func createFilterFile(effectifFiles []string, batchKey BatchKey, pathname string) (string, error) {
-	// make sure that there is only one effectif file
-	if len(effectifFiles) != 1 {
-		return "", errors.New("filter generation requires just 1 effectif file")
-	}
+func createFilterFile(effectifFilePath string, batchKey BatchKey, pathname string) (string, error) {
 	// create the filter file, if it does not already exist
 	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
 	filterFilePath := path.Join(pathname, filterFileName)
@@ -86,8 +83,8 @@ func createFilterFile(effectifFiles []string, batchKey BatchKey, pathname string
 		return "", err
 	}
 	err = createfilter.CreateFilter(
-		filterWriter,                          // output: the filter file
-		path.Join(pathname, effectifFiles[0]), // input: the effectif file
+		filterWriter,     // output: the filter file
+		effectifFilePath, // input: the effectif file
 		createfilter.DefaultNbMois,
 		createfilter.DefaultMinEffectif,
 		createfilter.DefaultNbIgnoredCols,
