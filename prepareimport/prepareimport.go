@@ -22,9 +22,16 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	var err error
 	filesProperty, unsupportedFiles := PopulateFilesProperty(pathname, batchKey)
 
-	dateFinEffectif, err := checkOrCreateFilterFromEffectif(filesProperty, batchKey, pathname)
-	if err != nil {
-		return nil, err
+	// To complete the FilesProperty, we need:
+	// - a filter file (created from an effectif file, at the batch/parent level)
+	// - a dateFinEffectif value (provided as parameter, or detected from effectif file)
+
+	var dateFinEffectif time.Time
+	if !filesProperty.HasFilterFile() {
+		dateFinEffectif, err = checkOrCreateFilterFromEffectif(filesProperty, batchKey, pathname)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if dateFinEffectif.IsZero() {
@@ -47,7 +54,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 }
 
 func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey BatchKey, pathname string) (dateFinEffectif time.Time, err error) {
-	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
+	if !filesProperty.HasFilterFile() && filesProperty["effectif"] != nil {
 		if len(filesProperty["effectif"]) != 1 {
 			return dateFinEffectif, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
 		}
@@ -71,7 +78,7 @@ func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey Batch
 			return dateFinEffectif, err
 		}
 	}
-	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
+	if !filesProperty.HasFilterFile() {
 		err = errors.New("filter is missing: please include a filter or an effectif file")
 	}
 	return dateFinEffectif, err

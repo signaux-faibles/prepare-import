@@ -9,6 +9,11 @@ import (
 // FilesProperty represents the "files" property of an Admin object.
 type FilesProperty map[ValidFileType][]string
 
+// HasFilterFile returns true if a filter file is specified.
+func (fp FilesProperty) HasFilterFile() bool {
+	return fp["filter"] != nil && len(fp["filter"]) > 0
+}
+
 // PopulateFilesProperty populates the "files" property of an Admin object, given a path.
 func PopulateFilesProperty(pathname string, batchKey BatchKey) (FilesProperty, []string) {
 	batchPath := path.Join(pathname, batchKey.String())
