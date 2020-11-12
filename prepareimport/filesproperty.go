@@ -1,6 +1,7 @@
 package prepareimport
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -14,9 +15,12 @@ func (fp FilesProperty) HasFilterFile() bool {
 	return fp["filter"] != nil && len(fp["filter"]) > 0
 }
 
-// HasEffectifFile returns true if an effectif file is specified.
-func (fp FilesProperty) HasEffectifFile() bool {
-	return fp["effectif"] != nil && len(fp["effectif"]) > 0
+// GetEffectifFile returns the effectif file.
+func (fp FilesProperty) GetEffectifFile() (string, error) {
+	if fp["effectif"] == nil || len(fp["effectif"]) != 1 {
+		return "", fmt.Errorf("batch requires just 1 effectif file, found: %s", fp["effectif"])
+	}
+	return fp["effectif"][0], nil
 }
 
 // PopulateFilesProperty populates the "files" property of an Admin object, given a path.

@@ -28,18 +28,19 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 
 	var dateFinEffectif time.Time
 	if !filesProperty.HasFilterFile() {
-		if filesProperty.HasEffectifFile() {
-			err = createFilterFromEffectif(filesProperty, batchKey, pathname)
-			if err != nil {
-				return nil, err
-			}
-			effectifFile := path.Join(pathname, filesProperty["effectif"][0])
-			dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFile, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, errors.New("filter is missing: please include a filter or an effectif file")
+		effectifFile, err := filesProperty.GetEffectifFile()
+		if err != nil {
+			return nil, errors.New("filter is missing: please include a filter or one effectif file")
+		}
+		filterFileName, err := createFilterFromEffectif(effectifFile, batchKey, pathname)
+		if err != nil {
+			return nil, err
+		}
+		filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
+		effectifFilePath := path.Join(pathname, filesProperty["effectif"][0])
+		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -62,23 +63,15 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	}, err
 }
 
-func createFilterFromEffectif(filesProperty FilesProperty, batchKey BatchKey, pathname string) (err error) {
-	if len(filesProperty["effectif"]) != 1 {
-		return fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
-	}
-
+func createFilterFromEffectif(effectifFile string, batchKey BatchKey, pathname string) (string, error) {
 	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
 	filterFilePath := path.Join(pathname, filterFileName)
 	if fileExists(filterFilePath) {
-		return errors.New("about to overwrite existing filter file: " + filterFilePath)
+		return "", errors.New("about to overwrite existing filter file: " + filterFilePath)
 	}
-	effectifFilePath := path.Join(pathname, filesProperty["effectif"][0])
-	err = createFilterFile(filterFilePath, effectifFilePath)
-	if err != nil {
-		return err
-	}
-	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
-	return err
+	effectifFilePath := path.Join(pathname, effectifFile)
+	err := createFilterFile(filterFilePath, effectifFilePath)
+	return filterFileName, err
 }
 
 func createFilterFile(filterFilePath string, effectifFilePath string) error {
