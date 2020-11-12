@@ -13,17 +13,11 @@ type IDProperty struct {
 	Type string   `json:"type"`
 }
 
-// PopulateAdminObject populates an AdminObject, given a list of data files.
-func PopulateAdminObject(augmentedFilenames []DataFile, batchKey BatchKey, dateFinEffectif DateFinEffectif) (AdminObject /*UnsupportedFiles*/, []string) {
-
-	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFilenames, batchKey.Path())
-	completeTypes := populateCompleteTypesProperty(filesProperty)
-
-	return AdminObject{
-		"_id":            IDProperty{batchKey, "batch"},
-		"files":          filesProperty,
-		"complete_types": completeTypes,
-	}, unsupportedFiles
+// ParamProperty represents the "param" property of an Admin object.
+type ParamProperty struct {
+	DateDebut       MongoDate `json:"date_debut"`
+	DateFin         MongoDate `json:"date_fin"`
+	DateFinEffectif MongoDate `json:"date_fin_effectif"`
 }
 
 // UnsupportedFilesError is an Error object that lists files that were not supported.

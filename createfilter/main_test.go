@@ -36,13 +36,10 @@ func TestCreateFilter(t *testing.T) {
 }
 
 func TestDetectDateFinEffectif(t *testing.T) {
-	expectedPeriod := Periode{
-		Start: time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC),
-		End:   time.Date(2020, time.Month(2), 1, 0, 0, 0, 0, time.UTC),
-	}
-	actualPeriod, err := detectDateFinEffectif("test_data.csv", DefaultNbIgnoredCols) // => col name: "eff202011"
+	expectedDate := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
+	actualDate, err := DetectDateFinEffectif("test_data.csv", DefaultNbIgnoredCols) // => col name: "eff202011"
 	if assert.NoError(t, err) {
-		assert.Equal(t, expectedPeriod, actualPeriod)
+		assert.Equal(t, expectedDate, actualDate)
 	}
 }
 

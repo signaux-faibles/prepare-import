@@ -2,7 +2,7 @@ package prepareimport
 
 import (
 	"errors"
-	"io/ioutil"
+	"fmt"
 	"os"
 	"path"
 	"time"
@@ -12,32 +12,12 @@ import (
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
 func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
+	var err error
+	filesProperty, unsupportedFiles := PopulateFilesProperty(pathname, batchKey)
 
-	batchPath := path.Join(pathname, batchKey.String())
-	filenames, err := ReadFilenames(batchPath)
+	dateFinEffectif, err := checkOrCreateFilterFromEffectif(filesProperty, batchKey, pathname)
 	if err != nil {
 		return nil, err
-	}
-	augmentedFiles := []DataFile{}
-	for _, file := range filenames {
-		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
-	}
-
-	// adminObject, unsupportedFiles := PopulateAdminObject(augmentedFiles, batchKey, dateFinEffectif) // TODO: de-duplicate code
-	filesProperty, unsupportedFiles := PopulateFilesProperty(augmentedFiles, batchKey.Path())
-	completeTypes := populateCompleteTypesProperty(filesProperty)
-
-	var dateFinEffectif time.Time
-	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
-		err = createAndAppendFilter(filesProperty, batchKey, pathname)
-		if err != nil {
-			return nil, err
-		}
-		dateFinEffectif = time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC) // TODO: detect from file
-	}
-
-	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
-		return nil, errors.New("filter is missing: please include a filter or an effectif file")
 	}
 
 	if dateFinEffectif.IsZero() {
@@ -47,17 +27,38 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		}
 	}
 
-	adminObject := AdminObject{
-		"_id":            IDProperty{batchKey, "batch"},
-		"files":          filesProperty,
-		"complete_types": completeTypes,
-		"param":          populateParamProperty(batchKey, NewDateFinEffectif(dateFinEffectif)),
+	if len(unsupportedFiles) > 0 {
+		err = UnsupportedFilesError{unsupportedFiles}
 	}
 
-	if len(unsupportedFiles) > 0 {
-		return adminObject, UnsupportedFilesError{unsupportedFiles}
+	return AdminObject{
+		"_id":            IDProperty{batchKey, "batch"},
+		"files":          filesProperty,
+		"complete_types": populateCompleteTypesProperty(filesProperty),
+		"param":          populateParamProperty(batchKey, NewDateFinEffectif(dateFinEffectif)),
+	}, err
+}
+
+func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey BatchKey, pathname string) (dateFinEffectif time.Time, err error) {
+	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
+		if len(filesProperty["effectif"]) != 1 {
+			return dateFinEffectif, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
+		}
+		err = createAndAppendFilter(filesProperty, batchKey, pathname)
+		if err != nil {
+			return dateFinEffectif, err
+		}
+		effectifFile := path.Join(pathname, filesProperty["effectif"][0])
+		// TODO: éviter de lire le fichier Effectif deux fois
+		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFile, createfilter.DefaultNbIgnoredCols)
+		if err != nil {
+			return dateFinEffectif, err
+		}
 	}
-	return adminObject, nil
+	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
+		err = errors.New("filter is missing: please include a filter or an effectif file")
+	}
+	return dateFinEffectif, err
 }
 
 func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
@@ -88,19 +89,6 @@ func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathn
 	}
 	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
 	return nil
-}
-
-// ReadFilenames returns the name of files found at the provided path.
-func ReadFilenames(path string) ([]string, error) {
-	var files []string
-	fileInfo, err := ioutil.ReadDir(path)
-	if err != nil {
-		return files, err
-	}
-	for _, file := range fileInfo {
-		files = append(files, file.Name())
-	}
-	return files, nil
 }
 
 func fileExists(filename string) bool {

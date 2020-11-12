@@ -30,6 +30,13 @@ func TestPrepareImport(t *testing.T) {
 		assert.Equal(t, expected, err.Error())
 	})
 
+	t.Run("Should warn if 2 effectif files are provided", func(t *testing.T) {
+		dir := CreateTempFiles(t, dummyBatchKey, []string{"Sigfaible_effectif_siret.csv", "Sigfaible_effectif_siret2.csv"})
+		_, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
+		expected := "generating a filter requires just 1 effectif file, found: [/1802/Sigfaible_effectif_siret.csv /1802/Sigfaible_effectif_siret2.csv]"
+		assert.Equal(t, expected, err.Error())
+	})
+
 	t.Run("Should warn if neither effectif and date_fin_effectif are provided", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"filter_2002.csv"})
 		_, err := PrepareImport(dir, dummyBatchKey, "")
@@ -43,6 +50,15 @@ func TestPrepareImport(t *testing.T) {
 		expected := FilesProperty{filter: []string{dummyBatchKey.Path() + "filter_2002.csv"}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
+		}
+	})
+
+	t.Run("Should return an _id property", func(t *testing.T) {
+		batch := newSafeBatchKey("1802")
+		dir := CreateTempFiles(t, batch, []string{"filter_2002.csv"})
+		res, err := PrepareImport(dir, batch, dummyDateFinEffectif)
+		if assert.NoError(t, err) {
+			assert.Equal(t, IDProperty{batch, "batch"}, res["_id"])
 		}
 	})
 
