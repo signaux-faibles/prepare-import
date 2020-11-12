@@ -28,16 +28,18 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 
 	var dateFinEffectif time.Time
 	if !filesProperty.HasFilterFile() {
+		// Let's create a filter file from the effectif file
 		effectifFile, err := filesProperty.GetEffectifFile()
 		if err != nil {
 			return nil, errors.New("filter is missing: please include a filter or one effectif file")
 		}
-		filterFileName, err := createFilterFromEffectif(effectifFile, batchKey, pathname)
+		effectifFilePath := path.Join(pathname, effectifFile)
+		filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
+		err = createFilterFromEffectif(path.Join(pathname, filterFileName), effectifFilePath)
 		if err != nil {
 			return nil, err
 		}
 		filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
-		effectifFilePath := path.Join(pathname, filesProperty["effectif"][0])
 		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
 		if err != nil {
 			return nil, err
@@ -63,18 +65,10 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	}, err
 }
 
-func createFilterFromEffectif(effectifFile string, batchKey BatchKey, pathname string) (string, error) {
-	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
-	filterFilePath := path.Join(pathname, filterFileName)
+func createFilterFromEffectif(filterFilePath string, effectifFilePath string) error {
 	if fileExists(filterFilePath) {
-		return "", errors.New("about to overwrite existing filter file: " + filterFilePath)
+		return errors.New("about to overwrite existing filter file: " + filterFilePath)
 	}
-	effectifFilePath := path.Join(pathname, effectifFile)
-	err := createFilterFile(filterFilePath, effectifFilePath)
-	return filterFileName, err
-}
-
-func createFilterFile(filterFilePath string, effectifFilePath string) error {
 	filterWriter, err := os.Create(filterFilePath)
 	if err != nil {
 		return err
