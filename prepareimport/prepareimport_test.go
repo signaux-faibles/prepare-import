@@ -31,6 +31,15 @@ func TestPrepareImport(t *testing.T) {
 		assert.Equal(t, expected, err.Error())
 	})
 
+	t.Run("Should warn if the sub-batch was not found in the specified directory", func(t *testing.T) {
+		subBatch := newSafeBatchKey("1803_01")
+		parentBatch := newSafeBatchKey("1803")
+		parentDir := CreateTempFiles(t, parentBatch, []string{})
+		_, err := PrepareImport(parentDir, subBatch, "")
+		expected := "could not find directory 1803/01 in provided path"
+		assert.Equal(t, expected, err.Error())
+	})
+
 	t.Run("Should warn if no filter is provided", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"Sigfaibles_debits.csv"})
 		_, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
