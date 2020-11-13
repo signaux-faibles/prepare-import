@@ -71,16 +71,22 @@ func TestPrepareImport(t *testing.T) {
 		}
 	})
 
-	t.Run("Should detect the filter file of the parent batch, given we are generating a sub-batch", func(t *testing.T) {
+	t.Run("Should detect and duplicate the filter file of the parent batch, given we are generating a sub-batch", func(t *testing.T) {
+		// Set expectations
 		subBatch := newSafeBatchKey("1803_01")
-		parentBatch := subBatch.GetParentBatch()
-		parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{"filter_siren_1803.csv"})
-		subBatchDir := filepath.Join(parentDir, parentBatch, subBatch.String())
+		parentBatch := newSafeBatchKey(subBatch.GetParentBatch())
+		filterFile := newBatchFile(parentBatch, "filter_siren_1803.csv")
+		expectedFilesProp := FilesProperty{filter: {filterFile}}
+		// Setup test environment
+		parentDir := CreateTempFiles(t, parentBatch, []string{filterFile.FileName()})
+		subBatchDir := filepath.Join(parentDir, parentBatch.String(), subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
-		expectedFilesProp := FilesProperty{filter: {newBatchFile(newSafeBatchKey(parentBatch), "filter_siren_1803.csv")}}
+		// Run the test
 		res, err := PrepareImport(parentDir, subBatch, "2018-03-01")
 		if assert.NoError(t, err) {
 			assert.Equal(t, expectedFilesProp, res["files"])
+			assert.Equal(t, subBatch.Path()+filterFile.FileName(), filterFile.FilePath())
+			assert.True(t, fileExists(filterFile.FilePath()))
 		}
 	})
 
