@@ -72,7 +72,9 @@ func ReadFilenames(path string) ([]string, error) {
 		return files, err
 	}
 	for _, file := range fileInfo {
-		files = append(files, file.Name())
+		if !file.IsDir() {
+			files = append(files, file.Name())
+		}
 	}
 	return files, nil
 }
