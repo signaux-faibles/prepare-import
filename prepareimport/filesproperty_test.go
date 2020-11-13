@@ -1,6 +1,8 @@
 package prepareimport
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -63,8 +65,20 @@ func TestPopulateFilesProperty(t *testing.T) {
 		assert.Len(t, unsupportedFiles, 1)
 		assert.Equal(t, FilesProperty{}, filesProperty)
 	})
+
 	t.Run("Should report unsupported files", func(t *testing.T) {
 		_, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"coco.csv"}}, dummyBatchKey)
 		assert.Equal(t, []string{dummyBatchKey.Path() + "coco.csv"}, unsupportedFiles)
+	})
+
+	t.Run("Should skip subdirectories", func(t *testing.T) {
+		subBatch := newSafeBatchKey("1803_01")
+		parentBatch := subBatch.GetParentBatch()
+		parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{})
+		subBatchDir := filepath.Join(parentDir, parentBatch, subBatch.String())
+		os.Mkdir(subBatchDir, 0777)
+		parentFilesProperty, unsupportedFiles := PopulateFilesProperty(parentDir, newSafeBatchKey(parentBatch))
+		assert.Equal(t, []string{}, unsupportedFiles)
+		assert.Equal(t, FilesProperty{}, parentFilesProperty)
 	})
 }
