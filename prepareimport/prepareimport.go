@@ -28,7 +28,13 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	// - a dateFinEffectif value (provided as parameter, or detected from effectif file)
 
 	var dateFinEffectif time.Time
+	effectifFile, _ := filesProperty.GetEffectifFile()
 	filterFile, _ := filesProperty.GetFilterFile()
+
+	if effectifFile == nil && batchKey.IsSubBatch() {
+		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
+		effectifFile, err = parentFilesProperty.GetEffectifFile()
+	}
 
 	if filterFile == nil && batchKey.IsSubBatch() {
 		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
@@ -46,18 +52,10 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	}
 
 	if filterFile == nil {
-		// Let's create a filter file from the effectif file
-		var err error
-		var effectifFile BatchFile
-		if batchKey.IsSubBatch() {
-			parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
-			effectifFile, err = parentFilesProperty.GetEffectifFile()
-		} else {
-			effectifFile, err = filesProperty.GetEffectifFile()
-		}
-		if err != nil {
+		if effectifFile == nil {
 			return nil, errors.New("filter is missing: batch should include a filter or one effectif file")
 		}
+		// Let's create a filter file from the effectif file
 		effectifFilePath := path.Join(pathname, effectifFile.FilePathInParentBatch())
 		filterFile = newBatchFile(batchKey, "filter_siren_"+batchKey.String()+".csv")
 		filterFileName := filterFile.FilePath()
