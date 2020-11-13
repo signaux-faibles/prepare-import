@@ -44,14 +44,14 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("Should warn if no filter is provided", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"Sigfaibles_debits.csv"})
 		_, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
-		expected := "filter is missing: please include a filter or one effectif file"
+		expected := "filter is missing: batch should include a filter or one effectif file"
 		assert.Equal(t, expected, err.Error())
 	})
 
 	t.Run("Should warn if 2 effectif files are provided", func(t *testing.T) {
 		dir := CreateTempFiles(t, dummyBatchKey, []string{"Sigfaible_effectif_siret.csv", "Sigfaible_effectif_siret2.csv"})
 		_, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
-		expected := "filter is missing: please include a filter or one effectif file"
+		expected := "filter is missing: batch should include a filter or one effectif file"
 		assert.Equal(t, expected, err.Error())
 	})
 
