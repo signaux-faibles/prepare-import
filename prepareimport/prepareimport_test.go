@@ -79,14 +79,14 @@ func TestPrepareImport(t *testing.T) {
 		parentFilterFile := newBatchFile(parentBatch, "filter_siren_1803.csv")
 		expectedFilesProp := FilesProperty{filter: {filterFile}}
 		// Setup test environment
-		parentDir := CreateTempFiles(t, parentBatch, []string{parentFilterFile.FileName()})
+		parentDir := CreateTempFiles(t, parentBatch, []string{parentFilterFile.Name()})
 		subBatchDir := filepath.Join(parentDir, parentBatch.String(), subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
 		// Run the test
 		res, err := PrepareImport(parentDir, subBatch, "2018-03-01")
 		if assert.NoError(t, err) {
 			assert.Equal(t, expectedFilesProp, res["files"])
-			duplicatedFilePath := path.Join(parentDir, parentBatch.GetParentBatch(), filterFile.FilePath())
+			duplicatedFilePath := path.Join(parentDir, parentBatch.GetParentBatch(), filterFile.Path())
 			assert.True(t, fileExists(duplicatedFilePath))
 		}
 	})
@@ -105,7 +105,7 @@ func TestPrepareImport(t *testing.T) {
 			t.Fatal(err)
 		}
 		parentDir := CreateTempFilesWithContent(t, parentBatch, map[string][]byte{
-			parentEffectifFile.FileName(): data,
+			parentEffectifFile.Name(): data,
 		})
 		subBatchDir := filepath.Join(parentDir, parentBatch.String(), subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
@@ -113,7 +113,7 @@ func TestPrepareImport(t *testing.T) {
 		res, err := PrepareImport(parentDir, subBatch, "")
 		if assert.NoError(t, err) {
 			assert.Equal(t, expectedFilesProp, res["files"])
-			duplicatedFilePath := path.Join(parentDir, parentBatch.GetParentBatch(), filterFile.FilePath())
+			duplicatedFilePath := path.Join(parentDir, parentBatch.GetParentBatch(), filterFile.Path())
 			assert.True(t, fileExists(duplicatedFilePath))
 			assert.Equal(t, expectedDateFinEffectif, res["param"].(ParamProperty).DateFinEffectif)
 		}

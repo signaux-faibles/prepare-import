@@ -41,15 +41,15 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		filterFile, _ = parentFilesProperty.GetFilterFile()
 	}
 
+	// if needed, create a filter file from the effectif file
 	if filterFile == nil {
 		if effectifFile == nil {
 			return nil, errors.New("filter is missing: batch should include a filter or one effectif file")
 		}
-		// Let's create a filter file from the effectif file
-		effectifFilePath := path.Join(pathname, effectifFile.FilePath())
+		effectifFilePath := path.Join(pathname, effectifFile.Path())
 		effectifBatch := effectifFile.BatchKey()
 		filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
-		if err = createFilterFromEffectif(path.Join(pathname, filterFile.FilePath()), effectifFilePath); err != nil {
+		if err = createFilterFromEffectif(path.Join(pathname, filterFile.Path()), effectifFilePath); err != nil {
 			return nil, err
 		}
 		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
@@ -58,20 +58,22 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		}
 	}
 
+	// add the filter to filesProperty
 	if filesProperty["filter"] == nil && filterFile != nil {
 		if batchKey.IsSubBatch() {
 			// copy the filter into the sub-batch's directory
-			src := path.Join(pathname, filterFile.FilePath())
-			dest := path.Join(pathname, batchKey.GetParentBatch(), batchKey.Path(), filterFile.FileName())
+			src := path.Join(pathname, filterFile.Path())
+			dest := path.Join(pathname, batchKey.GetParentBatch(), batchKey.Path(), filterFile.Name())
 			err = copy(src, dest)
 			if err != nil {
 				return nil, err
 			}
-			filterFile = newBatchFile(batchKey, filterFile.FileName())
+			filterFile = newBatchFile(batchKey, filterFile.Name())
 		}
 		filesProperty["filter"] = append(filesProperty["filter"], filterFile)
 	}
 
+	// make sure we have date_fin_effectif
 	if dateFinEffectif.IsZero() {
 		dateFinEffectif, err = time.Parse("2006-01-02", providedDateFinEffectif)
 		if err != nil {
