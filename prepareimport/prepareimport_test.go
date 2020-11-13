@@ -71,18 +71,21 @@ func TestPrepareImport(t *testing.T) {
 		}
 	})
 
-	t.Run("Should detect the effectif file of the parent batch, given we are generating a sub-batch", func(t *testing.T) {
+	t.Run("Should detect the filter file of the parent batch, given we are generating a sub-batch", func(t *testing.T) {
 		subBatch := newSafeBatchKey("1803_01")
 		parentBatch := subBatch.GetParentBatch()
-		parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{"filter_2002.csv"})
+		parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{"filter_siren_1803.csv"})
 		subBatchDir := filepath.Join(parentDir, parentBatch, subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
 		res, err := PrepareImport(parentDir, subBatch, "")
-		expected := FilesProperty{filter: {dummyBatchFile("filter_2002.csv")}}
+		expected := FilesProperty{filter: {dummyBatchFile("filter_siren_1803.csv")}}
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, res["files"])
 		}
 	})
+
+	// TODO: Should detect the effectif file of the parent batch, given we are generating a sub-batch
+	// parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{"Sigfaible_effectif_siret.csv"})
 
 	t.Run("Should return an _id property", func(t *testing.T) {
 		batch := newSafeBatchKey("1802")
