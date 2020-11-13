@@ -3,6 +3,7 @@ package prepareimport
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -33,7 +34,14 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
 		filterFile, err = parentFilesProperty.GetFilterFile()
 		if err == nil {
-			filesProperty["filter"] = append(filesProperty["filter"], filterFile)
+			// copy the filter into the sub-batch's directory
+			src := path.Join(pathname, filterFile.FilePath())
+			dest := path.Join(pathname, batchKey.GetParentBatch(), batchKey.Path(), filterFile.FileName())
+			err = copy(src, dest)
+			if err != nil {
+				return nil, err
+			}
+			filesProperty["filter"] = append(filesProperty["filter"], newBatchFile(batchKey, filterFile.FileName()))
 		}
 	}
 
@@ -113,4 +121,26 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return true
+}
+
+// Copy the src file to dst. Any existing file will be overwritten and will not
+// copy file attributes. Source: https://stackoverflow.com/a/21061062/592254
+func copy(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return out.Close()
 }

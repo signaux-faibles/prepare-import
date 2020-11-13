@@ -75,18 +75,19 @@ func TestPrepareImport(t *testing.T) {
 		// Set expectations
 		subBatch := newSafeBatchKey("1803_01")
 		parentBatch := newSafeBatchKey(subBatch.GetParentBatch())
-		filterFile := newBatchFile(parentBatch, "filter_siren_1803.csv")
+		filterFile := newBatchFile(subBatch, "filter_siren_1803.csv")
+		parentFilterFile := newBatchFile(parentBatch, "filter_siren_1803.csv")
 		expectedFilesProp := FilesProperty{filter: {filterFile}}
 		// Setup test environment
-		parentDir := CreateTempFiles(t, parentBatch, []string{filterFile.FileName()})
+		parentDir := CreateTempFiles(t, parentBatch, []string{parentFilterFile.FileName()})
 		subBatchDir := filepath.Join(parentDir, parentBatch.String(), subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
 		// Run the test
 		res, err := PrepareImport(parentDir, subBatch, "2018-03-01")
 		if assert.NoError(t, err) {
 			assert.Equal(t, expectedFilesProp, res["files"])
-			assert.Equal(t, subBatch.Path()+filterFile.FileName(), filterFile.FilePath())
-			assert.True(t, fileExists(filterFile.FilePath()))
+			duplicatedFilePath := path.Join(parentDir, parentBatch.GetParentBatch(), filterFile.FilePath())
+			assert.True(t, fileExists(duplicatedFilePath))
 		}
 	})
 
