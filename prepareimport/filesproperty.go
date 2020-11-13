@@ -23,6 +23,14 @@ func (fp FilesProperty) HasFilterFile() bool {
 	return fp["filter"] != nil && len(fp["filter"]) > 0
 }
 
+// GetFilterFile returns the filter file.
+func (fp FilesProperty) GetFilterFile() (BatchFile, error) {
+	if fp["filter"] == nil || len(fp["filter"]) != 1 {
+		return nil, fmt.Errorf("batch requires just 1 filter file, found: %s", fp["filter"])
+	}
+	return fp["filter"][0], nil
+}
+
 // GetEffectifFile returns the effectif file.
 func (fp FilesProperty) GetEffectifFile() (BatchFile, error) {
 	if fp["effectif"] == nil || len(fp["effectif"]) != 1 {

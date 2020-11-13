@@ -27,7 +27,14 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	// - a dateFinEffectif value (provided as parameter, or detected from effectif file)
 
 	var dateFinEffectif time.Time
-	if !filesProperty.HasFilterFile() {
+	if !filesProperty.HasFilterFile() && batchKey.IsSubBatch() {
+		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
+		filterFile, err := parentFilesProperty.GetFilterFile()
+		if err != nil {
+			return nil, err
+		}
+		filesProperty["filter"] = append(filesProperty["filter"], filterFile)
+	} else if !filesProperty.HasFilterFile() {
 		// Let's create a filter file from the effectif file
 		var err error
 		var effectifFile BatchFile

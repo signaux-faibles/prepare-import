@@ -77,10 +77,10 @@ func TestPrepareImport(t *testing.T) {
 		parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{"filter_siren_1803.csv"})
 		subBatchDir := filepath.Join(parentDir, parentBatch, subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
-		res, err := PrepareImport(parentDir, subBatch, "")
-		expected := FilesProperty{filter: {dummyBatchFile("filter_siren_1803.csv")}}
+		expectedFilesProp := FilesProperty{filter: {newBatchFile(newSafeBatchKey(parentBatch), "filter_siren_1803.csv")}}
+		res, err := PrepareImport(parentDir, subBatch, "2018-03-01")
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected, res["files"])
+			assert.Equal(t, expectedFilesProp, res["files"])
 		}
 	})
 
