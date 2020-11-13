@@ -84,8 +84,19 @@ func TestPrepareImport(t *testing.T) {
 		}
 	})
 
-	// TODO: Should detect the effectif file of the parent batch, given we are generating a sub-batch
-	// parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{"Sigfaible_effectif_siret.csv"})
+	t.Run("Should infer the filter and date_fin_effectif from the effectif file of the parent batch, given we are generating a sub-batch", func(t *testing.T) {
+		subBatch := newSafeBatchKey("1803_01")
+		parentBatch := subBatch.GetParentBatch()
+		parentDir := CreateTempFiles(t, newSafeBatchKey(parentBatch), []string{"Sigfaible_effectif_siret.csv"})
+		subBatchDir := filepath.Join(parentDir, parentBatch, subBatch.String())
+		os.Mkdir(subBatchDir, 0777)
+		expectedFilesProp := FilesProperty{filter: {newBatchFile(newSafeBatchKey(parentBatch), "filter_siren_1803.csv")}}
+		res, err := PrepareImport(parentDir, subBatch, "")
+		if assert.NoError(t, err) {
+			assert.Equal(t, expectedFilesProp, res["files"])
+			assert.Equal(t, "2018-03-01", res["params"].(ParamProperty).DateFinEffectif)
+		}
+	})
 
 	t.Run("Should return an _id property", func(t *testing.T) {
 		batch := newSafeBatchKey("1802")
