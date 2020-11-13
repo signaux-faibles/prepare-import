@@ -10,9 +10,10 @@ import (
 
 // BatchFile represents a file that is listed in a FilesProperty entry.
 type BatchFile interface {
-	FileName() string
-	FilePath() string
-	FilePathInParentBatch() string
+	BatchKey() BatchKey
+	FileName() string              // TODO: rename --> Name()
+	FilePath() string              // TODO: rename --> Path()
+	FilePathInParentBatch() string // TODO: rename --> PathInParentBatch()
 }
 
 // FilesProperty represents the "files" property of an Admin object.
@@ -84,26 +85,30 @@ func ReadFilenames(path string) ([]string, error) {
 
 func newBatchFile(batchKey BatchKey, filename string) BatchFile {
 	return batchFile{
-		BatchKey: batchKey,
-		Filename: filename,
+		batchKey: batchKey,
+		filename: filename,
 	}
 }
 
 type batchFile struct {
-	BatchKey BatchKey
-	Filename string
+	batchKey BatchKey
+	filename string
+}
+
+func (file batchFile) BatchKey() BatchKey {
+	return file.batchKey
 }
 
 func (file batchFile) FileName() string {
-	return file.Filename
+	return file.filename
 }
 
 func (file batchFile) FilePath() string {
-	return file.BatchKey.Path() + file.Filename
+	return file.batchKey.Path() + file.filename
 }
 
 func (file batchFile) FilePathInParentBatch() string {
-	return file.BatchKey.GetParentPath() + file.Filename
+	return file.batchKey.GetParentPath() + file.filename
 }
 
 // MarshalJSON will be called when serializing the AdminObject.
