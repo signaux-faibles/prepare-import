@@ -18,11 +18,6 @@ type BatchFile interface {
 // FilesProperty represents the "files" property of an Admin object.
 type FilesProperty map[ValidFileType][]BatchFile
 
-// HasFilterFile returns true if a filter file is specified.
-func (fp FilesProperty) HasFilterFile() bool {
-	return fp["filter"] != nil && len(fp["filter"]) > 0
-}
-
 // GetFilterFile returns the filter file.
 func (fp FilesProperty) GetFilterFile() (BatchFile, error) {
 	if fp["filter"] == nil || len(fp["filter"]) != 1 {
