@@ -98,17 +98,24 @@ func TestPrepareImport(t *testing.T) {
 		filterFile := newBatchFile(subBatch, "filter_siren_1803.csv")
 		parentEffectifFile := newBatchFile(parentBatch, "Sigfaible_effectif_siret.csv")
 		expectedFilesProp := FilesProperty{filter: {filterFile}}
+		expectedDateFinEffectif := NewDateFinEffectif(time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)).MongoDate()
 		// Setup test environment
-		parentDir := CreateTempFiles(t, parentBatch, []string{parentEffectifFile.FileName()})
+		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
+		if err != nil {
+			t.Fatal(err)
+		}
+		parentDir := CreateTempFilesWithContent(t, parentBatch, map[string][]byte{
+			parentEffectifFile.FileName(): data,
+		})
 		subBatchDir := filepath.Join(parentDir, parentBatch.String(), subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
 		// Run the test
 		res, err := PrepareImport(parentDir, subBatch, "")
 		if assert.NoError(t, err) {
 			assert.Equal(t, expectedFilesProp, res["files"])
-			assert.Equal(t, "2018-03-01", res["params"].(ParamProperty).DateFinEffectif)
 			duplicatedFilePath := path.Join(parentDir, parentBatch.GetParentBatch(), filterFile.FilePath())
 			assert.True(t, fileExists(duplicatedFilePath))
+			assert.Equal(t, expectedDateFinEffectif, res["param"].(ParamProperty).DateFinEffectif)
 		}
 	})
 
