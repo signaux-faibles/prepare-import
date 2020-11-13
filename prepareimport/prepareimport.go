@@ -39,16 +39,6 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	if filterFile == nil && batchKey.IsSubBatch() {
 		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
 		filterFile, err = parentFilesProperty.GetFilterFile()
-		if err == nil {
-			// copy the filter into the sub-batch's directory
-			src := path.Join(pathname, filterFile.FilePath())
-			dest := path.Join(pathname, batchKey.GetParentBatch(), batchKey.Path(), filterFile.FileName())
-			err = copy(src, dest)
-			if err != nil {
-				return nil, err
-			}
-			filesProperty["filter"] = append(filesProperty["filter"], newBatchFile(batchKey, filterFile.FileName()))
-		}
 	}
 
 	if filterFile == nil {
@@ -59,11 +49,17 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		effectifFilePath := path.Join(pathname, effectifFile.FilePathInParentBatch())
 		effectifBatch := effectifFile.BatchKey()
 		filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
-		filterFilePath := path.Join(pathname, filterFile.FilePath())
-		err = createFilterFromEffectif(filterFilePath, effectifFilePath)
+		err = createFilterFromEffectif(path.Join(pathname, filterFile.FilePath()), effectifFilePath)
 		if err != nil {
 			return nil, err
 		}
+		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if filesProperty["filter"] == nil && filterFile != nil {
 		if batchKey.IsSubBatch() {
 			// copy the filter into the sub-batch's directory
 			src := path.Join(pathname, filterFile.FilePath())
@@ -72,14 +68,9 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 			if err != nil {
 				return nil, err
 			}
-			filesProperty["filter"] = append(filesProperty["filter"], newBatchFile(batchKey, filterFile.FileName()))
-		} else {
-			filesProperty["filter"] = append(filesProperty["filter"], filterFile)
+			filterFile = newBatchFile(batchKey, filterFile.FileName())
 		}
-		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
-		if err != nil {
-			return nil, err
-		}
+		filesProperty["filter"] = append(filesProperty["filter"], filterFile)
 	}
 
 	if dateFinEffectif.IsZero() {
