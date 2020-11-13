@@ -27,9 +27,4 @@ func TestBatchKey(t *testing.T) {
 		batchKey, _ := NewBatchKey("1802_01")
 		assert.Equal(t, "1802", batchKey.GetParentBatch())
 	})
-
-	t.Run("Should return the path of the parent of a sub-batch", func(t *testing.T) {
-		batchKey, _ := NewBatchKey("1802_01")
-		assert.Equal(t, "/1802/", batchKey.GetParentPath())
-	})
 }
