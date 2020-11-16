@@ -12,7 +12,7 @@ import (
 
 // Implementation of the prepare-import command.
 func main() {
-	var path = flag.String("path", ".", "Chemin d'accès aux fichiers données")
+	var path = flag.String("path", ".", "Chemin d'accès au répertoire des batches")
 	var batchKey = flag.String(
 		"batch",
 		"",

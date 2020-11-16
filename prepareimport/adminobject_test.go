@@ -6,15 +6,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func dummyBatchFile(filename string) BatchFile {
+	return newBatchFile(dummyBatchKey, filename)
+}
+
 func TestPopulateCompleteTypesProperty(t *testing.T) {
 	t.Run("Should not return a debit file as a complete_type", func(t *testing.T) {
-		res := populateCompleteTypesProperty(FilesProperty{"debit": {"Sigfaibles_debits.csv"}})
+		res := populateCompleteTypesProperty(FilesProperty{"debit": {dummyBatchFile("Sigfaibles_debits.csv")}})
 		expected := []ValidFileType{}
 		assert.Equal(t, expected, res)
 	})
 
 	t.Run("Should return apconso as a complete_type", func(t *testing.T) {
-		res := populateCompleteTypesProperty(FilesProperty{"apconso": {"act_partielle_conso_depuis2014_FRANCE.csv"}})
+		res := populateCompleteTypesProperty(FilesProperty{"apconso": {dummyBatchFile("act_partielle_conso_depuis2014_FRANCE.csv")}})
 		expected := []ValidFileType{apconso}
 		assert.Equal(t, expected, res)
 	})

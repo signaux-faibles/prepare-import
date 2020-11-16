@@ -17,4 +17,14 @@ func TestBatchKey(t *testing.T) {
 		_, err := NewBatchKey("")
 		assert.EqualError(t, err, "la clé du batch doit respecter le format requis AAMM")
 	})
+
+	t.Run("Should return the path of a batch", func(t *testing.T) {
+		batchKey, _ := NewBatchKey("1802")
+		assert.Equal(t, "/1802/", batchKey.Path())
+	})
+
+	t.Run("Should return the parent of a sub-batch", func(t *testing.T) {
+		batchKey, _ := NewBatchKey("1802_01")
+		assert.Equal(t, "1802", batchKey.GetParentBatch())
+	})
 }

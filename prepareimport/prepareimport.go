@@ -3,6 +3,8 @@ package prepareimport
 import (
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"path"
 	"time"
@@ -12,14 +14,66 @@ import (
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
 func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
+
+	batchPath := getBatchPath(pathname, batchKey)
+	if _, err := ioutil.ReadDir(path.Join(pathname, batchPath)); err != nil {
+		return nil, fmt.Errorf("could not find directory %s in provided path", batchPath)
+	}
+
 	var err error
 	filesProperty, unsupportedFiles := PopulateFilesProperty(pathname, batchKey)
 
-	dateFinEffectif, err := checkOrCreateFilterFromEffectif(filesProperty, batchKey, pathname)
-	if err != nil {
-		return nil, err
+	// To complete the FilesProperty, we need:
+	// - a filter file (created from an effectif file, at the batch/parent level)
+	// - a dateFinEffectif value (provided as parameter, or detected from effectif file)
+
+	var dateFinEffectif time.Time
+	effectifFile, _ := filesProperty.GetEffectifFile()
+	filterFile, _ := filesProperty.GetFilterFile()
+
+	if effectifFile == nil && batchKey.IsSubBatch() {
+		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
+		effectifFile, _ = parentFilesProperty.GetEffectifFile()
 	}
 
+	if filterFile == nil && batchKey.IsSubBatch() {
+		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
+		filterFile, _ = parentFilesProperty.GetFilterFile()
+	}
+
+	// if needed, create a filter file from the effectif file
+	if filterFile == nil {
+		if effectifFile == nil {
+			return nil, errors.New("filter is missing: batch should include a filter or one effectif file")
+		}
+		effectifFilePath := path.Join(pathname, effectifFile.Path())
+		effectifBatch := effectifFile.BatchKey()
+		filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
+		if err = createFilterFromEffectif(path.Join(pathname, filterFile.Path()), effectifFilePath); err != nil {
+			return nil, err
+		}
+		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// add the filter to filesProperty
+	if filesProperty["filter"] == nil && filterFile != nil {
+		if batchKey.IsSubBatch() {
+			// copy the filter into the sub-batch's directory
+			src := path.Join(pathname, filterFile.Path())
+			dest := path.Join(pathname, batchKey.GetParentBatch(), batchKey.Path(), filterFile.Name())
+			err = copy(src, dest)
+			if err != nil {
+				return nil, err
+			}
+			filterFile = newBatchFile(batchKey, filterFile.Name())
+		}
+		filesProperty["filter"] = append(filesProperty["filter"], filterFile)
+	}
+
+	// make sure we have date_fin_effectif
 	if dateFinEffectif.IsZero() {
 		dateFinEffectif, err = time.Parse("2006-01-02", providedDateFinEffectif)
 		if err != nil {
@@ -39,36 +93,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	}, err
 }
 
-func checkOrCreateFilterFromEffectif(filesProperty FilesProperty, batchKey BatchKey, pathname string) (dateFinEffectif time.Time, err error) {
-	if filesProperty["filter"] == nil && filesProperty["effectif"] != nil {
-		if len(filesProperty["effectif"]) != 1 {
-			return dateFinEffectif, fmt.Errorf("generating a filter requires just 1 effectif file, found: %s", filesProperty["effectif"])
-		}
-		err = createAndAppendFilter(filesProperty, batchKey, pathname)
-		if err != nil {
-			return dateFinEffectif, err
-		}
-		effectifFile := path.Join(pathname, filesProperty["effectif"][0])
-		// TODO: éviter de lire le fichier Effectif deux fois
-		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFile, createfilter.DefaultNbIgnoredCols)
-		if err != nil {
-			return dateFinEffectif, err
-		}
-	}
-	if filesProperty["filter"] == nil || len(filesProperty["filter"]) == 0 {
-		err = errors.New("filter is missing: please include a filter or an effectif file")
-	}
-	return dateFinEffectif, err
-}
-
-func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathname string) error {
-	// make sure that there is only one effectif file
-	if len(filesProperty["effectif"]) != 1 {
-		return errors.New("filter generation requires just 1 effectif file")
-	}
-	// create the filter file, if it does not already exist
-	filterFileName := path.Join(batchKey.Path(), "filter_siren_"+batchKey.String()+".csv")
-	filterFilePath := path.Join(pathname, filterFileName)
+func createFilterFromEffectif(filterFilePath string, effectifFilePath string) error {
 	if fileExists(filterFilePath) {
 		return errors.New("about to overwrite existing filter file: " + filterFilePath)
 	}
@@ -76,19 +101,20 @@ func createAndAppendFilter(filesProperty FilesProperty, batchKey BatchKey, pathn
 	if err != nil {
 		return err
 	}
-	// populate the filter file and the "filter" property of the AdminObject
-	err = createfilter.CreateFilter(
-		filterWriter,
-		path.Join(pathname, filesProperty["effectif"][0]), // effectifFileName
+	return createfilter.CreateFilter(
+		filterWriter,     // output: the filter file
+		effectifFilePath, // input: the effectif file
 		createfilter.DefaultNbMois,
 		createfilter.DefaultMinEffectif,
 		createfilter.DefaultNbIgnoredCols,
 	)
-	if err != nil {
-		return err
+}
+
+func getBatchPath(pathname string, batchKey BatchKey) string {
+	if batchKey.IsSubBatch() {
+		return path.Join(batchKey.GetParentBatch(), batchKey.String())
 	}
-	filesProperty["filter"] = append(filesProperty["filter"], filterFileName)
-	return nil
+	return batchKey.String()
 }
 
 func fileExists(filename string) bool {
@@ -97,4 +123,26 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return true
+}
+
+// Copy the src file to dst. Any existing file will be overwritten and will not
+// copy file attributes. Source: https://stackoverflow.com/a/21061062/592254
+func copy(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return out.Close()
 }
