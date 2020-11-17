@@ -43,9 +43,8 @@ Note: penser à mettre les URLs à jour.
    Le suivant du dernier numéro déjà importé dans:
    _Mes données_ > _Données importées_ > _Importer nouvelle variable_
 
-3. Créer la nouvelle variable en indiquant qu'il s'agit d'un champs `identifiant d'entreprise`.
-   Télécharger le fichier.
-   
+3. Créer la nouvelle variable en indiquant qu'il s'agit d'un champs `identifiant d'entreprise`. Télécharger le fichier.
+
 4. Transformer le filtre de périmètre généré par `prepare-import` lors du dernier import d'un fichier `effectif`:
    `$ tools/filter_to_diane -v var_num="CF000xx" ../20xx/filter_20xx.csv > ../diane_req/diane_filter_20xx.csv`
    puis `$ ssconvert ../diane_req/diane_filter_20xx.csv ../diane_req/diane_filter_20xx.xls`
