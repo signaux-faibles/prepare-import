@@ -39,24 +39,25 @@ Note: penser à mettre les URLs à jour.
 
 1. Se connecter sur le site [Diane+](https://diane.bvdinfo.com)
 
-2. _Créer un fichier de filtrage à partir du fichier effectif._
-   Regarder le numéro de la nouvelle variable à importer (le suivant du dernier
-   numéro déjà importé dans:
+2. Identifier le numéro de la nouvelle variable à importer. (ex: `CF00011`)
+   Le suivant du dernier numéro déjà importé dans:
    _Mes données_ > _Données importées_ > _Importer nouvelle variable_
 
-3. Changer le fichier `filter_to_diane.awk`
-   pour mettre à jour le numéro de variable.
-   Par exemple si le dernier est CF00011 dans diane+ alors il faut mettre CF00012
-   dans le script.
+3. Créer la nouvelle variable en indiquant qu'il s'agit d'un champs `identifiant d'entreprise`.
+   Télécharger le fichier.
+   
+4. Transformer le filtre de périmètre généré par `prepare-import` lors du dernier import d'un fichier `effectif`:
+   `$ tools/filter_to_diane -v var_num="CF000xx" ../20xx/filter_20xx.csv > ../diane_req/diane_filter_20xx.csv`
+   puis `$ ssconvert ../diane_req/diane_filter_20xx.csv ../diane_req/diane_filter_20xx.xls`
+   ... en spécifiant le numéro de la nouvelle variable dans le paramètre `var_num`.
+   Par exemple si le dernier est `CF00011` dans diane+ alors il faut passer `CF00012` au script.
    /!\ Attention, le script n'est pas robuste, par exemple si la sélection de
    département est décommentée, il faut changer l'encodage et le séparateur de la
    commande suivante non commentée (options -e et -d) /!\
 
-4. Créer la nouvelle variable en indiquant qu'il s'agit d'un champs `identifiant d'entreprise`
-   Récupérer le fichier sur l'ordinateur local, le transformer en fichier excel,
-   et le soumettre sur diane+ dans l'interface _importer nouvelle variable_
+5. Dans l'interface _importer nouvelle variable_ de Diane+, envoyer le fichier Excel ainsi généré.
 
-5. Sélectionner la nouvelle variable dans:
+6. Sélectionner la nouvelle variable dans:
    _Mes données_ > _Données importées_ > _Entreprises avec une donnée importée_
 
 > _Autres ..._
