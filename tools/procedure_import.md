@@ -20,6 +20,7 @@ Depuis `ssh stockage`:
 sudo su
 cd /var/lib/goup_base/public
 mkdir _<batch>_
+tools/goupy.py . # pour afficher les métadonnées de chaque fichier de données
 # /!\ Attention commande suivante non fonctionnelle !
 find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 ```
@@ -29,11 +30,16 @@ find -maxdepth 1 -ctime -10 -print0 | xargs -0 mv -t _<batch>_/
 Depuis `ssh stockage -R 1080` (avec partage de connexion internet de l'hôte via le port `1080`):
 
 ```sh
-http_proxy="socks5h://127.0.0.1:1080" wget http://data.cquest.org/geo_sirene/v2019/last/StockEtablissement_utf8_geo.csv.gz
-https_proxy="socks5h://127.0.0.1:1080" wget https://www.data.gouv.fr/fr/datasets/r/c63c91ec-7659-490b-baac-98ee599ece37
+cd /var/lib/goup_base/public/_<batch>_
+export https_proxy="socks5h://127.0.0.1:1080"
+curl https://files.data.gouv.fr/insee-sirene/StockUniteLegale_utf8.zip | zcat > sireneUL.csv
+curl https://data.cquest.org/geo_sirene/v2019/last/StockEtablissement_utf8_geo.csv.gz | zcat > StockEtablissement_utf8_geo.csv
 ```
 
-Note: penser à mettre les URLs à jour.
+> Notes:
+>
+> - Disponible depuis [la page de la Base Sirene](https://www.data.gouv.fr/fr/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/), le fichier `sireneUL.csv` contient les données par entreprise
+> - Le fichier `StockEtablissement_utf8_geo.csv` contient les données par établissement de data.gouv.fr enrichies de leur géolocalisation. La composante `v2019` représente la version du format de fichier, et non la fraicheur des données.
 
 ## Télécharger le fichier Diane
 
