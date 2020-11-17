@@ -41,7 +41,7 @@ jobs:
 
       - name: Install test dependencies
         run: |
-          sudo apt-get install -y ssconvert # for filter_to_diane
+          sudo apt-get install -y gnumeric # more specifically: "ssconvert", for filter_to_diane
 
       - name: Test
         run: go test ./... -v -coverprofile=coverage.out
