@@ -26,8 +26,11 @@ func TestFilterToDiane(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		expectedOutput := createfilter.DiffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
+		t.Cleanup(func() {
+			_ = os.Remove("filter_to_diane_testdata.txt")
+		})
 
+		expectedOutput := createfilter.DiffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
 		assert.Equal(t, string(expectedOutput), cmdOutput.String())
 	})
 }
@@ -35,7 +38,6 @@ func TestFilterToDiane(t *testing.T) {
 func TestFilterToDianeXls(t *testing.T) {
 	t.Run("filter_to_diane to MS Excel golden file", func(t *testing.T) {
 
-		// TODO: mention ssconvert (part of gnumeric) as a dependency
 		cmd := exec.Command("ssconvert", "filter_to_diane_golden.txt", "filter_to_diane_golden_tmp.xls")
 		err := cmd.Run()
 		if err != nil {
@@ -72,6 +74,5 @@ func TestFilterToDianeXls(t *testing.T) {
 		if err != nil {
 			t.Fatal("The resulting excel file should have kept the leading 0")
 		}
-
 	})
 }
