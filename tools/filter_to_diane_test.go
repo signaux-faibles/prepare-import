@@ -21,14 +21,11 @@ func TestFilterToDiane(t *testing.T) {
 		cmd := exec.Command("./filter_to_diane.awk", "-v", "var_num=CF00012", "filter_to_diane_testdata.txt")
 		var cmdOutput bytes.Buffer
 		cmd.Stdout = &cmdOutput
+		cmd.Stderr = os.Stderr
 		err := cmd.Run()
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		t.Cleanup(func() {
-			_ = os.Remove("filter_to_diane_testdata.txt")
-		})
 
 		expectedOutput := createfilter.DiffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
 		assert.Equal(t, string(expectedOutput), cmdOutput.String())
