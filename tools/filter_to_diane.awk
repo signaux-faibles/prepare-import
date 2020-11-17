@@ -13,4 +13,4 @@
 
 
 BEGIN { OFS=","; print var_num, "SIREN" }
-{if (!siren[$0]) { i++; print "id"i, $0; siren[$0]=1 }}
+{if (!siren[$0]) { i++; print "id"i, "\x27"$0; siren[$0]=1 }}
