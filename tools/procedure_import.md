@@ -56,9 +56,6 @@ curl https://data.cquest.org/geo_sirene/v2019/last/StockEtablissement_utf8_geo.c
    puis `$ ssconvert ../diane_req/diane_filter_20xx.csv ../diane_req/diane_filter_20xx.xls`
    ... en spécifiant le numéro de la nouvelle variable dans le paramètre `var_num`.
    Par exemple si le dernier est `CF00011` dans diane+ alors il faut passer `CF00012` au script.
-   /!\ Attention, le script n'est pas robuste, par exemple si la sélection de
-   département est décommentée, il faut changer l'encodage et le séparateur de la
-   commande suivante non commentée (options -e et -d) /!\
 
 5. Dans l'interface _importer nouvelle variable_ de Diane+, envoyer le fichier Excel ainsi généré.
 
