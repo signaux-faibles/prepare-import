@@ -39,6 +39,10 @@ jobs:
           make format format-doc
           exit $(git diff | wc -l) # Return a non-zero error code if any output file has changed
 
+      - name: Install test dependencies
+        run: |
+          sudo apt-get install -y gnumeric # more specifically: "ssconvert", for filter_to_diane
+
       - name: Test
         run: go test ./... -v -coverprofile=coverage.out
 

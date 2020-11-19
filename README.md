@@ -8,6 +8,12 @@ Elle vise à supporter tous les types de fichiers décrits dans le tableau fourn
 
 La rencontre de fichiers non supportés n'empêchera pas la génération d'un batch, mais ceux-ci seront listés dans la sortie d'erreurs. (`stderr`)
 
+## Dépendances
+
+- Go
+- `awk`
+- `gnumeric` (et plus particulièrement la commande `ssconvert`)
+
 ## Usage
 
 ```sh
