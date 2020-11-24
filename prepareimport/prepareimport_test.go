@@ -91,7 +91,7 @@ func TestPrepareImport(t *testing.T) {
 		}
 	})
 
-	t.Run("Should infer date_fin_effectif from the effectif file", func(t *testing.T) {
+	t.Run("Should infer date_fin_effectif from the effectif file, given no filter was found", func(t *testing.T) {
 		// Set expectations
 		effectifFile := dummyBatchFile("Sigfaible_effectif_siret.csv")
 		providedDateFinEffetif := ""
@@ -103,6 +103,27 @@ func TestPrepareImport(t *testing.T) {
 		}
 		parentDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			effectifFile.Name(): data,
+		})
+		// Run the test
+		res, err := PrepareImport(parentDir, dummyBatchKey, providedDateFinEffetif)
+		if assert.NoError(t, err) {
+			assert.Equal(t, expectedDateFinEffectif, res["param"].(ParamProperty).DateFinEffectif)
+		}
+	})
+
+	t.Run("Should infer date_fin_effectif from the effectif file, given a filter was found", func(t *testing.T) {
+		// Set expectations
+		effectifFile := dummyBatchFile("Sigfaible_effectif_siret.csv")
+		providedDateFinEffetif := ""
+		expectedDateFinEffectif := NewDateFinEffectif(time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)).MongoDate()
+		// Setup test environment
+		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
+		if err != nil {
+			t.Fatal(err)
+		}
+		parentDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
+			effectifFile.Name(): data,
+			"filter_2002.csv":   {},
 		})
 		// Run the test
 		res, err := PrepareImport(parentDir, dummyBatchKey, providedDateFinEffetif)
