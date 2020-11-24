@@ -64,11 +64,6 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		if err = createFilterFromEffectif(path.Join(pathname, filterFile.Path()), effectifFilePath); err != nil {
 			return nil, err
 		}
-		println("Detecting dateFinEffectif from effectif file ...")
-		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// add the filter to filesProperty
@@ -86,6 +81,15 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		}
 		println("Adding filter file to batch ...")
 		filesProperty["filter"] = append(filesProperty["filter"], filterFile)
+	}
+
+	if effectifFile != nil {
+		println("Detecting dateFinEffectif from effectif file ...")
+		effectifFilePath := path.Join(pathname, effectifFile.Path())
+		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// make sure we have date_fin_effectif
