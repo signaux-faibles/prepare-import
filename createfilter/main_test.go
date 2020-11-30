@@ -36,7 +36,12 @@ func TestCreateFilter(t *testing.T) {
 	})
 }
 
+// Règle: si et seulement si au moins un établissement a eu pendant au moins
+// une période un effectif >= 10, on veut l'avoir en base de données, avec
+// tous les autres établissements de cette entreprise.
+// cf https://github.com/signaux-faibles/opensignauxfaibles/issues/199
 func TestOutputPerimeter(t *testing.T) {
+	// test de non regression
 	t.Run("le département de l'entreprise n'est pas considéré comme une valeur d'effectif", func(t *testing.T) {
 		// setup conditions and expectations
 		minEffectif := 10
@@ -71,18 +76,18 @@ func TestDetectDateFinEffectif(t *testing.T) {
 }
 
 func TestIsInsidePerimeter(t *testing.T) {
-	nbMois := 3 // => number of recent months that will be considered
+	nbMois := 3 // => seules les valeurs d'effectif des 3 derniers mois vont être considérées
 	minEffectif := 10
 	testCases := []struct {
 		input    []string
 		expected bool
 	}{
-		{[]string{"10", "9", "4", "7", "5"}, false},
-		{[]string{"10", "20", "4", "7", "5"}, false},
-		{[]string{"10", "9", "12", "7", "5"}, true},
-		{[]string{"10", "9", "12", "", ""}, true},
-		{[]string{"10", "9", "5", "", ""}, false},
-		{[]string{"10", "9", "", "", ""}, false},
+		{[]string{"10", "9", "4", "7", "5"}, false},  // ❌ l'effectif ≥10 date de plus de 3 mois
+		{[]string{"10", "20", "4", "7", "5"}, false}, // ❌ l'effectif ≥10
+		{[]string{"10", "9", "12", "7", "5"}, true},  // ✅ un effectif ≥10 a été trouvé dans la fenêtre des 3 mois
+		{[]string{"10", "9", "12", "", ""}, true},    // ✅ l'absence des 2 dernières valeurs d'effectif n'influe pas
+		{[]string{"10", "9", "5", "", ""}, false},    // ❌ l'absence des 2 dernières valeurs d'effectif n'influe pas
+		{[]string{"10", "9", "", "", ""}, false},     // ❌ l'absence des 3 dernières valeurs d'effectif n'influe pas
 	}
 
 	for i, tc := range testCases {
