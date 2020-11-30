@@ -24,6 +24,9 @@ const DefaultMinEffectif = 10
 // DefaultNbIgnoredCols is the default number of rightmost columns that don't contain effectif data.
 const DefaultNbIgnoredCols = 2
 
+// NbLeadingColsToSkip is the number of leftmost columns that don't contain effectif data.
+const NbLeadingColsToSkip = 5 // column names: "compte", "siret", "rais_soc", "ape_ins" and "dep"
+
 // Implementation of the create_filter command.
 func main() {
 
@@ -87,7 +90,7 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCo
 			log.Panic(err)
 		}
 		shouldKeep := len(record[1]) == 14 &&
-			isInsidePerimeter(record[0:len(record)-nIgnoredCols], nbMois, minEffectif)
+			isInsidePerimeter(record[NbLeadingColsToSkip:len(record)-nIgnoredCols], nbMois, minEffectif)
 
 		if shouldKeep {
 			perimeter = append(perimeter, record[1])
