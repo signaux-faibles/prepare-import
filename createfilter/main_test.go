@@ -1,6 +1,7 @@
 package createfilter
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/csv"
 	"flag"
@@ -35,6 +36,31 @@ func TestCreateFilter(t *testing.T) {
 	})
 }
 
+func TestOutputPerimeter(t *testing.T) {
+	t.Run("le département de l'entreprise n'est pas considéré comme une valeur d'effectif", func(t *testing.T) {
+		// setup conditions and expectations
+		minEffectif := 10
+		nbIgnoredCols := 2 // "base" and "UR_EMET"
+		expectedSirens := []string{"22222222222222", "33333333333333"}
+		effectifData := strings.Join([]string{
+			"compte;siret;rais_soc;ape_ins;dep;eff201011;eff201012;base;UR_EMET",
+			"000000000000000000;00000000000000;ENTREPRISE;1234Z;75;4;4;116;075077",   // ❌ 75 ≥ 10, mais ce n'est pas un effectif
+			"111111111111111111;11111111111111;ENTREPRISE;1234Z;53;4;4;116;075077",   // ❌ 53 ≥ 10, mais ce n'est pas un effectif
+			"222222222222222222;22222222222222;ENTREPRISE;1234Z;92;14;14;116;075077", // ✅ siren retenu car 14 est bien un effectif ≥ 10
+			"333333333333333333;33333333333333;ENTREPRISE;1234Z;92;14;14;116;075077", // ✅ siren retenu car 14 est bien un effectif ≥ 10
+		}, "\n")
+		// run the test
+		var output bytes.Buffer
+		reader := csv.NewReader(strings.NewReader(effectifData))
+		reader.Comma = ';'
+		writer := bufio.NewWriter(&output)
+		outputPerimeter(reader, writer, DefaultNbMois, minEffectif, nbIgnoredCols)
+		writer.Flush()
+		// assert
+		assert.Equal(t, expectedSirens, strings.Split(output.String(), "\n"))
+	})
+}
+
 func TestDetectDateFinEffectif(t *testing.T) {
 	expectedDate := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
 	actualDate, err := DetectDateFinEffectif("test_data.csv", DefaultNbIgnoredCols) // => col name: "eff202011"
@@ -44,7 +70,7 @@ func TestDetectDateFinEffectif(t *testing.T) {
 }
 
 func TestIsInsidePerimeter(t *testing.T) {
-	nbMois := 3
+	nbMois := 3 // => number of recent months that will be considered
 	minEffectif := 10
 	testCases := []struct {
 		input    []string
