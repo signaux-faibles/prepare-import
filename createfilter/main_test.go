@@ -1,6 +1,7 @@
 package createfilter
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/csv"
 	"flag"
@@ -35,6 +36,37 @@ func TestCreateFilter(t *testing.T) {
 	})
 }
 
+// Règle: si et seulement si au moins un établissement a eu pendant au moins
+// une période un effectif >= 10, on veut l'avoir en base de données, avec
+// tous les autres établissements de cette entreprise.
+// cf https://github.com/signaux-faibles/opensignauxfaibles/issues/199
+func TestOutputPerimeter(t *testing.T) {
+	// test de non regression
+	t.Run("le département de l'entreprise n'est pas considéré comme une valeur d'effectif", func(t *testing.T) {
+		// setup conditions and expectations
+		minEffectif := 10
+		nbIgnoredCols := 2 // "base" and "UR_EMET"
+		expectedSirens := []string{"222222222", "333333333"}
+		effectifData := strings.Join([]string{
+			"compte;siret;rais_soc;ape_ins;dep;eff201011;eff201012;base;UR_EMET",
+			"000000000000000000;00000000000000;ENTREPRISE;1234Z;75;4;4;116;075077",   // ❌ 75 ≥ 10, mais ce n'est pas un effectif
+			"111111111111111111;11111111111111;ENTREPRISE;1234Z;53;4;4;116;075077",   // ❌ 53 ≥ 10, mais ce n'est pas un effectif
+			"222222222222222222;22222222222222;ENTREPRISE;1234Z;92;14;14;116;075077", // ✅ siren retenu car 14 est bien un effectif ≥ 10
+			"333333333333333333;33333333333333;ENTREPRISE;1234Z;92;14;14;116;075077", // ✅ siren retenu car 14 est bien un effectif ≥ 10
+		}, "\n")
+		// run the test
+		var output bytes.Buffer
+		reader := csv.NewReader(strings.NewReader(effectifData))
+		reader.Comma = ';'
+		writer := bufio.NewWriter(&output)
+		outputPerimeter(reader, writer, DefaultNbMois, minEffectif, nbIgnoredCols)
+		writer.Flush()
+		// assert
+		actualSirens := strings.Split(strings.TrimSpace(output.String()), "\n")
+		assert.Equal(t, expectedSirens, actualSirens)
+	})
+}
+
 func TestDetectDateFinEffectif(t *testing.T) {
 	expectedDate := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
 	actualDate, err := DetectDateFinEffectif("test_data.csv", DefaultNbIgnoredCols) // => col name: "eff202011"
@@ -44,18 +76,18 @@ func TestDetectDateFinEffectif(t *testing.T) {
 }
 
 func TestIsInsidePerimeter(t *testing.T) {
-	nbMois := 3
+	nbMois := 3 // => seules les valeurs d'effectif des 3 derniers mois vont être considérées
 	minEffectif := 10
 	testCases := []struct {
 		input    []string
 		expected bool
 	}{
-		{[]string{"10", "9", "4", "7", "5"}, false},
-		{[]string{"10", "20", "4", "7", "5"}, false},
-		{[]string{"10", "9", "12", "7", "5"}, true},
-		{[]string{"10", "9", "12", "", ""}, true},
-		{[]string{"10", "9", "5", "", ""}, false},
-		{[]string{"10", "9", "", "", ""}, false},
+		{[]string{"10", "9", "4", "7", "5"}, false},  // ❌ l'effectif ≥10 date de plus de 3 mois
+		{[]string{"10", "20", "4", "7", "5"}, false}, // ❌ l'effectif ≥10
+		{[]string{"10", "9", "12", "7", "5"}, true},  // ✅ un effectif ≥10 a été trouvé dans la fenêtre des 3 mois
+		{[]string{"10", "9", "12", "", ""}, true},    // ✅ l'absence des 2 dernières valeurs d'effectif n'influe pas
+		{[]string{"10", "9", "5", "", ""}, false},    // ❌ l'absence des 2 dernières valeurs d'effectif n'influe pas
+		{[]string{"10", "9", "", "", ""}, false},     // ❌ l'absence des 3 dernières valeurs d'effectif n'influe pas
 	}
 
 	for i, tc := range testCases {
