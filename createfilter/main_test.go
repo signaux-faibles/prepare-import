@@ -57,7 +57,8 @@ func TestOutputPerimeter(t *testing.T) {
 		outputPerimeter(reader, writer, DefaultNbMois, minEffectif, nbIgnoredCols)
 		writer.Flush()
 		// assert
-		assert.Equal(t, expectedSirens, strings.Split(output.String(), "\n"))
+		actualSirens := strings.Split(strings.TrimSpace(output.String()), "\n")
+		assert.Equal(t, expectedSirens, actualSirens)
 	})
 }
 
