@@ -41,7 +41,7 @@ func TestOutputPerimeter(t *testing.T) {
 		// setup conditions and expectations
 		minEffectif := 10
 		nbIgnoredCols := 2 // "base" and "UR_EMET"
-		expectedSirens := []string{"22222222222222", "33333333333333"}
+		expectedSirens := []string{"222222222", "333333333"}
 		effectifData := strings.Join([]string{
 			"compte;siret;rais_soc;ape_ins;dep;eff201011;eff201012;base;UR_EMET",
 			"000000000000000000;00000000000000;ENTREPRISE;1234Z;75;4;4;116;075077",   // ❌ 75 ≥ 10, mais ce n'est pas un effectif
