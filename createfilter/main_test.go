@@ -65,6 +65,29 @@ func TestOutputPerimeter(t *testing.T) {
 		actualSirens := strings.Split(strings.TrimSpace(output.String()), "\n")
 		assert.Equal(t, expectedSirens, actualSirens)
 	})
+
+	t.Run("outputPerimeter ne doit pas contenir deux fois le même siren", func(t *testing.T) {
+		// setup conditions and expectations
+		minEffectif := 1
+		nbIgnoredCols := 0
+		expectedSirens := []string{"111111111", "333333333"}
+		effectifData := strings.Join([]string{
+			"compte;siret;rais_soc;ape_ins;dep;eff201011",
+			"111111111111111111;11111111111112;ENTREPRISE;1234Z;53;1", // premier établissement ayant 111111111 comme siren
+			"111111111111111111;11111111111113;ENTREPRISE;1234Z;92;1", // deuxième établissement ayant 111111111 comme siren
+			"333333333333333333;33333333333333;ENTREPRISE;1234Z;92;1",
+		}, "\n")
+		// run the test
+		var output bytes.Buffer
+		reader := csv.NewReader(strings.NewReader(effectifData))
+		reader.Comma = ';'
+		writer := bufio.NewWriter(&output)
+		outputPerimeter(reader, writer, DefaultNbMois, minEffectif, nbIgnoredCols)
+		writer.Flush()
+		// assert
+		actualSirens := strings.Split(strings.TrimSpace(output.String()), "\n")
+		assert.Equal(t, expectedSirens, actualSirens)
+	})
 }
 
 func TestDetectDateFinEffectif(t *testing.T) {
