@@ -47,22 +47,16 @@ func TestOutputPerimeter(t *testing.T) {
 		minEffectif := 10
 		nbIgnoredCols := 2 // "base" and "UR_EMET"
 		expectedSirens := []string{"222222222", "333333333"}
-		effectifData := strings.Join([]string{
+		csvLines := []string{
 			"compte;siret;rais_soc;ape_ins;dep;eff201011;eff201012;base;UR_EMET",
 			"000000000000000000;00000000000000;ENTREPRISE;1234Z;75;4;4;116;075077",   // ❌ 75 ≥ 10, mais ce n'est pas un effectif
 			"111111111111111111;11111111111111;ENTREPRISE;1234Z;53;4;4;116;075077",   // ❌ 53 ≥ 10, mais ce n'est pas un effectif
 			"222222222222222222;22222222222222;ENTREPRISE;1234Z;92;14;14;116;075077", // ✅ siren retenu car 14 est bien un effectif ≥ 10
 			"333333333333333333;33333333333333;ENTREPRISE;1234Z;92;14;14;116;075077", // ✅ siren retenu car 14 est bien un effectif ≥ 10
-		}, "\n")
-		// run the test
-		var output bytes.Buffer
-		reader := csv.NewReader(strings.NewReader(effectifData))
-		reader.Comma = ';'
-		writer := bufio.NewWriter(&output)
-		outputPerimeter(reader, writer, DefaultNbMois, minEffectif, nbIgnoredCols)
-		writer.Flush()
+		}
+		// test: run outputPerimeter() on csv lines
+		actualSirens := getOutputPerimeter(csvLines, DefaultNbMois, minEffectif, nbIgnoredCols)
 		// assert
-		actualSirens := strings.Split(strings.TrimSpace(output.String()), "\n")
 		assert.Equal(t, expectedSirens, actualSirens)
 	})
 
@@ -71,23 +65,29 @@ func TestOutputPerimeter(t *testing.T) {
 		minEffectif := 1
 		nbIgnoredCols := 0
 		expectedSirens := []string{"111111111", "333333333"}
-		effectifData := strings.Join([]string{
+		csvLines := []string{
 			"compte;siret;rais_soc;ape_ins;dep;eff201011",
 			"111111111111111111;11111111111112;ENTREPRISE;1234Z;53;1", // premier établissement ayant 111111111 comme siren
 			"111111111111111111;11111111111113;ENTREPRISE;1234Z;92;1", // deuxième établissement ayant 111111111 comme siren
 			"333333333333333333;33333333333333;ENTREPRISE;1234Z;92;1",
-		}, "\n")
-		// run the test
-		var output bytes.Buffer
-		reader := csv.NewReader(strings.NewReader(effectifData))
-		reader.Comma = ';'
-		writer := bufio.NewWriter(&output)
-		outputPerimeter(reader, writer, DefaultNbMois, minEffectif, nbIgnoredCols)
-		writer.Flush()
+		}
+		// test: run outputPerimeter() on csv lines
+		actualSirens := getOutputPerimeter(csvLines, DefaultNbMois, minEffectif, nbIgnoredCols)
 		// assert
-		actualSirens := strings.Split(strings.TrimSpace(output.String()), "\n")
 		assert.Equal(t, expectedSirens, actualSirens)
 	})
+}
+
+// wrapper to run outputPerimeter() on a slice of csv lines
+func getOutputPerimeter(csvLines []string, nbMois, minEffectif, nbIgnoredCols int) (actualSirens []string) {
+	effectifData := strings.Join(csvLines, "\n")
+	var output bytes.Buffer
+	reader := csv.NewReader(strings.NewReader(effectifData))
+	reader.Comma = ';'
+	writer := bufio.NewWriter(&output)
+	outputPerimeter(reader, writer, nbMois, minEffectif, nbIgnoredCols)
+	writer.Flush()
+	return strings.Split(strings.TrimSpace(output.String()), "\n")
 }
 
 func TestDetectDateFinEffectif(t *testing.T) {
