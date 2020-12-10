@@ -75,8 +75,8 @@ func initializeEffectifReader(f *os.File) *csv.Reader {
 }
 
 func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCols int) {
-	perimeter := []string{}
-	_, err := r.Read() // en tête
+	detectedSirens := map[string]struct{}{} // smaller memory footprint than map[string]bool
+	_, err := r.Read()                      // en tête
 	if err != nil {
 		log.Panic(err)
 	}
@@ -89,15 +89,17 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCo
 		} else if err != nil {
 			log.Panic(err)
 		}
-		shouldKeep := len(record[1]) == 14 &&
+		siret := record[1]
+		shouldKeep := len(siret) == 14 &&
 			isInsidePerimeter(record[NbLeadingColsToSkip:len(record)-nIgnoredCols], nbMois, minEffectif)
 
-		if shouldKeep {
-			perimeter = append(perimeter, record[1])
+		siren := siret[0:9] // trim siret into a siren
+		_, alreadyDetected := detectedSirens[siren]
+
+		if shouldKeep && alreadyDetected == false {
+			detectedSirens[siren] = struct{}{}
+			fmt.Fprintln(w, siren)
 		}
-	}
-	for _, siret := range perimeter {
-		fmt.Fprintln(w, siret[0:9])
 	}
 }
 
