@@ -37,6 +37,9 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 		{"filter_siren_2002.csv", filter},
 		{"sireneUL.csv", sireneUl},
 		{"StockEtablissement_utf8_geo.csv", sirene},
+		{"StockEtablissement_utf8_geo.csv", sirene},
+		{"E_202011095813_Retro-Paydex_20201207.csv", paydex},
+		{"E_202011095813_Identite_20201207.csv", ""}, // not paydex
 	}
 	for _, testCase := range cases {
 		t.Run("should return "+string(testCase.category)+" for file "+testCase.name, func(t *testing.T) {
