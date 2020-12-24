@@ -62,6 +62,7 @@ const (
 	procol      ValidFileType = "procol"
 	sirene      ValidFileType = "sirene"
 	sireneUl    ValidFileType = "sirene_ul"
+	paydex      ValidFileType = "paydex"
 )
 
 // ValidFileType is the type used by all constants like ADMIN_URSSAF, APCONSO, etc...
