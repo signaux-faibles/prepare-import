@@ -18,6 +18,9 @@
     ],
     "filter": [
       "/1802/filter_siren_1802.csv"
+    ],
+    "paydex": [
+      "/1802/E_202011095813_Retro-Paydex_20201207.csv"
     ]
   },
   "param": {

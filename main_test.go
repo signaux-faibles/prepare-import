@@ -30,10 +30,11 @@ func TestMain(t *testing.T) {
 			t.Fatal(err)
 		}
 		parentDir := prepareimport.CreateTempFilesWithContent(t, batchKey, map[string][]byte{
-			"Sigfaibles_effectif_siret.csv": effectifData,
-			"Sigfaibles_debits.csv":         {},
-			"abcdef":                        {},
-			"unsupported.csv":               {},
+			"Sigfaibles_effectif_siret.csv":            effectifData,
+			"Sigfaibles_debits.csv":                    {},
+			"abcdef":                                   {},
+			"unsupported.csv":                          {},
+			"E_202011095813_Retro-Paydex_20201207.csv": {},
 		})
 
 		content := []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}")
