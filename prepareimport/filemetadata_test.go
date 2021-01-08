@@ -23,12 +23,4 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 		}))
 		assert.Equal(t, bdf, got)
 	})
-
-	t.Run("should return \"interim\" for bin file which had a sas7dbat extension", func(t *testing.T) {
-		got := ExtractFileTypeFromMetadata("ab8613ab66ebddb2db21e36b92fc5b70", MakeMetadata(MetadataProperty{
-			"filename":  "tab_19m10.sas7bdat",
-			"goup-path": "dgefp",
-		}))
-		assert.Equal(t, interim, got)
-	})
 }
