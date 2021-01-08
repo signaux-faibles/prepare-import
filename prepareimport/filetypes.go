@@ -61,6 +61,7 @@ const (
 	sirene      ValidFileType = "sirene"
 	sireneUl    ValidFileType = "sirene_ul"
 	paydex      ValidFileType = "paydex"
+	ellisphere  ValidFileType = "ellisphere"
 )
 
 // ValidFileType is the type used by all constants like ADMIN_URSSAF, APCONSO, etc...
