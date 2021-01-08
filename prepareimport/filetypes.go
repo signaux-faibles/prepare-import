@@ -2,7 +2,6 @@ package prepareimport
 
 import (
 	"regexp"
-	"strings"
 )
 
 // ExtractFileTypeFromFilename returns a file type from filename, or empty string for unsupported file names
@@ -28,8 +27,6 @@ func ExtractFileTypeFromFilename(filename string) ValidFileType {
 		return sireneUl
 	case filename == "StockEtablissement_utf8_geo.csv":
 		return sirene
-	case strings.HasSuffix(filename, ".sas7bdat"):
-		return interim
 	case mentionsDebits.MatchString(filename):
 		return debit
 	case hasDianePrefix.MatchString(filename):
@@ -60,7 +57,6 @@ const (
 	effectif    ValidFileType = "effectif"
 	effectifEnt ValidFileType = "effectif_ent"
 	filter      ValidFileType = "filter"
-	interim     ValidFileType = "interim"
 	procol      ValidFileType = "procol"
 	sirene      ValidFileType = "sirene"
 	sireneUl    ValidFileType = "sirene_ul"
