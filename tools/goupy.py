@@ -20,7 +20,8 @@ def main():
   writer = csv.DictWriter(sys.stdout, get_keys(data), dialect=csv.excel)
   writer.writeheader()
   for d in data:
-    writer.writerow(d)
+    row = {k: unicode(v).encode("utf-8") for k,v in d.iteritems()}
+    writer.writerow(row)
 
 def read_info(path):
   if path[-4:] == 'info':
@@ -48,4 +49,3 @@ def get_keys(datas):
 
 if __name__=="__main__":
   main()
-
