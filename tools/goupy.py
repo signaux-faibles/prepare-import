@@ -7,12 +7,12 @@ from datetime import datetime
 
 def main():
   if len(sys.argv) != 2:
-    print "goup.py permet de lister le contenu d'un répertoire de stockage goup"
-    print "usage: goupy.py [path of directory]"
+    print("goup.py permet de lister le contenu d'un répertoire de stockage goup")
+    print("usage: goupy.py [path of directory]")
     sys.exit(1)
 
   if not (os.path.isdir(sys.argv[1])):
-    print "Le chemin indiqué n'est pas un répertoire"
+    print("Le chemin indiqué n'est pas un répertoire")
     sys.exit(1)
 
   data = [read_info(os.path.join(sys.argv[1], path)) for path in os.listdir(sys.argv[1]) if  read_info(os.path.join(sys.argv[1], path)) != None]
