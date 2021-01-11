@@ -37,6 +37,8 @@ func ExtractFileTypeFromFilename(filename string) ValidFileType {
 		return filter
 	case isRetroPaydex.MatchString(filename):
 		return paydex
+	case isEllisphere.MatchString(filename):
+		return ellisphere
 	default:
 		return ""
 	}
@@ -61,6 +63,7 @@ const (
 	sirene      ValidFileType = "sirene"
 	sireneUl    ValidFileType = "sirene_ul"
 	paydex      ValidFileType = "paydex"
+	ellisphere  ValidFileType = "ellisphere"
 )
 
 // ValidFileType is the type used by all constants like ADMIN_URSSAF, APCONSO, etc...
@@ -71,3 +74,4 @@ var mentionsEffectif = regexp.MustCompile(`effectif_`)
 var mentionsDebits = regexp.MustCompile(`_debits`)
 var hasFilterPrefix = regexp.MustCompile(`^filter_`)
 var isRetroPaydex = regexp.MustCompile(`^E_[0-9]{12}_Retro-Paydex_[0-9]{8}.csv$`)
+var isEllisphere = regexp.MustCompile(`^Ellisphère-Tête de groupe-[^.]*.xlsx$`)
