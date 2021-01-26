@@ -109,7 +109,7 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCo
 		}
 	}
 	if skippedLines > 0 {
-		fmt.Printf("%d lines with bad siret/siren skipped :(", skippedLines)
+		fmt.Printf("%d lines with bad siret/siren skipped :( \n", skippedLines)
 	}
 
 }
