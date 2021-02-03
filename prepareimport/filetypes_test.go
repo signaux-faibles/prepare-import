@@ -23,6 +23,16 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 		{"Sigfaible_delais.csv", delai},
 		{"Sigfaible_ccsf.csv", ccsf},
 
+		// compressed version of urssaf files
+		{"Sigfaible_ccsf.csv.gz", ccsf},
+		{"Sigfaible_etablissement_utf8.csv.gz", adminUrssaf}, // sfdata parser name: "comptes"
+		{"Sigfaible_cotisdues.csv.gz", cotisation},
+		{"Sigfaible_debits.csv.gz", debit},
+		{"Sigfaible_delais.csv.gz", delai},
+		{"Sigfaible_effectif_siren.csv.gz", effectifEnt},
+		{"Sigfaible_effectif_siret.csv.gz", effectif},
+		{"Sigfaible_pcoll.csv.gz", procol},
+
 		// guessed from dgefp files
 		{"act_partielle_conso_depuis2014_FRANCE.csv", apconso},
 		{"act_partielle_ddes_depuis2015_FRANCE.csv", apdemande},
