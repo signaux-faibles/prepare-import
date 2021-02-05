@@ -24,7 +24,7 @@ func TestPopulateCompleteTypesProperty(t *testing.T) {
 			filename:    "Sigfaibles_debits.csv",
 			gzippedSize: thresholdPerGzippedFileType["debit"] - 1, // just below the threshold
 		}
-		res := populateCompleteTypesProperty(FilesProperty{"debit": {debitBatchFile}})
+		res := populateCompleteTypesProperty(FilesProperty{"debit": {&debitBatchFile}})
 		assert.Equal(t, expected, res)
 	})
 
@@ -35,7 +35,7 @@ func TestPopulateCompleteTypesProperty(t *testing.T) {
 			filename:    "Sigfaibles_debits.csv",
 			gzippedSize: 254781489, // thresholdPerGzippedFileType["debit"]
 		}
-		res := populateCompleteTypesProperty(FilesProperty{"debit": {debitBatchFile}})
+		res := populateCompleteTypesProperty(FilesProperty{"debit": {&debitBatchFile}})
 		assert.Equal(t, expected, res)
 	})
 

@@ -1,6 +1,7 @@
 package prepareimport
 
 import (
+	"log"
 	"path/filepath"
 	"strings"
 )
@@ -8,7 +9,9 @@ import (
 // DataFile represents a Data File to be imported, and allows to determine its type and name.
 type DataFile interface {
 	GetFilename() string           // the name as it will be stored in Admin
+	GetOriginalFilename() string   // the original name of the file, as described in metadata (if applicable)
 	DetectFileType() ValidFileType // returns the type of that file (e.g. DEBIT)
+	GetSize() *uint64              // returns the size of that file, in bytes
 }
 
 // AugmentDataFile returns a SimpleDataFile or UploadedDataFile (if metadata had to be loaded).
@@ -34,6 +37,17 @@ func (dataFile SimpleDataFile) GetFilename() string {
 	return dataFile.filename
 }
 
+// GetOriginalFilename returns the same as GetFilename()
+func (dataFile SimpleDataFile) GetOriginalFilename() string {
+	return dataFile.GetFilename()
+}
+
+// GetSize returns the size of that file, in bytes.
+func (dataFile SimpleDataFile) GetSize() *uint64 {
+	log.Println("Warning: getting gzippedSize of SimpleDataFile is not implemented yet: " + dataFile.filename)
+	return nil
+}
+
 // UploadedDataFile is a DataFile which type can be determined thanks to a metadata file (e.g. bin+info files).
 type UploadedDataFile struct {
 	filename string
@@ -50,4 +64,18 @@ func (dataFile UploadedDataFile) DetectFileType() ValidFileType {
 // GetFilename returns the name as it will be stored in Admin.
 func (dataFile UploadedDataFile) GetFilename() string {
 	return dataFile.filename
+}
+
+// GetOriginalFilename returns the original name of the file, as described in metadata.
+func (dataFile UploadedDataFile) GetOriginalFilename() string {
+	metaFilepath := filepath.Join(dataFile.path, dataFile.filename+".info")
+	fileinfo := LoadMetadata(metaFilepath)
+	return fileinfo.MetaData["filename"]
+}
+
+// GetSize returns the size of that file, in bytes.
+func (dataFile UploadedDataFile) GetSize() *uint64 {
+	metaFilepath := filepath.Join(dataFile.path, dataFile.filename+".info")
+	fileinfo := LoadMetadata(metaFilepath)
+	return &fileinfo.Size
 }

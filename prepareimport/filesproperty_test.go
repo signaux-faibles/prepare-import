@@ -84,7 +84,7 @@ func TestPopulateFilesProperty(t *testing.T) {
 
 	t.Run("Should forward the size of a gzipped file provided with metadata", func(t *testing.T) {
 
-		metadata := `{ "MetaData": { "filename": "Sigfaibles_debits.csv", "goup-path": "" }, "Size": 254781489 }` // thresholdPerGzippedFileType["debit"]
+		metadata := `{ "MetaData": { "filename": "Sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }` // thresholdPerGzippedFileType["debit"]
 		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			"083fe617e80f2e30a21598d38a854bc6":      {},
 			"083fe617e80f2e30a21598d38a854bc6.info": []byte(metadata),
@@ -103,9 +103,9 @@ func TestPopulateFilesProperty(t *testing.T) {
 		// 	},
 		// }
 		expectedFiles := FilesProperty{"debit": {
-			batchFile{
+			&batchFile{
 				batchKey:    dummyBatchKey,
-				filename:    "Sigfaibles_debits.csv",
+				filename:    "083fe617e80f2e30a21598d38a854bc6",
 				gzippedSize: 254781489, // thresholdPerGzippedFileType["debit"]
 			},
 		}}
