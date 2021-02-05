@@ -71,5 +71,6 @@ var defaultCompleteTypes = []ValidFileType{
 
 // types of files that will be considered as "complete" if their gzipped size reach a certain threshold (in bytes)
 var thresholdPerGzippedFileType = map[ValidFileType]uint64{
-	debit: 254781489,
+	procol: 1646193,
+	debit:  254781489,
 }
