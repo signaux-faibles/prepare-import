@@ -78,6 +78,7 @@ type BatchFile interface {
 	BatchKey() BatchKey
 	Name() string
 	Path() string
+	GetGzippedSize() uint64 // in bytes
 }
 
 func newBatchFile(batchKey BatchKey, filename string) BatchFile {
@@ -88,8 +89,9 @@ func newBatchFile(batchKey BatchKey, filename string) BatchFile {
 }
 
 type batchFile struct {
-	batchKey BatchKey
-	filename string
+	batchKey    BatchKey
+	filename    string
+	gzippedSize uint64 // in bytes
 }
 
 func (file batchFile) BatchKey() BatchKey {
@@ -102,6 +104,10 @@ func (file batchFile) Name() string {
 
 func (file batchFile) Path() string {
 	return file.batchKey.Path() + file.filename
+}
+
+func (file batchFile) GetGzippedSize() uint64 {
+	return file.gzippedSize
 }
 
 // MarshalJSON will be called when serializing the AdminObject.

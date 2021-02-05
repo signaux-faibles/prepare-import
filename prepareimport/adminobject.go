@@ -1,6 +1,7 @@
 package prepareimport
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -44,9 +45,21 @@ func populateCompleteTypesProperty(filesProperty FilesProperty) []ValidFileType 
 			completeTypes = append(completeTypes, typeName)
 		}
 	}
+	for typeName, thresholdInBytes := range thresholdPerGzippedFileType {
+		if files, ok := filesProperty[typeName]; ok {
+			if len(files) != 1 {
+				panic(fmt.Errorf("'complete' file detection can only work if there is only 1 file per type, found %v for type %v", len(files), typeName))
+			}
+			file := files[0]
+			if file.GetGzippedSize() >= thresholdInBytes {
+				completeTypes = append(completeTypes, typeName)
+			}
+		}
+	}
 	return completeTypes
 }
 
+// types of files that are always provided as "complete"
 var defaultCompleteTypes = []ValidFileType{
 	apconso,
 	apdemande,
@@ -54,4 +67,9 @@ var defaultCompleteTypes = []ValidFileType{
 	effectifEnt,
 	sirene,
 	sireneUl,
+}
+
+// types of files that will be considered as "complete" if their gzipped size reach a certain threshold (in bytes)
+var thresholdPerGzippedFileType = map[ValidFileType]uint64{
+	debit: 254781489,
 }
