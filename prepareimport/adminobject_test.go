@@ -11,9 +11,20 @@ func dummyBatchFile(filename string) BatchFile {
 }
 
 func TestPopulateCompleteTypesProperty(t *testing.T) {
-	t.Run("Should not return a debit file as a complete_type", func(t *testing.T) {
+	t.Run("Should not return a small debit file as a complete_type", func(t *testing.T) {
 		res := populateCompleteTypesProperty(FilesProperty{"debit": {dummyBatchFile("Sigfaibles_debits.csv")}})
 		expected := []ValidFileType{}
+		assert.Equal(t, expected, res)
+	})
+
+	t.Run("Should return a large gzipped debit file as a complete_type", func(t *testing.T) {
+		expected := []ValidFileType{debit}
+		debitBatchFile := batchFile{
+			batchKey:    dummyBatchKey,
+			filename:    "Sigfaibles_debits.csv",
+			gzippedSize: 254781489, // thresholdPerGzippedFileType["debit"]
+		}
+		res := populateCompleteTypesProperty(FilesProperty{"debit": {debitBatchFile}})
 		assert.Equal(t, expected, res)
 	})
 
