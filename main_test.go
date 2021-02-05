@@ -32,7 +32,7 @@ func TestMain(t *testing.T) {
 			"Sigfaibles_effectif_siret.csv": effectifData,
 			"Sigfaibles_debits.csv":         {},
 			"abcdef":                        {},
-			"abcdef.info":                   []byte("{\"MetaData\":{\"filename\":\"FICHIER_SF_2020_02.csv\",\"goup-path\":\"bdf\"}}"),
+			"abcdef.info":                   []byte(`{ "MetaData": { "filename": "Sigfaible_pcoll.csv", "goup-path": "bdf" } }`),
 			"unsupported.csv":               {},
 			"E_202011095813_Retro-Paydex_20201207.csv": {},
 		})
