@@ -32,16 +32,15 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	effectifFile, _ := filesProperty.GetEffectifFile()
 	filterFile, _ := filesProperty.GetFilterFile()
 
-	if effectifFile == nil && batchKey.IsSubBatch() {
-		println("Looking for effectif file in " + batchKey.GetParentBatch() + " ...")
+	if (effectifFile == nil || filterFile == nil) && batchKey.IsSubBatch() {
+		println("Looking for effectif and/or filter file in " + batchKey.GetParentBatch() + " ...")
 		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
-		effectifFile, _ = parentFilesProperty.GetEffectifFile()
-	}
-
-	if filterFile == nil && batchKey.IsSubBatch() {
-		println("Looking for filter file in " + batchKey.GetParentBatch() + " ...")
-		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
-		filterFile, _ = parentFilesProperty.GetFilterFile()
+		if effectifFile == nil {
+			effectifFile, _ = parentFilesProperty.GetEffectifFile()
+		}
+		if filterFile == nil {
+			filterFile, _ = parentFilesProperty.GetFilterFile()
+		}
 	}
 
 	if effectifFile != nil {
