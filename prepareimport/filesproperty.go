@@ -2,6 +2,7 @@ package prepareimport
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -34,7 +35,15 @@ func PopulateFilesPropertyFromDataFiles(filenames []DataFile, batchKey BatchKey)
 		if _, exists := filesProperty[filetype]; !exists {
 			filesProperty[filetype] = []BatchFile{}
 		}
-		filesProperty[filetype] = append(filesProperty[filetype], newBatchFile(batchKey, filename.GetFilename()))
+		batchFileToAdd := newBatchFile(batchKey, filename.GetFilename())
+		if strings.HasSuffix(filename.GetOriginalFilename(), ".gz") {
+			size := filename.GetSize()
+			if size == nil {
+				panic(errors.New("file size could not be found for: " + batchFileToAdd.Name()))
+			}
+			batchFileToAdd.AddGzippedSize(*size)
+		}
+		filesProperty[filetype] = append(filesProperty[filetype], batchFileToAdd)
 	}
 	return filesProperty, unsupportedFiles
 }
@@ -78,33 +87,44 @@ type BatchFile interface {
 	BatchKey() BatchKey
 	Name() string
 	Path() string
+	GetGzippedSize() uint64     // in bytes
+	AddGzippedSize(size uint64) // in bytes
 }
 
 func newBatchFile(batchKey BatchKey, filename string) BatchFile {
-	return batchFile{
+	return &batchFile{
 		batchKey: batchKey,
 		filename: filename,
 	}
 }
 
 type batchFile struct {
-	batchKey BatchKey
-	filename string
+	batchKey    BatchKey
+	filename    string
+	gzippedSize uint64 // in bytes
 }
 
-func (file batchFile) BatchKey() BatchKey {
+func (file *batchFile) BatchKey() BatchKey {
 	return file.batchKey
 }
 
-func (file batchFile) Name() string {
+func (file *batchFile) Name() string {
 	return file.filename
 }
 
-func (file batchFile) Path() string {
+func (file *batchFile) Path() string {
 	return file.batchKey.Path() + file.filename
 }
 
+func (file *batchFile) AddGzippedSize(size uint64) {
+	file.gzippedSize = size
+}
+
+func (file *batchFile) GetGzippedSize() uint64 {
+	return file.gzippedSize
+}
+
 // MarshalJSON will be called when serializing the AdminObject.
-func (file batchFile) MarshalJSON() ([]byte, error) {
+func (file *batchFile) MarshalJSON() ([]byte, error) {
 	return json.Marshal(file.Path())
 }

@@ -12,7 +12,7 @@ test: ## Run tests, including end-to-end binary tests
 	@go test ./... -test.count=1 # prevent cache
 
 test-update: ## Run tests and update snapshots / golden files
-	@make test
+	@make prepare-import
 	@go test main_test.go -update -test.count=1 # prevent cache and update golden file
 
 format: ## Fix the formatting of .go files

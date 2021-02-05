@@ -81,4 +81,22 @@ func TestPopulateFilesProperty(t *testing.T) {
 		assert.Equal(t, []string{}, unsupportedFiles)
 		assert.Equal(t, FilesProperty{}, parentFilesProperty)
 	})
+
+	t.Run("Should forward the size of a gzipped file provided with metadata", func(t *testing.T) {
+		metadata := `{ "MetaData": { "filename": "Sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }` // thresholdPerGzippedFileType["debit"]
+		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
+			"083fe617e80f2e30a21598d38a854bc6":      {},
+			"083fe617e80f2e30a21598d38a854bc6.info": []byte(metadata),
+		})
+		expectedFiles := FilesProperty{"debit": {
+			&batchFile{
+				batchKey:    dummyBatchKey,
+				filename:    "083fe617e80f2e30a21598d38a854bc6",
+				gzippedSize: 254781489, // thresholdPerGzippedFileType["debit"]
+			},
+		}}
+		resFilesProperty, unsupportedFiles := PopulateFilesProperty(dir, dummyBatchKey)
+		assert.Len(t, unsupportedFiles, 0)
+		assert.Equal(t, expectedFiles, resFilesProperty)
+	})
 }

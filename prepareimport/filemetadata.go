@@ -7,6 +7,7 @@ import (
 
 // UploadedFileMeta represents the JSON object loaded from .info files.
 type UploadedFileMeta struct {
+	Size     uint64
 	MetaData MetadataProperty
 }
 
