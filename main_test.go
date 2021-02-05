@@ -35,8 +35,8 @@ func TestMain(t *testing.T) {
 			"abcdef.info":                   []byte(`{ "MetaData": { "filename": "FICHIER_SF_2020_02.csv", "goup-path": "bdf" } }`),
 			"unsupported.csv":               {},
 			"E_202011095813_Retro-Paydex_20201207.csv": {},
-			// "083fe617e80f2e30a21598d38a854bc6":         {},
-			// "083fe617e80f2e30a21598d38a854bc6.info":    []byte(`{ "MetaData": { "filename": "Sigfaible_pcoll.csv", "goup-path": "" } }`),
+			"083fe617e80f2e30a21598d38a854bc6":         {},
+			"083fe617e80f2e30a21598d38a854bc6.info":    []byte(`{ "MetaData": { "filename": "Sigfaible_pcoll.csv", "goup-path": "" } }`),
 		})
 
 		cmds := []*exec.Cmd{
