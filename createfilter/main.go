@@ -80,7 +80,9 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCo
 	if err != nil {
 		log.Panic(err)
 	}
+	lineNumber, skippedLines := 0, 0
 	for {
+		lineNumber++
 		record, err := r.Read()
 
 		// Stop at EOF.
@@ -93,14 +95,23 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCo
 		shouldKeep := len(siret) == 14 &&
 			isInsidePerimeter(record[NbLeadingColsToSkip:len(record)-nIgnoredCols], nbMois, minEffectif)
 
-		siren := siret[0:9] // trim siret into a siren
-		_, alreadyDetected := detectedSirens[siren]
-
-		if shouldKeep && alreadyDetected == false {
-			detectedSirens[siren] = struct{}{}
-			fmt.Fprintln(w, siren)
+		var siren string
+		if len(siret) >= 9 {
+			siren = siret[0:9] // trim siret into a siren
+			_, alreadyDetected := detectedSirens[siren]
+			if shouldKeep && alreadyDetected == false {
+				detectedSirens[siren] = struct{}{}
+				fmt.Fprintln(w, siren)
+			}
+		} else {
+			skippedLines++
+			fmt.Printf("%d digit siret encountered, skipping line %d \n", len(siret), lineNumber)
 		}
 	}
+	if skippedLines > 0 {
+		fmt.Printf("%d lines with bad siret/siren skipped :( \n", skippedLines)
+	}
+
 }
 
 func isInsidePerimeter(record []string, nbMois, minEffectif int) bool {
