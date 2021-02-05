@@ -6,22 +6,23 @@ import (
 
 // ExtractFileTypeFromFilename returns a file type from filename, or empty string for unsupported file names
 func ExtractFileTypeFromFilename(filename string) ValidFileType {
+	possiblyGzFilename := regexp.MustCompile(`^(.*)\.gz$`).ReplaceAllString(filename, `$1`)
 	switch {
 	case filename == "act_partielle_conso_depuis2014_FRANCE.csv":
 		return apconso
 	case filename == "act_partielle_ddes_depuis2015_FRANCE.csv":
 		return apdemande
-	case filename == "Sigfaible_etablissement_utf8.csv":
+	case possiblyGzFilename == "Sigfaible_etablissement_utf8.csv":
 		return adminUrssaf
-	case filename == "Sigfaible_effectif_siren.csv":
+	case possiblyGzFilename == "Sigfaible_effectif_siren.csv":
 		return effectifEnt
-	case filename == "Sigfaible_pcoll.csv":
+	case possiblyGzFilename == "Sigfaible_pcoll.csv":
 		return procol
-	case filename == "Sigfaible_cotisdues.csv":
+	case possiblyGzFilename == "Sigfaible_cotisdues.csv":
 		return cotisation
-	case filename == "Sigfaible_delais.csv":
+	case possiblyGzFilename == "Sigfaible_delais.csv":
 		return delai
-	case filename == "Sigfaible_ccsf.csv":
+	case possiblyGzFilename == "Sigfaible_ccsf.csv":
 		return ccsf
 	case filename == "sireneUL.csv":
 		return sireneUl
