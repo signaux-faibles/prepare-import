@@ -52,6 +52,7 @@ func populateCompleteTypesProperty(filesProperty FilesProperty) []ValidFileType 
 			}
 			file := files[0]
 			if file.GetGzippedSize() >= thresholdInBytes {
+				println(fmt.Sprintf("Info: file \"%v\" was marked as \"complete\" because it's a gzipped file which size reached the threshold of %v bytes", file.Name(), thresholdInBytes))
 				completeTypes = append(completeTypes, typeName)
 			}
 		}
