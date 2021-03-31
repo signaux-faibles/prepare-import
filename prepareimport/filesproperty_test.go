@@ -91,7 +91,7 @@ func TestPopulateFilesProperty(t *testing.T) {
 		resFilesProperty, _ := PopulateFilesProperty(dir, dummyBatchKey)
 		assert.Len(t, resFilesProperty["debit"], 1)
 		actualFilePath := resFilesProperty["debit"][0].Path() // cf batchFile.MarshalJSON()
-		assert.Equal(t, "gzip:083fe617e80f2e30a21598d38a854bc6", actualFilePath)
+		assert.Equal(t, "gzip:/1802/083fe617e80f2e30a21598d38a854bc6", actualFilePath)
 	})
 
 	t.Run("Should forward the size of a gzipped file provided with metadata", func(t *testing.T) {
