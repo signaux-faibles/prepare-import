@@ -82,6 +82,18 @@ func TestPopulateFilesProperty(t *testing.T) {
 		assert.Equal(t, FilesProperty{}, parentFilesProperty)
 	})
 
+	t.Run("Should add a 'gzip:' prefix to compressed files", func(t *testing.T) {
+		metadata := `{ "MetaData": { "filename": "Sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }`
+		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
+			"083fe617e80f2e30a21598d38a854bc6":      {},
+			"083fe617e80f2e30a21598d38a854bc6.info": []byte(metadata),
+		})
+		resFilesProperty, _ := PopulateFilesProperty(dir, dummyBatchKey)
+		assert.Len(t, resFilesProperty["debit"], 1)
+		actualFilePath := resFilesProperty["debit"][0].Path() // cf batchFile.MarshalJSON()
+		assert.Equal(t, "gzip:/1802/083fe617e80f2e30a21598d38a854bc6", actualFilePath)
+	})
+
 	t.Run("Should forward the size of a gzipped file provided with metadata", func(t *testing.T) {
 		metadata := `{ "MetaData": { "filename": "Sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }` // thresholdPerGzippedFileType["debit"]
 		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{

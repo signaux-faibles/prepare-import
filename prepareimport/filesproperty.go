@@ -113,7 +113,11 @@ func (file *batchFile) Name() string {
 }
 
 func (file *batchFile) Path() string {
-	return file.batchKey.Path() + file.filename
+	var prefix string
+	if file.gzippedSize > 0 {
+		prefix = "gzip:"
+	}
+	return prefix + file.batchKey.Path() + file.filename
 }
 
 func (file *batchFile) AddGzippedSize(size uint64) {
