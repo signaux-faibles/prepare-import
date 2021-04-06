@@ -43,4 +43,5 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(string(json))
+	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
 }
