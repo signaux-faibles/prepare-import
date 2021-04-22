@@ -249,32 +249,31 @@ func TestPrepareImport(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
+		// compress effectif file
 		var compressedEffectifData bytes.Buffer
 		zw := gzip.NewWriter(&compressedEffectifData)
-
 		if _, err = zw.Write(data); err != nil {
 			t.Fatal(err)
 		}
 		if err := zw.Close(); err != nil {
 			t.Fatal(err)
 		}
-
-		// fileReader, err = gzip.NewReader(file)
-		// if err != nil {
-		// 	return file, nil, err
-		// }
-
+		// run prepare-import
 		metadata := `{ "MetaData": { "filename": "Sigfaible_effectif_siret.csv.gz", "goup-path": "acoss" }, "Size": 172391771 }`
 		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			// "Sigfaible_effectif_siret.csv.gz": compressedEffectifData.Bytes(),
-			"719776012f6a124c3fab0f1c74fd585a":      {},
+			"719776012f6a124c3fab0f1c74fd585a":      compressedEffectifData.Bytes(),
 			"719776012f6a124c3fab0f1c74fd585a.info": []byte(metadata),
 		})
-		adminObject, err := PrepareImport(dir, dummyBatchKey, "") // => open gzip:/var/folders/v3/_c06yg_96tbf9kzmm0zq0y180000gn/T/example695100756/1802/719776012f6a124c3fab0f1c74fd585a: no such file or directory
+		adminObject, err := PrepareImport(dir, dummyBatchKey, "")
+		// setup expectations
 		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
+		expectedEffectifFile := &batchFile{
+			batchKey:    dummyBatchKey,
+			filename:    "719776012f6a124c3fab0f1c74fd585a",
+			gzippedSize: 172391771, // TODO: pourquoi cette taille est bien supérieure à celle de createfilter/test_data.csv ? (2 744 octets)
+		}
 		expected := FilesProperty{
-			"effectif": {dummyBatchFile("Sigfaible_effectif_siret.csv.gz")},
+			"effectif": {expectedEffectifFile},
 			"filter":   {dummyBatchFile(filterFileName)},
 		}
 		// check that the filter is listed in the "files" property

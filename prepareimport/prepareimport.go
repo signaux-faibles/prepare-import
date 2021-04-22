@@ -84,7 +84,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 
 	if effectifFile != nil {
 		println("Detecting dateFinEffectif from effectif file ...")
-		effectifFilePath := path.Join(pathname, effectifFile.Path())
+		effectifFilePath := effectifFile.AbsolutePath(pathname)
 		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
 		if err != nil {
 			return nil, err
