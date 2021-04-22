@@ -1,6 +1,8 @@
 package prepareimport
 
 import (
+	"bytes"
+	"compress/gzip"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -226,6 +228,50 @@ func TestPrepareImport(t *testing.T) {
 		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expected := FilesProperty{
 			"effectif": {dummyBatchFile("Sigfaible_effectif_siret.csv")},
+			"filter":   {dummyBatchFile(filterFileName)},
+		}
+		// check that the filter is listed in the "files" property
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected, adminObject["files"])
+		}
+		// check that the filter file exists
+		filterFilePath := path.Join(dir, dummyBatchKey.Path(), filterFileName)
+		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
+		// check that date_fin_effectif was detected from the effectif file
+		validDateFinEffectif := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
+		expectedDateFinEffectif := NewDateFinEffectif(validDateFinEffectif).MongoDate()
+		actualDateFinEffectif := adminObject["param"].(ParamProperty).DateFinEffectif
+		assert.Equal(t, expectedDateFinEffectif, actualDateFinEffectif)
+	})
+
+	t.Run("should create filter file even if effectif file is compressed", func(t *testing.T) {
+		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var compressedEffectifData bytes.Buffer
+		zw := gzip.NewWriter(&compressedEffectifData)
+
+		if _, err = zw.Write(data); err != nil {
+			t.Fatal(err)
+		}
+		if err := zw.Close(); err != nil {
+			t.Fatal(err)
+		}
+
+		// fileReader, err = gzip.NewReader(file)
+		// if err != nil {
+		// 	return file, nil, err
+		// }
+
+		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
+			"Sigfaible_effectif_siret.csv.gz": compressedEffectifData.Bytes(),
+		})
+		adminObject, err := PrepareImport(dir, dummyBatchKey, "")
+		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
+		expected := FilesProperty{
+			"effectif": {dummyBatchFile("Sigfaible_effectif_siret.csv.gz")},
 			"filter":   {dummyBatchFile(filterFileName)},
 		}
 		// check that the filter is listed in the "files" property
