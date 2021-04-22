@@ -113,10 +113,12 @@ func (file *batchFile) Name() string {
 	return file.filename
 }
 
+// AbsolutePath retourne le chemin relatif du fichier, avec un préfixe "gzip:" si celui-ci est compressé.
 func (file *batchFile) Path() string {
 	return file.AbsolutePath("")
 }
 
+// AbsolutePath retourne le chemin absolu du fichier, avec un préfixe "gzip:" si celui-ci est compressé.
 func (file *batchFile) AbsolutePath(parentDir string) string {
 	var prefix string
 	if file.gzippedSize > 0 {
