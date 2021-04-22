@@ -2,6 +2,7 @@ package createfilter
 
 import (
 	"bufio"
+	"compress/gzip"
 	"encoding/csv"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -66,16 +68,30 @@ func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif
 	return err
 }
 
+// If the effectif file has a "gzip:" prefix, it will be decompressed on the fly.
 func makeEffectifReaderFromFile(effectifFileName string) (*csv.Reader, *os.File, error) {
+	var fileReader io.Reader
+	compressed := strings.HasPrefix(effectifFileName, "gzip:")
+	if compressed {
+		effectifFileName = strings.Replace(effectifFileName, "gzip:", "", 1)
+	}
 	file, err := os.Open(effectifFileName)
 	if err != nil {
 		return nil, nil, err
 	}
-	return initializeEffectifReader(file), file, err
+	if compressed {
+		fileReader, err = gzip.NewReader(file)
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		fileReader = bufio.NewReader(file)
+	}
+	return initializeEffectifReader(fileReader), file, err
 }
 
-func initializeEffectifReader(f *os.File) *csv.Reader {
-	r := csv.NewReader(bufio.NewReader(f))
+func initializeEffectifReader(reader io.Reader) *csv.Reader {
+	r := csv.NewReader(reader)
 	r.LazyQuotes = true
 	r.Comma = ';'
 	return r
