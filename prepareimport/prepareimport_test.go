@@ -100,12 +100,8 @@ func TestPrepareImport(t *testing.T) {
 		providedDateFinEffetif := ""
 		expectedDateFinEffectif := NewDateFinEffectif(time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)).MongoDate()
 		// Setup test environment
-		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
-		if err != nil {
-			t.Fatal(err)
-		}
 		parentDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			effectifFile.Name(): data,
+			effectifFile.Name(): readFileData(t, "../createfilter/test_data.csv"),
 		})
 		// Run the test
 		res, err := PrepareImport(parentDir, dummyBatchKey, providedDateFinEffetif)
@@ -120,12 +116,8 @@ func TestPrepareImport(t *testing.T) {
 		providedDateFinEffetif := ""
 		expectedDateFinEffectif := NewDateFinEffectif(time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)).MongoDate()
 		// Setup test environment
-		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
-		if err != nil {
-			t.Fatal(err)
-		}
 		parentDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			effectifFile.Name(): data,
+			effectifFile.Name(): readFileData(t, "../createfilter/test_data.csv"),
 			"filter_2002.csv":   {},
 		})
 		// Run the test
@@ -144,12 +136,8 @@ func TestPrepareImport(t *testing.T) {
 		expectedFilesProp := FilesProperty{filter: {filterFile}}
 		expectedDateFinEffectif := NewDateFinEffectif(time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)).MongoDate()
 		// Setup test environment
-		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
-		if err != nil {
-			t.Fatal(err)
-		}
 		parentDir := CreateTempFilesWithContent(t, parentBatch, map[string][]byte{
-			parentEffectifFile.Name(): data,
+			parentEffectifFile.Name(): readFileData(t, "../createfilter/test_data.csv"),
 		})
 		subBatchDir := filepath.Join(parentDir, parentBatch.String(), subBatch.String())
 		os.Mkdir(subBatchDir, 0777)
@@ -218,29 +206,26 @@ func TestPrepareImport(t *testing.T) {
 	})
 
 	t.Run("should create filter file and fill date_fin_effectif if an effectif file is present", func(t *testing.T) {
-		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
-		if err != nil {
-			t.Fatal(err)
-		}
-		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			"Sigfaible_effectif_siret.csv": data,
-		})
-		adminObject, err := PrepareImport(dir, dummyBatchKey, "")
+		// setup expectations
 		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expected := FilesProperty{
 			"effectif": {dummyBatchFile("Sigfaible_effectif_siret.csv")},
 			"filter":   {dummyBatchFile(filterFileName)},
 		}
+		expectedDateFinEffectif := makeMongoDate(2020, 1, 1)
+		// run prepare-import
+		batchDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
+			"Sigfaible_effectif_siret.csv": readFileData(t, "../createfilter/test_data.csv"),
+		})
+		adminObject, err := PrepareImport(batchDir, dummyBatchKey, "")
 		// check that the filter is listed in the "files" property
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, adminObject["files"])
 		}
 		// check that the filter file exists
-		filterFilePath := path.Join(dir, dummyBatchKey.Path(), filterFileName)
+		filterFilePath := path.Join(batchDir, dummyBatchKey.Path(), filterFileName)
 		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 		// check that date_fin_effectif was detected from the effectif file
-		validDateFinEffectif := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
-		expectedDateFinEffectif := NewDateFinEffectif(validDateFinEffectif).MongoDate()
 		actualDateFinEffectif := adminObject["param"].(ParamProperty).DateFinEffectif
 		assert.Equal(t, expectedDateFinEffectif, actualDateFinEffectif)
 	})
@@ -254,10 +239,11 @@ func TestPrepareImport(t *testing.T) {
 			filename:    "719776012f6a124c3fab0f1c74fd585a",
 			gzippedSize: uint64(compressedEffectifData.Len()),
 		}
-		expected := FilesProperty{
+		expectedFiles := FilesProperty{
 			"effectif": {expectedEffectifFile},
 			"filter":   {dummyBatchFile(filterFileName)},
 		}
+		expectedDateFinEffectif := makeMongoDate(2020, 1, 1)
 		// run prepare-import
 		batchDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			"719776012f6a124c3fab0f1c74fd585a": compressedEffectifData.Bytes(),
@@ -268,17 +254,28 @@ func TestPrepareImport(t *testing.T) {
 		adminObject, err := PrepareImport(batchDir, dummyBatchKey, "")
 		// check that the filter is listed in the "files" property
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected, adminObject["files"])
+			assert.Equal(t, expectedFiles, adminObject["files"])
 		}
 		// check that the filter file exists
 		filterFilePath := path.Join(batchDir, dummyBatchKey.Path(), filterFileName)
 		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 		// check that date_fin_effectif was detected from the effectif file
-		validDateFinEffectif := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
-		expectedDateFinEffectif := NewDateFinEffectif(validDateFinEffectif).MongoDate()
 		actualDateFinEffectif := adminObject["param"].(ParamProperty).DateFinEffectif
 		assert.Equal(t, expectedDateFinEffectif, actualDateFinEffectif)
 	})
+}
+
+func makeMongoDate(year, month, day int) MongoDate {
+	validDateFinEffectif := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	return NewDateFinEffectif(validDateFinEffectif).MongoDate()
+}
+
+func readFileData(t *testing.T, filePath string) []byte {
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data
 }
 
 func compressFileData(t *testing.T, filePath string) (compressedData bytes.Buffer) {
