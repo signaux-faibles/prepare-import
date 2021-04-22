@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -245,43 +246,32 @@ func TestPrepareImport(t *testing.T) {
 	})
 
 	t.Run("should create filter file even if effectif file is compressed", func(t *testing.T) {
-		data, err := ioutil.ReadFile("../createfilter/test_data.csv")
-		if err != nil {
-			t.Fatal(err)
-		}
-		// compress effectif file
-		var compressedEffectifData bytes.Buffer
-		zw := gzip.NewWriter(&compressedEffectifData)
-		if _, err = zw.Write(data); err != nil {
-			t.Fatal(err)
-		}
-		if err := zw.Close(); err != nil {
-			t.Fatal(err)
-		}
-		// run prepare-import
-		metadata := `{ "MetaData": { "filename": "Sigfaible_effectif_siret.csv.gz", "goup-path": "acoss" }, "Size": 172391771 }`
-		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			"719776012f6a124c3fab0f1c74fd585a":      compressedEffectifData.Bytes(),
-			"719776012f6a124c3fab0f1c74fd585a.info": []byte(metadata),
-		})
-		adminObject, err := PrepareImport(dir, dummyBatchKey, "")
+		compressedEffectifData := compressFileData(t, "../createfilter/test_data.csv")
 		// setup expectations
 		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expectedEffectifFile := &batchFile{
 			batchKey:    dummyBatchKey,
 			filename:    "719776012f6a124c3fab0f1c74fd585a",
-			gzippedSize: 172391771, // TODO: pourquoi cette taille est bien supérieure à celle de createfilter/test_data.csv ? (2 744 octets)
+			gzippedSize: uint64(compressedEffectifData.Len()),
 		}
 		expected := FilesProperty{
 			"effectif": {expectedEffectifFile},
 			"filter":   {dummyBatchFile(filterFileName)},
 		}
+		// run prepare-import
+		batchDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
+			"719776012f6a124c3fab0f1c74fd585a": compressedEffectifData.Bytes(),
+			"719776012f6a124c3fab0f1c74fd585a.info": []byte(
+				fmt.Sprintf(`{ "MetaData": { "filename": "Sigfaible_effectif_siret.csv.gz", "goup-path": "acoss" }, "Size": %v }`, compressedEffectifData.Len()),
+			),
+		})
+		adminObject, err := PrepareImport(batchDir, dummyBatchKey, "")
 		// check that the filter is listed in the "files" property
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected, adminObject["files"])
 		}
 		// check that the filter file exists
-		filterFilePath := path.Join(dir, dummyBatchKey.Path(), filterFileName)
+		filterFilePath := path.Join(batchDir, dummyBatchKey.Path(), filterFileName)
 		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 		// check that date_fin_effectif was detected from the effectif file
 		validDateFinEffectif := time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)
@@ -289,4 +279,19 @@ func TestPrepareImport(t *testing.T) {
 		actualDateFinEffectif := adminObject["param"].(ParamProperty).DateFinEffectif
 		assert.Equal(t, expectedDateFinEffectif, actualDateFinEffectif)
 	})
+}
+
+func compressFileData(t *testing.T, filePath string) (compressedData bytes.Buffer) {
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zw := gzip.NewWriter(&compressedData)
+	if _, err = zw.Write(data); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return compressedData
 }
