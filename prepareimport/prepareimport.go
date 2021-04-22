@@ -56,7 +56,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		if effectifFile == nil {
 			return nil, errors.New("filter is missing: batch should include a filter or one effectif file")
 		}
-		effectifFilePath := path.Join(pathname, effectifFile.Path())
+		effectifFilePath := effectifFile.AbsolutePath(pathname)
 		effectifBatch := effectifFile.BatchKey()
 		filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
 		println("Generating filter file: " + filterFile.Path() + " ...")

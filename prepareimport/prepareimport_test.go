@@ -271,7 +271,7 @@ func TestPrepareImport(t *testing.T) {
 			"719776012f6a124c3fab0f1c74fd585a":      {},
 			"719776012f6a124c3fab0f1c74fd585a.info": []byte(metadata),
 		})
-		adminObject, err := PrepareImport(dir, dummyBatchKey, "") // => open /var/folders/v3/_c06yg_96tbf9kzmm0zq0y180000gn/T/example424586267/gzip:/1802/719776012f6a124c3fab0f1c74fd585a: no such file or directory
+		adminObject, err := PrepareImport(dir, dummyBatchKey, "") // => open gzip:/var/folders/v3/_c06yg_96tbf9kzmm0zq0y180000gn/T/example695100756/1802/719776012f6a124c3fab0f1c74fd585a: no such file or directory
 		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expected := FilesProperty{
 			"effectif": {dummyBatchFile("Sigfaible_effectif_siret.csv.gz")},
