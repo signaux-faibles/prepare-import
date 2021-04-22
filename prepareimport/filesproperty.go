@@ -87,6 +87,7 @@ type BatchFile interface {
 	BatchKey() BatchKey
 	Name() string
 	Path() string
+	AbsolutePath(parentDir string) string
 	GetGzippedSize() uint64     // in bytes
 	AddGzippedSize(size uint64) // in bytes
 }
@@ -112,12 +113,18 @@ func (file *batchFile) Name() string {
 	return file.filename
 }
 
+// AbsolutePath retourne le chemin relatif du fichier, avec un préfixe "gzip:" si celui-ci est compressé.
 func (file *batchFile) Path() string {
+	return file.AbsolutePath("")
+}
+
+// AbsolutePath retourne le chemin absolu du fichier, avec un préfixe "gzip:" si celui-ci est compressé.
+func (file *batchFile) AbsolutePath(parentDir string) string {
 	var prefix string
 	if file.gzippedSize > 0 {
 		prefix = "gzip:"
 	}
-	return prefix + file.batchKey.Path() + file.filename
+	return prefix + path.Join(parentDir, file.batchKey.Path(), file.filename)
 }
 
 func (file *batchFile) AddGzippedSize(size uint64) {

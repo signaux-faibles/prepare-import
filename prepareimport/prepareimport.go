@@ -56,7 +56,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		if effectifFile == nil {
 			return nil, errors.New("filter is missing: batch should include a filter or one effectif file")
 		}
-		effectifFilePath := path.Join(pathname, effectifFile.Path())
+		effectifFilePath := effectifFile.AbsolutePath(pathname)
 		effectifBatch := effectifFile.BatchKey()
 		filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
 		println("Generating filter file: " + filterFile.Path() + " ...")
@@ -84,7 +84,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 
 	if effectifFile != nil {
 		println("Detecting dateFinEffectif from effectif file ...")
-		effectifFilePath := path.Join(pathname, effectifFile.Path())
+		effectifFilePath := effectifFile.AbsolutePath(pathname)
 		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
 		if err != nil {
 			return nil, err
@@ -138,10 +138,7 @@ func getBatchPath(pathname string, batchKey BatchKey) string {
 
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return true
+	return !os.IsNotExist(err)
 }
 
 // Copy the src file to dst. Any existing file will be overwritten and will not
