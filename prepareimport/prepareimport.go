@@ -138,10 +138,7 @@ func getBatchPath(pathname string, batchKey BatchKey) string {
 
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return true
+	return !os.IsNotExist(err)
 }
 
 // Copy the src file to dst. Any existing file will be overwritten and will not
