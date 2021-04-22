@@ -32,12 +32,12 @@ func UrssafToPeriod(urssaf string) (Periode, error) {
 	}
 
 	if len(urssaf) != 6 {
-		return period, errors.New("Valeur non autorisée")
+		return period, errors.New("valeur non autorisée")
 	}
 
 	year, err := strconv.Atoi(urssaf[0:4])
 	if err != nil {
-		return Periode{}, errors.New("Valeur non autorisée")
+		return Periode{}, errors.New("valeur non autorisée")
 	}
 
 	if urssaf[4:6] == "62" {

@@ -55,13 +55,14 @@ func main() {
 }
 
 // CreateFilter generates a "filter" from an "effectif" file.
+// If the effectif file has a "gzip:" prefix, it will be decompressed on the fly.
 func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif int, nIgnoredCols int) error {
 	last := guessLastNMissing(effectifFileName, nIgnoredCols)
 	f, err := os.Open(effectifFileName)
-	defer f.Close()
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	r := initializeEffectifReader(f)
 	outputPerimeter(r, writer, nbMois, minEffectif, nIgnoredCols+last)
 	return nil
@@ -99,7 +100,7 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCo
 		if len(siret) >= 9 {
 			siren = siret[0:9] // trim siret into a siren
 			_, alreadyDetected := detectedSirens[siren]
-			if shouldKeep && alreadyDetected == false {
+			if shouldKeep && !alreadyDetected {
 				detectedSirens[siren] = struct{}{}
 				fmt.Fprintln(w, siren)
 			}
@@ -138,10 +139,10 @@ func isInsidePerimeter(record []string, nbMois, minEffectif int) bool {
 // DetectDateFinEffectif determines DateFinEffectif by parsing the effectif file.
 func DetectDateFinEffectif(path string, nIgnoredCols int) (dateFinEffectif time.Time, err error) {
 	f, err := os.Open(path)
-	defer f.Close()
 	if err != nil {
 		return time.Time{}, err
 	}
+	defer f.Close()
 	r := initializeEffectifReader(f)
 	header, err := r.Read() // en tête
 	if err != nil {
@@ -155,10 +156,10 @@ func DetectDateFinEffectif(path string, nIgnoredCols int) (dateFinEffectif time.
 
 func guessLastNMissing(path string, nIgnoredCols int) int {
 	f, err := os.Open(path)
-	defer f.Close()
 	if err != nil {
 		log.Panic(err)
 	}
+	defer f.Close()
 	r := initializeEffectifReader(f)
 	_, err = r.Read() // en tête
 	if err != nil {
