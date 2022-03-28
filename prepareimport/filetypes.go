@@ -8,9 +8,9 @@ import (
 func ExtractFileTypeFromFilename(filename string) ValidFileType {
 	possiblyGzFilename := regexp.MustCompile(`^(.*)\.gz$`).ReplaceAllString(filename, `$1`)
 	switch {
-	case filename == "act_partielle_conso_depuis2014_FRANCE.csv":
+	case filename == "consommation_ap.csv":
 		return apconso
-	case filename == "act_partielle_ddes_depuis2015_FRANCE.csv":
+	case filename == "demande_ap.csv":
 		return apdemande
 	case possiblyGzFilename == "Sigfaible_etablissement_utf8.csv":
 		return adminUrssaf

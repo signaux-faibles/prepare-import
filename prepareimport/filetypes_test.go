@@ -34,8 +34,8 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 		{"Sigfaible_pcoll.csv.gz", procol},
 
 		// guessed from dgefp files
-		{"act_partielle_conso_depuis2014_FRANCE.csv", apconso},
-		{"act_partielle_ddes_depuis2015_FRANCE.csv", apdemande},
+		{"consommation_ap.csv", apconso},
+		{"demande_ap.csv", apdemande},
 
 		// others
 		{"Diane_Export_4.txt", diane},
