@@ -1,29 +1,32 @@
 name: Go
 
 on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master, dev, dev-finalisation]
+    push:
+        branches:
+    release:
+        types: [published, edited]
+    pull_request:
+        branches:
+            - 'master'
 
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.14
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
           go-version: 1.14
         id: go
 
-      - name: Set up Python2 (for goupy)
-        uses: actions/setup-python@v2
-        with:
-          python-version: 2
+#      - name: Set up Python2 (for goupy)
+#        uses: actions/setup-python@v4
+#        with:
+#          python-version: 2
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # for deepsource, cf https://deepsource.io/docs/how-to/add-go-cov-ci.html#with-github-actions
           ref: ${{ github.event.pull_request.head.sha }}
@@ -62,3 +65,50 @@ jobs:
         run: |
           curl https://deepsource.io/cli | sh
           ./bin/deepsource report --analyzer test-coverage --key go --value-file ./coverage.out
+
+  publish:
+    name: Push OpenSignauxFaibles container
+    runs-on: ubuntu-latest
+    steps:
+
+#      - name: Check out code
+#        uses: actions/checkout@v3
+#
+#      - name: Set up node
+#        uses: actions/setup-node@v2
+#        with:
+#            node-version: 12
+#
+#      - name: Set up Go 1.14
+#        uses: actions/setup-go@v3
+#        with:
+#            go-version: 1.1
+      - name: Login to GitHub Container Registry
+        id: login
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v2
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=sha
+          flavor: |
+            latest=false
+            suffix=-${{ matrix.env }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./build-container
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
