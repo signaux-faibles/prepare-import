@@ -2,6 +2,7 @@ package prepareimport
 
 import (
 	"log"
+    "os"
 	"path/filepath"
 	"strings"
 )
@@ -19,12 +20,13 @@ func AugmentDataFile(file string, pathname string) DataFile {
 	if !strings.Contains(file, ".") { // "bin" files have no extension => no dot in their filename
 		return UploadedDataFile{file, pathname}
 	}
-	return SimpleDataFile{file}
+	return SimpleDataFile{file, pathname}
 }
 
 // SimpleDataFile is a DataFile which type can be determined without requiring a metadata file (e.g. well-named csv file).
 type SimpleDataFile struct {
 	filename string
+    pathname string
 }
 
 // DetectFileType returns the type of that file (e.g. DEBIT).
@@ -44,8 +46,13 @@ func (dataFile SimpleDataFile) GetOriginalFilename() string {
 
 // GetSize returns the size of that file, in bytes.
 func (dataFile SimpleDataFile) GetSize() *uint64 {
-	log.Println("Warning: getting gzippedSize of SimpleDataFile is not implemented yet: " + dataFile.filename)
-	return nil
+  fi, err := os.Stat(dataFile.pathname + "/" + dataFile.GetOriginalFilename())
+    if err != nil {
+      log.Println("Error: can't open file for reading: " + dataFile.GetOriginalFilename())
+      return nil
+    }
+    size := uint64(fi.Size())
+	return &size
 }
 
 // UploadedDataFile is a DataFile which type can be determined thanks to a metadata file (e.g. bin+info files).
@@ -58,7 +65,7 @@ type UploadedDataFile struct {
 func (dataFile UploadedDataFile) DetectFileType() ValidFileType {
 	metaFilepath := filepath.Join(dataFile.path, dataFile.filename+".info")
 	fileinfo := LoadMetadata(metaFilepath)
-	return ExtractFileTypeFromMetadata(metaFilepath, fileinfo) // e.g. "Sigfaible_debits.csv"
+	return ExtractFileTypeFromMetadata(metaFilepath, fileinfo) // e.g. "sigfaible_debits.csv"
 }
 
 // GetFilename returns the name as it will be stored in Admin.

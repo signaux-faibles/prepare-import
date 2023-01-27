@@ -12,10 +12,10 @@
       "/1802/abcdef"
     ],
     "debit": [
-      "/1802/Sigfaibles_debits.csv"
+      "/1802/sigfaibles_debits.csv"
     ],
     "effectif": [
-      "/1802/Sigfaibles_effectif_siret.csv"
+      "/1802/sigfaibles_effectif_siret.csv"
     ],
     "filter": [
       "/1802/filter_siren_1802.csv"
