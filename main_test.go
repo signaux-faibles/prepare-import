@@ -42,11 +42,11 @@ func TestMain(t *testing.T) {
 		cmds := []*exec.Cmd{
 			exec.Command(
 				"./prepare-import",
-				"--path", parentDir,
-				"--batch", batch,
-				"--date-fin-effectif", "2014-01-01",
+				"-path", parentDir,
+				"-batch", batch,
+				"-date-fin-effectif", "2014-01-01",
 			), // paramètres valides
-			exec.Command("./prepare-import", "--path", parentDir, "--batch", "180"), // nom de batch invalide
+			exec.Command("./prepare-import", "-path", parentDir, "-batch", "180"), // nom de batch invalide
 		}
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer
