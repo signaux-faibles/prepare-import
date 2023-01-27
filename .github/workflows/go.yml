@@ -31,11 +31,6 @@ jobs:
               dep ensure
           fi
 
-      - name: Build
-        run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o prepare-import
-          cp ./prepare-import ./build-container/prepare-import
-
       - name: Check formatting
         run: |
           make format format-doc
@@ -52,6 +47,11 @@ jobs:
         run: |
           go get github.com/schrej/godacov
           go run github.com/schrej/godacov -t ${{ secrets.CODACY_REPOSITORY_TOKEN_FOR_COVERAGE }} -r ./coverage.out -c $GITHUB_SHA
+
+      - name: Build
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o prepare-import
+          cp ./prepare-import ./build-container/prepare-import
 
       - name: Login to GitHub Container Registry
         id: login
