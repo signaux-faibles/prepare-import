@@ -42,7 +42,7 @@ jobs:
 
       - name: Build
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./... -o prepare-import
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o prepare-import
           cp ./prepare-import ./build-container/prepare-import
 
       - name: Test
