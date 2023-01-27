@@ -73,7 +73,6 @@ jobs:
             type=sha
           flavor: |
             latest=false
-            suffix=-${{ matrix.env }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
