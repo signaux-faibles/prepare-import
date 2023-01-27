@@ -10,7 +10,7 @@ func TestExtractFileTypeFromMetadata(t *testing.T) {
 
 	t.Run("should return \"debit\" for bin file which original name included \"debits\"", func(t *testing.T) {
 		got := ExtractFileTypeFromMetadata("9a047825d8173684b69994428449302f", MakeMetadata(MetadataProperty{
-			"filename":  "Sigfaible_debits.csv",
+			"filename":  "sigfaible_debits.csv",
 			"goup-path": "urssaf",
 		}))
 		assert.Equal(t, debit, got)
