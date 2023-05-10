@@ -20,10 +20,10 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
 
-#      - name: Check formatting
-#        run: |
-#          make format format-doc
-#          git diff --exit-code
+      - name: Check formatting
+        run: |
+          make format format-doc
+          git diff --exit-code
 
       - name: Build
         run: |
