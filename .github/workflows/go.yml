@@ -4,54 +4,42 @@ on:
   push:
     branches:
   release:
-    types: [published, edited]
-  pull_request:
-    branches:
-      - "master"
+    types: [published]
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-22.04
     steps:
-      - name: Set up Go 1.14
+      - name: Set up Go 1.20
         uses: actions/setup-go@v4
         with:
-          go-version: 1.14
+          go-version: "1.20"
         id: go
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
 
-      - name: Get dependencies
-        run: |
-          go get -v -t -d ./...
-          if [ -f Gopkg.toml ]; then
-              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-              dep ensure
-          fi
-
       - name: Check formatting
         run: |
           make format format-doc
-          exit $(git diff | wc -l) # Return a non-zero error code if any output file has changed
-
-      - name: Install test dependencies
-        run: |
-          sudo apt-get install -y --no-install-recommends gnumeric # more specifically: "ssconvert", for filter_to_diane
+          git diff --exit-code
 
       - name: Build
         run: |
+          go version
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o prepare-import
-          cp ./prepare-import ./build-container/prepare-import
+          cp ./prepare-import ./build-container
 
       - name: Test
         run: go test ./... -v -coverprofile=coverage.out
 
       - name: Upload coverage to codacy
-        run: |
-          go get github.com/schrej/godacov
-          go run github.com/schrej/godacov -t ${{ secrets.CODACY_REPOSITORY_TOKEN_FOR_COVERAGE }} -r ./coverage.out -c $GITHUB_SHA
+        run: >
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report
+          --coverage-reports coverage.out
+          --force-coverage-parser go
+          --project-token ${{ secrets.CODACY_REPOSITORY_TOKEN_FOR_COVERAGE }}
 
       - name: Login to GitHub Container Registry
         id: login
@@ -63,7 +51,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v2
+        uses: docker/metadata-action@v4
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
@@ -78,6 +66,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./build-container
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
