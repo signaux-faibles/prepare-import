@@ -23,6 +23,7 @@ jobs:
       - name: Check formatting
         run: |
           make format format-doc
+          echo "nb diff : $(git diff | wc -l)"
           exit $(git diff | wc -l) # Return a non-zero error code if any output file has changed
 
       - name: Build
