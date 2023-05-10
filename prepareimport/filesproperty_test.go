@@ -16,23 +16,23 @@ func TestPopulateFilesProperty(t *testing.T) {
 	})
 
 	t.Run("PopulateFilesProperty should contain effectif file in \"effectif\" property", func(t *testing.T) {
-		filesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"Sigfaibles_effectif_siret.csv"}}, dummyBatchKey)
+		filesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"sigfaibles_effectif_siret.csv", ""}}, dummyBatchKey)
 		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []BatchFile{dummyBatchFile("Sigfaibles_effectif_siret.csv")}, filesProperty[effectif])
+			assert.Equal(t, []BatchFile{dummyBatchFile("sigfaibles_effectif_siret.csv")}, filesProperty[effectif])
 		}
 	})
 
 	t.Run("PopulateFilesProperty should contain one debit file in \"debit\" property", func(t *testing.T) {
-		filesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}}, dummyBatchKey)
-		expected := FilesProperty{debit: {dummyBatchFile("Sigfaibles_debits.csv")}}
+		filesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"sigfaibles_debits.csv", ""}}, dummyBatchKey)
+		expected := FilesProperty{debit: {dummyBatchFile("sigfaibles_debits.csv")}}
 		assert.Len(t, unsupportedFiles, 0)
 		assert.Equal(t, expected, filesProperty)
 	})
 
 	t.Run("PopulateFilesProperty should contain both debits files in \"debit\" property", func(t *testing.T) {
-		filesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"Sigfaibles_debits.csv"}, SimpleDataFile{"Sigfaibles_debits2.csv"}}, dummyBatchKey)
+		filesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"sigfaibles_debits.csv", ""}, SimpleDataFile{"sigfaibles_debits2.csv", ""}}, dummyBatchKey)
 		if assert.Len(t, unsupportedFiles, 0) {
-			assert.Equal(t, []BatchFile{dummyBatchFile("Sigfaibles_debits.csv"), dummyBatchFile("Sigfaibles_debits2.csv")}, filesProperty[debit])
+			assert.Equal(t, []BatchFile{dummyBatchFile("sigfaibles_debits.csv"), dummyBatchFile("sigfaibles_debits2.csv")}, filesProperty[debit])
 		}
 	})
 
@@ -53,7 +53,7 @@ func TestPopulateFilesProperty(t *testing.T) {
 		inputFiles := []DataFile{}
 		for _, file := range files {
 			expectedFiles[file.Type] = append(expectedFiles[file.Type], dummyBatchFile(file.Filename))
-			inputFiles = append(inputFiles, SimpleDataFile{file.Filename})
+			inputFiles = append(inputFiles, SimpleDataFile{file.Filename, ""})
 		}
 		resFilesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles(inputFiles, dummyBatchKey)
 		assert.Len(t, unsupportedFiles, 0)
@@ -61,13 +61,13 @@ func TestPopulateFilesProperty(t *testing.T) {
 	})
 
 	t.Run("Should not include unsupported files", func(t *testing.T) {
-		filesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"coco.csv"}}, dummyBatchKey)
+		filesProperty, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"coco.csv",""}}, dummyBatchKey)
 		assert.Len(t, unsupportedFiles, 1)
 		assert.Equal(t, FilesProperty{}, filesProperty)
 	})
 
 	t.Run("Should report unsupported files", func(t *testing.T) {
-		_, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"coco.csv"}}, dummyBatchKey)
+		_, unsupportedFiles := PopulateFilesPropertyFromDataFiles([]DataFile{SimpleDataFile{"coco.csv",""}}, dummyBatchKey)
 		assert.Equal(t, []string{dummyBatchKey.Path() + "coco.csv"}, unsupportedFiles)
 	})
 
@@ -83,7 +83,7 @@ func TestPopulateFilesProperty(t *testing.T) {
 	})
 
 	t.Run("Should add a 'gzip:' prefix to compressed files", func(t *testing.T) {
-		metadata := `{ "MetaData": { "filename": "Sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }`
+		metadata := `{ "MetaData": { "filename": "sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }`
 		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			"083fe617e80f2e30a21598d38a854bc6":      {},
 			"083fe617e80f2e30a21598d38a854bc6.info": []byte(metadata),
@@ -95,7 +95,7 @@ func TestPopulateFilesProperty(t *testing.T) {
 	})
 
 	t.Run("Should forward the size of a gzipped file provided with metadata", func(t *testing.T) {
-		metadata := `{ "MetaData": { "filename": "Sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }` // thresholdPerGzippedFileType["debit"]
+		metadata := `{ "MetaData": { "filename": "sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }` // thresholdPerGzippedFileType["debit"]
 		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			"083fe617e80f2e30a21598d38a854bc6":      {},
 			"083fe617e80f2e30a21598d38a854bc6.info": []byte(metadata),

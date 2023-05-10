@@ -14,24 +14,24 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 		category ValidFileType
 	}{
 		// guessed from urssaf files found on stockage/goub server
-		{"Sigfaible_debits.csv", debit},
-		{"Sigfaible_cotisdues.csv", cotisation},
-		{"Sigfaible_pcoll.csv", procol},
-		{"Sigfaible_etablissement_utf8.csv", adminUrssaf},
-		{"Sigfaible_effectif_siret.csv", effectif},
-		{"Sigfaible_effectif_siren.csv", effectifEnt},
-		{"Sigfaible_delais.csv", delai},
-		{"Sigfaible_ccsf.csv", ccsf},
+		{"sigfaible_debits.csv", debit},
+		{"sigfaible_cotisdues.csv", cotisation},
+		{"sigfaible_pcoll.csv", procol},
+		{"sigfaible_etablissement_utf8.csv", adminUrssaf},
+		{"sigfaible_effectif_siret.csv", effectif},
+		{"sigfaible_effectif_siren.csv", effectifEnt},
+		{"sigfaible_delais.csv", delai},
+		{"sigfaible_ccsf.csv", ccsf},
 
 		// compressed version of urssaf files
-		{"Sigfaible_ccsf.csv.gz", ccsf},
-		{"Sigfaible_etablissement_utf8.csv.gz", adminUrssaf}, // sfdata parser name: "comptes"
-		{"Sigfaible_cotisdues.csv.gz", cotisation},
-		{"Sigfaible_debits.csv.gz", debit},
-		{"Sigfaible_delais.csv.gz", delai},
-		{"Sigfaible_effectif_siren.csv.gz", effectifEnt},
-		{"Sigfaible_effectif_siret.csv.gz", effectif},
-		{"Sigfaible_pcoll.csv.gz", procol},
+		{"sigfaible_ccsf.csv.gz", ccsf},
+		{"sigfaible_etablissement_utf8.csv.gz", adminUrssaf}, // sfdata parser name: "comptes"
+		{"sigfaible_cotisdues.csv.gz", cotisation},
+		{"sigfaible_debits.csv.gz", debit},
+		{"sigfaible_delais.csv.gz", delai},
+		{"sigfaible_effectif_siren.csv.gz", effectifEnt},
+		{"sigfaible_effectif_siret.csv.gz", effectif},
+		{"sigfaible_pcoll.csv.gz", procol},
 
 		// guessed from dgefp files
 		{"consommation_ap.csv", apconso},
@@ -39,8 +39,8 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 
 		// others
 		{"Diane_Export_4.txt", diane},
-		{"Sigfaibles_debits.csv", debit},
-		{"Sigfaibles_debits2.csv", debit},
+		{"sigfaibles_debits.csv", debit},
+		{"sigfaibles_debits2.csv", debit},
 		{"diane_req_2002.csv", diane},
 		{"diane_req_dom_2002.csv", diane},
 		{"effectif_dom.csv", effectif},

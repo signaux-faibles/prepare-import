@@ -12,17 +12,17 @@ func ExtractFileTypeFromFilename(filename string) ValidFileType {
 		return apconso
 	case filename == "demande_ap.csv":
 		return apdemande
-	case possiblyGzFilename == "Sigfaible_etablissement_utf8.csv":
+	case possiblyGzFilename == "sigfaible_etablissement_utf8.csv":
 		return adminUrssaf
-	case possiblyGzFilename == "Sigfaible_effectif_siren.csv":
+	case possiblyGzFilename == "sigfaible_effectif_siren.csv":
 		return effectifEnt
-	case possiblyGzFilename == "Sigfaible_pcoll.csv":
+	case possiblyGzFilename == "sigfaible_pcoll.csv":
 		return procol
-	case possiblyGzFilename == "Sigfaible_cotisdues.csv":
+	case possiblyGzFilename == "sigfaible_cotisdues.csv":
 		return cotisation
-	case possiblyGzFilename == "Sigfaible_delais.csv":
+	case possiblyGzFilename == "sigfaible_delais.csv":
 		return delai
-	case possiblyGzFilename == "Sigfaible_ccsf.csv":
+	case possiblyGzFilename == "sigfaible_ccsf.csv":
 		return ccsf
 	case filename == "sireneUL.csv":
 		return sireneUl

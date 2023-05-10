@@ -29,24 +29,24 @@ func TestMain(t *testing.T) {
 			t.Fatal(err)
 		}
 		parentDir := prepareimport.CreateTempFilesWithContent(t, batchKey, map[string][]byte{
-			"Sigfaibles_effectif_siret.csv": effectifData,
-			"Sigfaibles_debits.csv":         {},
+			"sigfaibles_effectif_siret.csv": effectifData,
+			"sigfaibles_debits.csv":         {},
 			"abcdef":                        {},
 			"abcdef.info":                   []byte(`{ "MetaData": { "filename": "FICHIER_SF_2020_02.csv", "goup-path": "bdf" } }`),
 			"unsupported.csv":               {},
 			"E_202011095813_Retro-Paydex_20201207.csv": {},
 			"083fe617e80f2e30a21598d38a854bc6":         {},
-			"083fe617e80f2e30a21598d38a854bc6.info":    []byte(`{ "MetaData": { "filename": "Sigfaible_pcoll.csv.gz", "goup-path": "" }, "Size": 1646193 }`),
+			"083fe617e80f2e30a21598d38a854bc6.info":    []byte(`{ "MetaData": { "filename": "sigfaible_pcoll.csv.gz", "goup-path": "" }, "Size": 1646193 }`),
 		})
 
 		cmds := []*exec.Cmd{
 			exec.Command(
 				"./prepare-import",
-				"--path", parentDir,
-				"--batch", batch,
-				"--date-fin-effectif", "2014-01-01",
+				"-path", parentDir,
+				"-batch", batch,
+				"-date-fin-effectif", "2014-01-01",
 			), // paramètres valides
-			exec.Command("./prepare-import", "--path", parentDir, "--batch", "180"), // nom de batch invalide
+			exec.Command("./prepare-import", "-path", parentDir, "-batch", "180"), // nom de batch invalide
 		}
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer
