@@ -19,6 +19,7 @@ format: ## Fix the formatting of .go files
 	@go fmt
 
 format-doc: ## Fix the formatting of md and yml files
+	@npm install --save-dev --save-exact prettier
 	@npx prettier --write .
 
 help: ## This help.
