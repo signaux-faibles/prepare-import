@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -24,7 +24,7 @@ func Test_Main(t *testing.T) {
 
 		batchKey, _ := prepareimport.NewBatchKey(batch)
 
-		effectifData, err := ioutil.ReadFile("./createfilter/test_data.csv")
+		effectifData, err := os.ReadFile("./createfilter/test_data.csv")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -55,7 +55,7 @@ func Test_Main(t *testing.T) {
 			cmd.Stderr = &cmdError
 			err := cmd.Run()
 			if err != nil {
-				// log.Fatal(err)
+				t.Logf("Erreur pendant l'exécution de `%s`: %s", cmd, err)
 			}
 		}
 

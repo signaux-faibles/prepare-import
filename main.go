@@ -36,7 +36,7 @@ func main() {
 	if _, ok := err.(prepareimport.UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
-		log.Fatal(err) // will print in the error output stream and exit
+		log.Fatal("Erreur pendant la préparation de l'import : ", err) // will print in the error output stream and exit
 	}
 	json, err := json.MarshalIndent(adminObject, "", "  ")
 	if err != nil {
