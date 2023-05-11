@@ -17,7 +17,7 @@ var errGoldenFile = "end_to_end_golden_err.txt"
 
 var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
 
-func TestMain(t *testing.T) {
+func Test_Main(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
 
 		batch := "1802"
