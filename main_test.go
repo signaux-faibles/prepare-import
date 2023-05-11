@@ -20,7 +20,7 @@ var updateGoldenFile = flag.Bool("update", false, "Update the expected test valu
 func Test_Main(t *testing.T) {
 	t.Run("prepare-import golden file", func(t *testing.T) {
 		t.Log("ATTENTION: ce test utilise l'exécutable compilé et non les sources.")
-		t.Log("Il faut donc ˆbuilder pour etre sur de tester la bonne version")
+		t.Log("Il faut donc builder pour etre sur de tester la bonne version")
 		batch := "1802"
 
 		batchKey, _ := prepareimport.NewBatchKey(batch)
