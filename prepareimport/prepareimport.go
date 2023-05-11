@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"time"
@@ -17,7 +16,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 
 	batchPath := getBatchPath(pathname, batchKey)
 	println("Listing data files in " + batchPath + "/ ...")
-	if _, err := ioutil.ReadDir(path.Join(pathname, batchPath)); err != nil {
+	if _, err := os.ReadDir(path.Join(pathname, batchPath)); err != nil {
 		return nil, fmt.Errorf("could not find directory %s in provided path", batchPath)
 	}
 

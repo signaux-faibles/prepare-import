@@ -45,7 +45,7 @@ func CreateTempFilesWithContent(t *testing.T, batchkey BatchKey, contentPerFile 
 
 	for filename := range contentPerFile {
 		tmpFilename := filepath.Join(batchDir, filename)
-		if err := ioutil.WriteFile(tmpFilename, contentPerFile[filename], 0666); err != nil {
+		if err := os.WriteFile(tmpFilename, contentPerFile[filename], 0666); err != nil {
 			t.Fatal(err.Error())
 		}
 	}

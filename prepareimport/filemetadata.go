@@ -2,7 +2,7 @@ package prepareimport
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 )
 
 // UploadedFileMeta represents the JSON object loaded from .info files.
@@ -27,7 +27,7 @@ func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) Val
 func LoadMetadata(filepath string) UploadedFileMeta {
 
 	// read file
-	data, err := ioutil.ReadFile(filepath)
+	data, err := os.ReadFile(filepath)
 	if err != nil {
 		panic(err)
 	}
