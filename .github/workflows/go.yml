@@ -35,6 +35,7 @@ jobs:
         run: go test ./... -v -coverprofile=coverage.out
 
       - name: Upload coverage to codacy
+        if: github.actor != 'dependabot[bot]'
         run: >
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report
           --coverage-reports coverage.out
