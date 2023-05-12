@@ -1,9 +1,10 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"flag"
 	"fmt"
+	"github.com/signaux-faibles/prepare-import/tools"
 	"log"
 	"os"
 
@@ -25,6 +26,9 @@ func main() {
 		"Date de fin des données \"effectif\" fournies, au format AAAA-MM-JJ (année + mois + jour)\n"+
 			"Exemple: 2014-01-01",
 	)
+	var mongoURL = flag.String("mongoURL", "", "Url de connexion à la base Mongo\n"+
+		"Exemple: mongodb://username:password@ip:port")
+	var databaseName = flag.String("databaseName", "", "Nom de la base de données Mongo")
 	flag.Parse()
 	validBatchKey, err := prepareimport.NewBatchKey(*batchKey)
 	if err != nil {
@@ -36,12 +40,14 @@ func main() {
 	if _, ok := err.(prepareimport.UnsupportedFilesError); ok {
 		fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
-		log.Fatal("Erreur pendant la préparation de l'import : ", err) // will print in the error output stream and exit
+		log.Fatal("Erreur inattendue pendant la préparation de l'import : ", err)
 	}
-	json, err := json.MarshalIndent(adminObject, "", "  ")
+
+	fmt.Println(adminObject.ToJSON())
+	err = tools.SaveInMongo(context.Background(), adminObject, *mongoURL, *databaseName)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
 	}
-	fmt.Println(string(json))
 	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
+
 }

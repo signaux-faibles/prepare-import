@@ -12,8 +12,13 @@ Usage:
   -batch string
     	Clé du batch à importer au format AAMM (année + mois + suffixe optionnel)
     	Exemple: 1802_1
+  -databaseName string
+    	Nom de la base de données Mongo
   -date-fin-effectif string
     	Date de fin des données "effectif" fournies, au format AAAA-MM-JJ (année + mois + jour)
     	Exemple: 2014-01-01
+  -mongoURL string
+    	Url de connexion à la base Mongo
+    	Exemple: mongodb://username:password@ip:port
   -path string
     	Chemin d'accès au répertoire des batches (default ".")
