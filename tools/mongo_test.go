@@ -111,11 +111,6 @@ func startMongoDB(pool *dockertest.Pool) (mongoURL, databaseName string) {
 	}); err != nil {
 		fmt.Printf("N'arrive pas à démarrer/restaurer Mongo: %s", err)
 	}
-	//fmt.Println("Mongo est prêt, on lance le restore dump")
-	//err = restoreDump(mongodb)
-	//if err != nil {
-	//	panic("Foirage du restore dump : " + err.Error())
-	//}
 	return mongoURL, databaseName
 }
 

@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"flag"
-	"os"
-	"os/exec"
-	"testing"
-
+	"github.com/jaswdr/faker"
 	"github.com/signaux-faibles/prepare-import/createfilter"
 	"github.com/signaux-faibles/prepare-import/prepareimport"
 	"github.com/stretchr/testify/assert"
+	"os"
+	"os/exec"
+	"strconv"
+	"testing"
 )
 
 var outGoldenFile = "end_to_end_golden.txt"
@@ -17,7 +18,14 @@ var errGoldenFile = "end_to_end_golden_err.txt"
 
 var updateGoldenFile = flag.Bool("update", false, "Update the expected test values in golden file")
 
+var fake faker.Faker
+
+func init() {
+	fake = faker.New()
+}
+
 func Test_Main(t *testing.T) {
+
 	t.Run("prepare-import golden file", func(t *testing.T) {
 		t.Log("ATTENTION: ce test utilise l'exécutable compilé et non les sources.")
 		t.Log("Il faut donc builder pour etre sur de tester la bonne version")
@@ -40,12 +48,17 @@ func Test_Main(t *testing.T) {
 			"083fe617e80f2e30a21598d38a854bc6.info":    []byte(`{ "MetaData": { "filename": "sigfaible_pcoll.csv.gz", "goup-path": "" }, "Size": 1646193 }`),
 		})
 
+		//url := randomMongoURL()
+		//databaseName := fake.Lorem().Word()
+
 		cmds := []*exec.Cmd{
 			exec.Command(
 				"./prepare-import",
 				"-path", parentDir,
 				"-batch", batch,
-				"-date-fin-effectif", "2014-01-01",
+				"-date-fin-effectif", "2018-01-01",
+				//"-mongoURL", url,
+				//"-databaseName", databaseName,
 			), // paramètres valides
 			exec.Command("./prepare-import", "-path", parentDir, "-batch", "180"), // nom de batch invalide
 		}
@@ -54,10 +67,7 @@ func Test_Main(t *testing.T) {
 		for _, cmd := range cmds {
 			cmd.Stdout = &cmdOutput
 			cmd.Stderr = &cmdError
-			err := cmd.Run()
-			if err != nil {
-				t.Logf("Erreur pendant l'exécution de `%s`: %s", cmd, err)
-			}
+			_ = cmd.Run()
 		}
 
 		expectedOutput := createfilter.DiffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
@@ -66,4 +76,8 @@ func Test_Main(t *testing.T) {
 		assert.Equal(t, string(expectedOutput), cmdOutput.String())
 		assert.Equal(t, string(expectedError), cmdError.String())
 	})
+}
+
+func randomMongoURL() string {
+	return "mongodb://" + fake.Internet().User() + ":" + fake.Internet().Password() + "@" + fake.Internet().Ipv4() + ":" + strconv.Itoa(fake.IntBetween(4000, 8000))
 }

@@ -2,6 +2,7 @@ package tools
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"github.com/signaux-faibles/prepare-import/core"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,12 +15,12 @@ func SaveInMongo(ctx context.Context, toSave core.AdminObject, mongoURL, databas
 	if db == nil {
 		err := connectDB(ctx, mongoURL, databaseName)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Erreur pendant la connexion à Mongo")
 		}
 	}
 	saved, err := db.Collection("Admin").InsertOne(ctx, toSave)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Erreur pendant l'insertion du document")
 	}
 	log.Printf("import sauvé dans la collection `Admin` avec l'id : %s", saved)
 	return nil

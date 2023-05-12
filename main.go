@@ -32,18 +32,22 @@ func main() {
 	flag.Parse()
 	validBatchKey, err := prepareimport.NewBatchKey(*batchKey)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
+		_, _ = fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 	adminObject, err := prepareimport.PrepareImport(*path, validBatchKey, *dateFinEffectif)
 	if _, ok := err.(prepareimport.UnsupportedFilesError); ok {
-		fmt.Fprintln(os.Stderr, err.Error())
+		_, _ = fmt.Fprintln(os.Stderr, err.Error())
 	} else if err != nil {
 		log.Fatal("Erreur inattendue pendant la préparation de l'import : ", err)
 	}
 
 	fmt.Println(adminObject.ToJSON())
+	if len(*mongoURL) == 0 || len(*databaseName) == 0 {
+		_, _ = fmt.Fprintln(os.Stderr, "ATTENTION : le résultat ne sera pas sauvegardé en base car les paramètres nécessaires n'ont pas été spécifiés")
+		os.Exit(0)
+	}
 	err = tools.SaveInMongo(context.Background(), adminObject, *mongoURL, *databaseName)
 	if err != nil {
 		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
