@@ -1,3 +1,4 @@
+// Package tools contient du code utilitaire
 package tools
 
 import (
@@ -11,6 +12,7 @@ import (
 
 var db *mongo.Database
 
+// SaveInMongo sauve l'objet `toSave` dans une base mongo
 func SaveInMongo(ctx context.Context, toSave core.AdminObject, mongoURL, databaseName string) error {
 	if db == nil {
 		err := connectDB(ctx, mongoURL, databaseName)
