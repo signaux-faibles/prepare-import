@@ -2,6 +2,7 @@ package createfilter
 
 import (
 	"bytes"
+	"github.com/pkg/errors"
 	"log"
 	"os"
 )
@@ -10,11 +11,19 @@ import (
 func DiffWithGoldenFile(filename string, updateGoldenFile bool, cmdOutput bytes.Buffer) []byte {
 
 	if updateGoldenFile {
-		os.WriteFile(filename, cmdOutput.Bytes(), 0644)
+		_ = os.WriteFile(filename, cmdOutput.Bytes(), 0644)
 	}
 	expected, err := os.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return expected
+}
+
+func ReadGoldenFile(filename string) string {
+	expected, err := os.ReadFile(filename)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "Erreur de lecture du Golden File"))
+	}
+	return string(expected)
 }

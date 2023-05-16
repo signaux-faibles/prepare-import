@@ -24,7 +24,7 @@ type UnsupportedFilesError struct {
 }
 
 func (err UnsupportedFilesError) Error() string {
-	return "unsupported: " + strings.Join(err.UnsupportedFiles, ", ")
+	return "type de fichier non supporté : " + strings.Join(err.UnsupportedFiles, ", ")
 }
 
 func populateParamProperty(batchKey BatchKey, dateFinEffectif DateFinEffectif) ParamProperty {

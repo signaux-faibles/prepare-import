@@ -13,7 +13,7 @@ import (
 func PopulateFilesProperty(pathname string, batchKey BatchKey) (FilesProperty, []string) {
 	batchPath := path.Join(pathname, batchKey.String())
 	filenames, _ := ReadFilenames(batchPath)
-	augmentedFiles := []DataFile{}
+	var augmentedFiles []DataFile
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
 	}

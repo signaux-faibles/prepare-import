@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/pkg/errors"
+	"github.com/signaux-faibles/prepare-import/core"
 	"github.com/signaux-faibles/prepare-import/tools"
 	"log"
 	"os"
@@ -29,29 +31,34 @@ func main() {
 	var mongoURL = flag.String("mongoURL", "", "Url de connexion à la base Mongo\n"+
 		"Exemple: mongodb://username:password@ip:port")
 	var databaseName = flag.String("databaseName", "", "Nom de la base de données Mongo")
-	flag.Parse()
-	validBatchKey, err := prepareimport.NewBatchKey(*batchKey)
-	if err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err.Error()+"\n\nUsage:")
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
-	adminObject, err := prepareimport.PrepareImport(*path, validBatchKey, *dateFinEffectif)
-	if _, ok := err.(prepareimport.UnsupportedFilesError); ok {
-		_, _ = fmt.Fprintln(os.Stderr, err.Error())
-	} else if err != nil {
-		log.Fatal("Erreur inattendue pendant la préparation de l'import : ", err)
-	}
 
-	fmt.Println(adminObject.ToJSON())
-	if len(*mongoURL) == 0 || len(*databaseName) == 0 {
-		_, _ = fmt.Fprintln(os.Stderr, "ATTENTION : le résultat ne sera pas sauvegardé en base car les paramètres nécessaires n'ont pas été spécifiés")
-		os.Exit(0)
+	flag.Parse()
+	adminObject, _ := prepare(*path, *batchKey, *dateFinEffectif)
+	saveAdminObject(adminObject, *mongoURL, *databaseName)
+	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
+}
+
+func prepare(path, batchKey, dateFinEffectif string) (core.AdminObject, error) {
+	validBatchKey, err := prepareimport.NewBatchKey(batchKey)
+	if err != nil {
+		return core.AdminObject{}, errors.Wrap(err, "erreur lors de la création de la clé de batch")
 	}
-	err = tools.SaveInMongo(context.Background(), adminObject, *mongoURL, *databaseName)
+	adminObject, err := prepareimport.PrepareImport(path, validBatchKey, dateFinEffectif)
+	if _, ok := err.(prepareimport.UnsupportedFilesError); ok {
+		return adminObject, err
+	} else if err != nil {
+		return core.AdminObject{}, errors.Wrap(err, "erreur inattendue pendant la préparation de l'import : ")
+	}
+	return adminObject, nil
+}
+
+func saveAdminObject(toSave core.AdminObject, mongoURL string, databaseName string) {
+	if len(mongoURL) <= 0 || len(databaseName) <= 0 {
+		_, _ = fmt.Fprintln(os.Stderr, "ATTENTION : le résultat ne sera pas sauvegardé en base car au moins un des paramètres nécessaires n'a pas été spécifié")
+		return
+	}
+	err := tools.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 	if err != nil {
 		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
 	}
-	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
-
 }
