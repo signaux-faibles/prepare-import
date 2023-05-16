@@ -20,6 +20,7 @@ func DiffWithGoldenFile(filename string, updateGoldenFile bool, cmdOutput bytes.
 	return expected
 }
 
+// ReadGoldenFile retourne le fichier passé en paramètre sous forme de chaine de caractère
 func ReadGoldenFile(filename string) string {
 	expected, err := os.ReadFile(filename)
 	if err != nil {
