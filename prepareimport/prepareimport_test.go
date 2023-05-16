@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -177,7 +176,7 @@ func TestPrepareImport(t *testing.T) {
 
 			tmpFilename := filepath.Join(dir, dummyBatchKey.String(), testCase.id+".info")
 			content := []byte("{\"MetaData\":{\"filename\":\"" + dummyBatchKey.Path() + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
-			if err := ioutil.WriteFile(tmpFilename, content, 0666); err != nil {
+			if err := os.WriteFile(tmpFilename, content, 0666); err != nil {
 				t.Fatal(err.Error())
 			}
 
@@ -271,7 +270,7 @@ func makeMongoDate(year, month, day int) MongoDate {
 }
 
 func readFileData(t *testing.T, filePath string) []byte {
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -279,7 +278,7 @@ func readFileData(t *testing.T, filePath string) []byte {
 }
 
 func compressFileData(t *testing.T, filePath string) (compressedData bytes.Buffer) {
-	data, err := ioutil.ReadFile(filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatal(err)
 	}

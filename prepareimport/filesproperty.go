@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 )
@@ -13,7 +13,7 @@ import (
 func PopulateFilesProperty(pathname string, batchKey BatchKey) (FilesProperty, []string) {
 	batchPath := path.Join(pathname, batchKey.String())
 	filenames, _ := ReadFilenames(batchPath)
-	augmentedFiles := []DataFile{}
+	var augmentedFiles []DataFile
 	for _, file := range filenames {
 		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
 	}
@@ -51,7 +51,7 @@ func PopulateFilesPropertyFromDataFiles(filenames []DataFile, batchKey BatchKey)
 // ReadFilenames returns the name of files found at the provided path.
 func ReadFilenames(path string) ([]string, error) {
 	var files []string
-	fileInfo, err := ioutil.ReadDir(path)
+	fileInfo, err := os.ReadDir(path)
 	if err != nil {
 		return files, err
 	}

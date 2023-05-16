@@ -2,7 +2,7 @@ package prepareimport
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 )
 
 // UploadedFileMeta represents the JSON object loaded from .info files.
@@ -14,7 +14,7 @@ type UploadedFileMeta struct {
 // MetadataProperty represents the "MetaData" property from .info files.
 type MetadataProperty map[string]string
 
-// ExtractFileTypeFromMetadata returns the type of a bin file (without extension), based on the contents of the associated .info file.
+// ExtractFileTypeFromMetadata returns the type of bin file (without extension), based on the contents of the associated .info file.
 func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) ValidFileType {
 	metadata := fileinfo.MetaData
 	if metadata["goup-path"] == "bdf" {
@@ -27,7 +27,7 @@ func ExtractFileTypeFromMetadata(filename string, fileinfo UploadedFileMeta) Val
 func LoadMetadata(filepath string) UploadedFileMeta {
 
 	// read file
-	data, err := ioutil.ReadFile(filepath)
+	data, err := os.ReadFile(filepath)
 	if err != nil {
 		panic(err)
 	}

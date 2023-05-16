@@ -12,7 +12,6 @@ La rencontre de fichiers non supportés n'empêchera pas la génération d'un ba
 
 - Go
 - `awk`
-- `gnumeric` (et plus particulièrement la commande `ssconvert`)
 
 ## Usage
 

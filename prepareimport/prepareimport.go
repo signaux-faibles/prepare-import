@@ -3,8 +3,8 @@ package prepareimport
 import (
 	"errors"
 	"fmt"
+	"github.com/signaux-faibles/prepare-import/core"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"time"
@@ -13,11 +13,11 @@ import (
 )
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.
-func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
+func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (core.AdminObject, error) {
 
 	batchPath := getBatchPath(pathname, batchKey)
 	println("Listing data files in " + batchPath + "/ ...")
-	if _, err := ioutil.ReadDir(path.Join(pathname, batchPath)); err != nil {
+	if _, err := os.ReadDir(path.Join(pathname, batchPath)); err != nil {
 		return nil, fmt.Errorf("could not find directory %s in provided path", batchPath)
 	}
 
@@ -104,7 +104,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		err = UnsupportedFilesError{unsupportedFiles}
 	}
 
-	return AdminObject{
+	return core.AdminObject{
 		"_id":            IDProperty{batchKey, "batch"},
 		"files":          filesProperty,
 		"complete_types": populateCompleteTypesProperty(filesProperty),
