@@ -34,13 +34,20 @@ jobs:
       - name: Test
         run: go test ./... -v -coverprofile=coverage.out
 
-      - name: Upload coverage to codacy
+      - name: Upload test coverage to codacy
         if: github.actor != 'dependabot[bot]'
         run: >
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report
           --coverage-reports coverage.out
           --force-coverage-parser go
           --project-token ${{ secrets.CODACY_REPOSITORY_TOKEN_FOR_COVERAGE }}
+
+      - name: Upload test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: go
+          coverage-file: coverage.out
+          dsn: ${{ secrets.DEEPSOURCE_DSN_FOR_COVERAGE }}
 
       - name: Login to GitHub Container Registry
         id: login
