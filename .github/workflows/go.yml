@@ -25,29 +25,15 @@ jobs:
           make format format-doc
           git diff --exit-code
 
-      - name: Build
-        run: |
-          go version
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o prepare-import
-          cp ./prepare-import ./build-container
-
       - name: Test
         run: go test ./... -v -coverprofile=coverage.out
 
-      - name: Upload test coverage to codacy
-        if: github.actor != 'dependabot[bot]'
-        run: >
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report
-          --coverage-reports coverage.out
-          --force-coverage-parser go
-          --project-token ${{ secrets.CODACY_REPOSITORY_TOKEN_FOR_COVERAGE }}
-
-      - name: Upload test coverage to DeepSource
-        uses: deepsourcelabs/test-coverage-action@master
-        with:
-          key: go
-          coverage-file: coverage.out
-          dsn: ${{ secrets.DEEPSOURCE_DSN_FOR_COVERAGE }}
+      - name: Build
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o prepare-import
+          # pour le mettre à disposition de la phase
+          # de construction du container
+          cp ./prepare-import ./build-container
 
       - name: Login to GitHub Container Registry
         id: login
@@ -56,7 +42,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v4
