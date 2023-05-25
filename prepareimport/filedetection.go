@@ -13,12 +13,12 @@ type DataFile interface {
 	GetSize() *uint64              // returns the size of that file, in bytes
 }
 
-// AugmentDataFile returns a SimpleDataFile or UploadedDataFile (if metadata had to be loaded).
-func AugmentDataFile(file string, pathname string) DataFile {
+// NewDataFile returns a SimpleDataFile
+func NewDataFile(file string, pathname string) DataFile {
 	return SimpleDataFile{file, pathname}
 }
 
-// SimpleDataFile is a DataFile which type can be determined without requiring a metadata file (e.g. well-named csv file).
+// SimpleDataFile is a DataFile
 type SimpleDataFile struct {
 	filename string
 	pathname string
@@ -48,15 +48,4 @@ func (dataFile SimpleDataFile) GetSize() *uint64 {
 	}
 	size := uint64(fi.Size())
 	return &size
-}
-
-// UploadedDataFile is a DataFile which type can be determined thanks to a metadata file (e.g. bin+info files).
-type UploadedDataFile struct {
-	filename string
-	path     string
-}
-
-// GetFilename returns the name as it will be stored in Admin.
-func (dataFile UploadedDataFile) GetFilename() string {
-	return dataFile.filename
 }

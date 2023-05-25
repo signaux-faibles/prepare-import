@@ -15,7 +15,7 @@ func PopulateFilesProperty(pathname string, batchKey BatchKey) (FilesProperty, [
 	filenames, _ := ReadFilenames(batchPath)
 	var augmentedFiles []DataFile
 	for _, file := range filenames {
-		augmentedFiles = append(augmentedFiles, AugmentDataFile(file, batchPath))
+		augmentedFiles = append(augmentedFiles, NewDataFile(file, batchPath))
 	}
 	return PopulateFilesPropertyFromDataFiles(augmentedFiles, batchKey)
 }

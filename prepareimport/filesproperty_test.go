@@ -94,7 +94,6 @@ func TestPopulateFilesProperty(t *testing.T) {
 		if err != nil {
 			t.Errorf("erreur pendant la compression d'un texte aléatoire : %s", err)
 		}
-		//metadata := `{ "MetaData": { "filename": "sigfaibles_debits.csv.gz", "goup-path": "" }, "Size": 254781489 }`
 		dir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			"sigfaibles_debits.csv.gz": bytes,
 		})
