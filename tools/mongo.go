@@ -3,11 +3,13 @@ package tools
 
 import (
 	"context"
+	"log"
+
 	"github.com/pkg/errors"
-	"github.com/signaux-faibles/prepare-import/core"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
+
+	"prepare-import/core"
 )
 
 var db *mongo.Database

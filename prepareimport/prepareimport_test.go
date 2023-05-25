@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"errors"
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -160,28 +159,22 @@ func TestPrepareImport(t *testing.T) {
 	})
 
 	cases := []struct {
-		id       string
+		//id       string
 		filename string
 		goupPath string
 		filetype ValidFileType
 	}{
-		{"9a047825d8173684b69994428449302f", "sigfaible_debits.csv", "urssaf", debit},
-		{"60d1bd320523904d8b8b427efbbd3928", "FICHIER_SF_2020_02.csv", "bdf", bdf},
+		{"sigfaible_debits.csv", "urssaf", debit},
+		{"StockEtablissement_utf8_geo.csv", "random", sirene},
 	}
 
 	for _, testCase := range cases {
 		t.Run("Uploaded file originally named "+testCase.filename+" should be of type "+string(testCase.filetype), func(t *testing.T) {
 
-			dir := CreateTempFiles(t, dummyBatchKey, []string{testCase.id, "filter_2002.csv"})
-
-			tmpFilename := filepath.Join(dir, dummyBatchKey.String(), testCase.id+".info")
-			content := []byte("{\"MetaData\":{\"filename\":\"" + dummyBatchKey.Path() + testCase.filename + "\",\"goup-path\":\"" + testCase.goupPath + "\"}}")
-			if err := os.WriteFile(tmpFilename, content, 0666); err != nil {
-				t.Fatal(err.Error())
-			}
+			dir := CreateTempFiles(t, dummyBatchKey, []string{testCase.filename, "filter_2002.csv"})
 
 			res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
-			expected := []BatchFile{dummyBatchFile(testCase.id)}
+			expected := []BatchFile{dummyBatchFile(testCase.filename)}
 			if assert.NoError(t, err) {
 				assert.Equal(t, expected, res["files"].(FilesProperty)[testCase.filetype])
 			}
@@ -195,13 +188,6 @@ func TestPrepareImport(t *testing.T) {
 		if assert.Error(t, err) && errors.As(err, &e) {
 			assert.Equal(t, []string{dummyBatchKey.Path() + "unsupported-file.csv"}, e.UnsupportedFiles)
 		}
-	})
-
-	t.Run("should fail if missing .info file", func(t *testing.T) {
-		dir := CreateTempFiles(t, dummyBatchKey, []string{"lonely"})
-		assert.Panics(t, func() {
-			PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
-		})
 	})
 
 	t.Run("should create filter file and fill date_fin_effectif if an effectif file is present", func(t *testing.T) {
@@ -235,7 +221,7 @@ func TestPrepareImport(t *testing.T) {
 		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
 		expectedEffectifFile := &batchFile{
 			batchKey:    dummyBatchKey,
-			filename:    "719776012f6a124c3fab0f1c74fd585a",
+			filename:    "sigfaible_effectif_siret.csv.gz",
 			gzippedSize: uint64(compressedEffectifData.Len()),
 		}
 		expectedFiles := FilesProperty{
@@ -245,10 +231,7 @@ func TestPrepareImport(t *testing.T) {
 		expectedDateFinEffectif := makeMongoDate(2020, 1, 1)
 		// run prepare-import
 		batchDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			"719776012f6a124c3fab0f1c74fd585a": compressedEffectifData.Bytes(),
-			"719776012f6a124c3fab0f1c74fd585a.info": []byte(
-				fmt.Sprintf(`{ "MetaData": { "filename": "sigfaible_effectif_siret.csv.gz", "goup-path": "acoss" }, "Size": %v }`, compressedEffectifData.Len()),
-			),
+			"sigfaible_effectif_siret.csv.gz": compressedEffectifData.Bytes(),
 		})
 		adminObject, err := PrepareImport(batchDir, dummyBatchKey, "")
 		// check that the filter is listed in the "files" property

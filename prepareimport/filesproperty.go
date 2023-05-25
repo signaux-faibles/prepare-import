@@ -27,9 +27,7 @@ func PopulateFilesPropertyFromDataFiles(filenames []DataFile, batchKey BatchKey)
 	for _, filename := range filenames {
 		filetype := filename.DetectFileType()
 		if filetype == "" {
-			if !strings.HasSuffix(filename.GetFilename(), ".info") {
-				unsupportedFiles = append(unsupportedFiles, batchKey.Path()+filename.GetFilename())
-			}
+			unsupportedFiles = append(unsupportedFiles, batchKey.Path()+filename.GetFilename())
 			continue
 		}
 		if _, exists := filesProperty[filetype]; !exists {
@@ -113,7 +111,7 @@ func (file *batchFile) Name() string {
 	return file.filename
 }
 
-// AbsolutePath retourne le chemin relatif du fichier, avec un préfixe "gzip:" si celui-ci est compressé.
+// Path retourne le chemin relatif du fichier, avec un préfixe "gzip:" si celui-ci est compressé.
 func (file *batchFile) Path() string {
 	return file.AbsolutePath("")
 }

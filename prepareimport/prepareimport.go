@@ -3,13 +3,13 @@ package prepareimport
 import (
 	"errors"
 	"fmt"
-	"github.com/signaux-faibles/prepare-import/core"
 	"io"
 	"os"
 	"path"
 	"time"
 
-	"github.com/signaux-faibles/prepare-import/createfilter"
+	"prepare-import/core"
+	"prepare-import/createfilter"
 )
 
 // PrepareImport generates an Admin object from files found at given pathname of the file system.

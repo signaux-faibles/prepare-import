@@ -1,6 +1,8 @@
 package prepareimport
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // MongoDate represents a date that can be serialized for MongoDB.
 type MongoDate struct {

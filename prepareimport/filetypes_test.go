@@ -59,7 +59,3 @@ func TestExtractFileTypeFromFilename(t *testing.T) {
 		})
 	}
 }
-
-func MakeMetadata(metadataFields MetadataProperty) UploadedFileMeta {
-	return UploadedFileMeta{MetaData: metadataFields}
-}
