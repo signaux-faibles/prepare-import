@@ -5,15 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/jaswdr/faker"
 	"github.com/stretchr/testify/assert"
 )
-
-var fake faker.Faker
-
-func init() {
-	fake = faker.New()
-}
 
 func TestPopulateFilesProperty(t *testing.T) {
 	t.Run("Should return an empty json when there is no file", func(t *testing.T) {
@@ -90,7 +83,7 @@ func TestPopulateFilesProperty(t *testing.T) {
 	})
 
 	t.Run("Should add a 'gzip:' prefix to compressed files", func(t *testing.T) {
-		bytes, err := gzipString(fake.Lorem().Text(254781489))
+		bytes, err := GzipString(SomeText(254781489))
 		if err != nil {
 			t.Errorf("erreur pendant la compression d'un texte aléatoire : %s", err)
 		}

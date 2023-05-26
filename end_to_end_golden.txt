@@ -20,7 +20,7 @@
       "/1802/E_202011095813_Retro-Paydex_20201207.csv"
     ],
     "procol": [
-      "/1802/sigfaible_pcoll.csv.gz"
+      "gzip:/1802/sigfaible_pcoll.csv.gz"
     ]
   },
   "param": {
