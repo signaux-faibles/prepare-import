@@ -5,12 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/signaux-faibles/prepare-import/core"
-	"github.com/signaux-faibles/prepare-import/tools"
 	"log"
 	"os"
-
-	"github.com/signaux-faibles/prepare-import/prepareimport"
+	"prepare-import/core"
+	"prepare-import/prepareimport"
+	"prepare-import/tools"
 )
 
 // Implementation of the prepare-import command.

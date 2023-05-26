@@ -46,7 +46,7 @@ func ExtractFileTypeFromFilename(filename string) ValidFileType {
 }
 
 // These constants represent types supported by our data integration process.
-// See https://github.com/signaux-faibles/documentation/blob/master/processus-traitement-donnees.md#sp%C3%A9cificit%C3%A9s-de-limport
+// See https://documentation/blob/master/processus-traitement-donnees.md#sp%C3%A9cificit%C3%A9s-de-limport
 const (
 	adminUrssaf ValidFileType = "admin_urssaf"
 	apconso     ValidFileType = "apconso"

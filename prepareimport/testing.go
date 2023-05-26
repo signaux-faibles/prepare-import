@@ -1,12 +1,22 @@
 package prepareimport
 
 import (
+	"bytes"
+	"compress/gzip"
 	"log"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/jaswdr/faker"
 )
+
+var fake faker.Faker
+
+func init() {
+	fake = faker.New()
+}
 
 func newSafeBatchKey(key string) BatchKey {
 	batchKey, err := NewBatchKey(key)
@@ -50,4 +60,28 @@ func CreateTempFilesWithContent(t *testing.T, batchkey BatchKey, contentPerFile 
 	}
 
 	return parentDir
+}
+
+func GzipString(src string) ([]byte, error) {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+
+	_, err := zw.Write([]byte(src))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := zw.Close(); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func SomeText(length int) string {
+	return fake.Lorem().Text(length)
+}
+
+func SomeTextAsBytes(length int) []byte {
+	return fake.Lorem().Bytes(length)
 }

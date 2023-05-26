@@ -3,16 +3,18 @@ package tools
 import (
 	"context"
 	"fmt"
-	"github.com/jaswdr/faker"
-	"github.com/ory/dockertest/v3"
-	"github.com/ory/dockertest/v3/docker"
-	"github.com/signaux-faibles/prepare-import/core"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/jaswdr/faker"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
+	"github.com/stretchr/testify/assert"
+
+	"prepare-import/core"
 )
 
 var mongoURL string
@@ -53,7 +55,7 @@ func Test_SaveInMongo(t *testing.T) {
 		err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 		ass.NoError(err)
 	})
-	t.Run("on sauve une autre objet avec le premier `_id` une seconde fois", func(t *testing.T) {
+	t.Run("on sauve un autre objet avec le premier `_id` une seconde fois", func(t *testing.T) {
 		toSave := core.AdminObject{"_id": firstID, fake.Internet().TLD(): fake.Internet().Domain()}
 		err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 		ass.Error(err)

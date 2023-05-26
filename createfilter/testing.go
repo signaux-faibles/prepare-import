@@ -2,9 +2,10 @@ package createfilter
 
 import (
 	"bytes"
-	"github.com/pkg/errors"
 	"log"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 // DiffWithGoldenFile compares the output of the execution of a test with the expected output.

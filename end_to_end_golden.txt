@@ -4,13 +4,9 @@
     "type": "batch"
   },
   "complete_types": [
-    "effectif",
-    "procol"
+    "effectif"
   ],
   "files": {
-    "bdf": [
-      "/1802/abcdef"
-    ],
     "debit": [
       "/1802/sigfaibles_debits.csv"
     ],
@@ -24,7 +20,7 @@
       "/1802/E_202011095813_Retro-Paydex_20201207.csv"
     ],
     "procol": [
-      "gzip:/1802/083fe617e80f2e30a21598d38a854bc6"
+      "gzip:/1802/sigfaible_pcoll.csv.gz"
     ]
   },
   "param": {

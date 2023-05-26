@@ -42,13 +42,6 @@ jobs:
           --force-coverage-parser go
           --project-token ${{ secrets.CODACY_REPOSITORY_TOKEN_FOR_COVERAGE }}
 
-      - name: Upload test coverage to DeepSource
-        uses: deepsourcelabs/test-coverage-action@master
-        with:
-          key: go
-          coverage-file: coverage.out
-          dsn: ${{ secrets.DEEPSOURCE_DSN_FOR_COVERAGE }}
-
       - name: Login to GitHub Container Registry
         id: login
         uses: docker/login-action@v2
