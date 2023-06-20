@@ -50,7 +50,7 @@ func Test_SaveInMongo(t *testing.T) {
 		err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 		ass.NoError(err)
 	})
-	t.Run("on sauve une objet fois avec un autre `_id`", func(t *testing.T) {
+	t.Run("on sauve un objet avec un autre `_id`", func(t *testing.T) {
 		toSave := core.AdminObject{"_id": secondID, fake.App().Name(): fake.App().Version()}
 		err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 		ass.NoError(err)
