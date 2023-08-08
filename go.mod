@@ -33,6 +33,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/opencontainers/runc v1.1.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/signaux-faibles/goSirene v0.2.4 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect

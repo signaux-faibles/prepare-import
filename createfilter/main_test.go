@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"flag"
+	"fmt"
 	"strconv"
 	"strings"
 	"testing"
@@ -23,7 +24,9 @@ func TestCreateFilter(t *testing.T) {
 
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer = *bytes.NewBufferString("") // default: no error
-		err := CreateFilter(&cmdOutput, "test_data.csv", DefaultNbMois, DefaultMinEffectif, DefaultNbIgnoredCols)
+
+		categorieJuridiqueFilter := CategorieJuridiqueFilter("./test_uniteLegale.csv.zip")
+		err := CreateFilter(&cmdOutput, "test_data.csv", DefaultNbMois, DefaultMinEffectif, DefaultNbIgnoredCols, categorieJuridiqueFilter)
 		if err != nil {
 			cmdError = *bytes.NewBufferString(err.Error())
 		}
@@ -85,7 +88,10 @@ func getOutputPerimeter(csvLines []string, nbMois, minEffectif, nbIgnoredCols in
 	reader := csv.NewReader(strings.NewReader(effectifData))
 	reader.Comma = ';'
 	writer := bufio.NewWriter(&output)
-	outputPerimeter(reader, writer, nbMois, minEffectif, nbIgnoredCols)
+	perimeter := getInitialPerimeter(reader, nbMois, minEffectif, nbIgnoredCols)
+	for siren, _ := range perimeter {
+		fmt.Fprintln(writer, siren)
+	}
 	writer.Flush()
 	return strings.Split(strings.TrimSpace(output.String()), "\n")
 }

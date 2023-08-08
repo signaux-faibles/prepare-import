@@ -29,6 +29,8 @@ const DefaultNbIgnoredCols = 2
 // NbLeadingColsToSkip is the number of leftmost columns that don't contain effectif data.
 const NbLeadingColsToSkip = 5 // column names: "compte", "siret", "rais_soc", "ape_ins" and "dep"
 
+type filter func(string) bool
+
 // Implementation of the create_filter command.
 func main() {
 
@@ -58,14 +60,33 @@ func main() {
 
 // CreateFilter generates a "filter" from an "effectif" file.
 // If the effectif file has a "gzip:" prefix, it will be decompressed on the fly.
-func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif int, nIgnoredCols int) error {
+func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif int, nIgnoredCols int, filters ...filter) error {
 	last := guessLastNMissing(effectifFileName, nIgnoredCols)
 	r, f, err := makeEffectifReaderFromFile(effectifFileName)
-	if err == nil {
-		outputPerimeter(r, writer, nbMois, minEffectif, nIgnoredCols+last)
-		f.Close()
+	if err != nil {
+		return err
 	}
-	return err
+
+	perimeter := getInitialPerimeter(r, nbMois, minEffectif, nIgnoredCols+last)
+
+	for _, f := range filters {
+		perimeter = applyFilter(perimeter, f)
+	}
+
+	for siren, _ := range perimeter {
+		fmt.Fprintln(writer, siren)
+	}
+	return f.Close()
+}
+
+func applyFilter(perimeter map[string]struct{}, f filter) map[string]struct{} {
+	newPerimeter := make(map[string]struct{})
+	for siren, _ := range perimeter {
+		if f(siren) {
+			newPerimeter[siren] = struct{}{}
+		}
+	}
+	return newPerimeter
 }
 
 // If the effectif file has a "gzip:" prefix, it will be decompressed on the fly.
@@ -97,7 +118,7 @@ func initializeEffectifReader(reader io.Reader) *csv.Reader {
 	return r
 }
 
-func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCols int) {
+func getInitialPerimeter(r *csv.Reader, nbMois, minEffectif, nIgnoredCols int) map[string]struct{} {
 	detectedSirens := map[string]struct{}{} // smaller memory footprint than map[string]bool
 	_, err := r.Read()                      // en tête
 	if err != nil {
@@ -124,7 +145,6 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCo
 			_, alreadyDetected := detectedSirens[siren]
 			if shouldKeep && !alreadyDetected {
 				detectedSirens[siren] = struct{}{}
-				fmt.Fprintln(w, siren)
 			}
 		} else {
 			skippedLines++
@@ -134,7 +154,7 @@ func outputPerimeter(r *csv.Reader, w io.Writer, nbMois, minEffectif, nIgnoredCo
 	if skippedLines > 0 {
 		fmt.Printf("%d lines with bad siret/siren skipped :( \n", skippedLines)
 	}
-
+	return detectedSirens
 }
 
 func isInsidePerimeter(record []string, nbMois, minEffectif int) bool {
