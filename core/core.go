@@ -17,3 +17,12 @@ func (current *AdminObject) ToJSON() string {
 	}
 	return string(jsonText)
 }
+
+func FromJSON(input string) AdminObject {
+	var r AdminObject
+	err := json.Unmarshal([]byte(input), &r)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}

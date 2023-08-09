@@ -4,9 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/pkg/errors"
 	"log"
 	"os"
+
+	"github.com/pkg/errors"
+
 	"prepare-import/core"
 	"prepare-import/prepareimport"
 	"prepare-import/tools"
@@ -54,6 +56,7 @@ func prepare(path, batchKey, dateFinEffectif string) (core.AdminObject, error) {
 func saveAdminObject(toSave core.AdminObject, mongoURL string, databaseName string) {
 	if len(mongoURL) <= 0 || len(databaseName) <= 0 {
 		_, _ = fmt.Fprintln(os.Stderr, "ATTENTION : le résultat ne sera pas sauvegardé en base car au moins un des paramètres nécessaires n'a pas été spécifié")
+		println(toSave.ToJSON())
 		return
 	}
 	err := tools.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)

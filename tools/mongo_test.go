@@ -2,6 +2,7 @@ package tools
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"log"
 	"os"
@@ -16,6 +17,9 @@ import (
 
 	"prepare-import/core"
 )
+
+//go:embed adminObject.json
+var adminObjectExample string
 
 var mongoURL string
 var databaseName string
@@ -33,12 +37,20 @@ func TestMain(m *testing.M) {
 
 	mongoURL, databaseName = startMongoDB(pool)
 
-	fmt.Println("On peut lancer les tests")
+	fmt.Println("On peut lancer les tests, mongo:", mongoURL, " / dbname:", databaseName)
 	code := m.Run()
 	//killContainer(mongodb)
 	// You can't defer this because os.Exit doesn't care for defer
 
 	os.Exit(code)
+}
+
+func Test_SaveInMongo_existingExample(t *testing.T) {
+	ass := assert.New(t)
+	toSave := core.FromJSON(adminObjectExample)
+	err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+	ass.NoError(err)
+
 }
 
 func Test_SaveInMongo(t *testing.T) {
@@ -72,12 +84,16 @@ func startMongoDB(pool *dockertest.Pool) (mongoURL, databaseName string) {
 		&dockertest.RunOptions{
 			Name:       mongodbContainerName,
 			Repository: "mongo",
-			Tag:        "6.0",
+			Tag:        "4.2",
 			Env: []string{
 				// username and password for mongodb superuser
 				"MONGO_INITDB_ROOT_USERNAME=root",
 				"MONGO_INITDB_ROOT_PASSWORD=password",
 			},
+			//Cmd: []string{
+			//	"--wiredTigerJournalCompressor zstd",
+			//	//--wiredTigerCollectionBlockCompressor zstd --wiredTigerIndexPrefixCompression true --wiredTigerCacheSizeGB 4",
+			//},
 			//Mounts: []string{cwd + "/test/resources/:/dump/"},
 		},
 		func(config *docker.HostConfig) {
