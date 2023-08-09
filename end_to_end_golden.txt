@@ -4,7 +4,8 @@
     "type": "batch"
   },
   "complete_types": [
-    "effectif"
+    "effectif",
+    "sirene_ul"
   ],
   "files": {
     "debit": [
@@ -21,6 +22,9 @@
     ],
     "procol": [
       "gzip:/1802/sigfaible_pcoll.csv.gz"
+    ],
+    "sirene_ul": [
+      "/1802/sireneUL.csv"
     ]
   },
   "param": {

@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -25,18 +26,23 @@ func TestCreateFilter(t *testing.T) {
 		var cmdOutput bytes.Buffer
 		var cmdError bytes.Buffer = *bytes.NewBufferString("") // default: no error
 
-		categorieJuridiqueFilter := CategorieJuridiqueFilter("./test_uniteLegale.csv.zip")
+		categorieJuridiqueFilter := CategorieJuridiqueFilter("./test_uniteLegale.csv")
 		err := CreateFilter(&cmdOutput, "test_data.csv", DefaultNbMois, DefaultMinEffectif, DefaultNbIgnoredCols, categorieJuridiqueFilter)
 		if err != nil {
 			cmdError = *bytes.NewBufferString(err.Error())
 		}
-
 		expectedOutput := DiffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
 		expectedError := DiffWithGoldenFile(errGoldenFile, *updateGoldenFile, cmdError)
 
-		assert.Equal(t, string(expectedOutput), cmdOutput.String())
+		assert.Equal(t, string(expectedOutput), sortOutput(cmdOutput.String()))
 		assert.Equal(t, string(expectedError), cmdError.String())
 	})
+}
+
+func sortOutput(s string) string {
+	lines := strings.Split(s[0:len(s)-1], "\n")
+	sort.Strings(lines)
+	return strings.Join(lines, "\n") + "\n"
 }
 
 // Règle: si et seulement si au moins un établissement a eu pendant au moins
@@ -59,6 +65,8 @@ func TestOutputPerimeter(t *testing.T) {
 		}
 		// test: run outputPerimeter() on csv lines
 		actualSirens := getOutputPerimeter(csvLines, DefaultNbMois, minEffectif, nbIgnoredCols)
+		sort.Strings(actualSirens)
+
 		// assert
 		assert.Equal(t, expectedSirens, actualSirens)
 	})
@@ -76,6 +84,7 @@ func TestOutputPerimeter(t *testing.T) {
 		}
 		// test: run outputPerimeter() on csv lines
 		actualSirens := getOutputPerimeter(csvLines, DefaultNbMois, minEffectif, nbIgnoredCols)
+		sort.Strings(actualSirens)
 		// assert
 		assert.Equal(t, expectedSirens, actualSirens)
 	})

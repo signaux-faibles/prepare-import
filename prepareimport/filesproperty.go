@@ -72,6 +72,13 @@ func (fp FilesProperty) GetFilterFile() (BatchFile, error) {
 	return fp["filter"][0], nil
 }
 
+func (fp FilesProperty) GetSireneULFile() (BatchFile, error) {
+	if fp[sireneUl] == nil || len(fp[sireneUl]) != 1 {
+		return nil, fmt.Errorf("batch requires just 1 sireneUL filter file, found %s", fp[sireneUl])
+	}
+	return fp[sireneUl][0], nil
+}
+
 // GetEffectifFile returns the effectif file.
 func (fp FilesProperty) GetEffectifFile() (BatchFile, error) {
 	if fp["effectif"] == nil || len(fp["effectif"]) != 1 {

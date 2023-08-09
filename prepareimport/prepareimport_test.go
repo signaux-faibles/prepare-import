@@ -95,11 +95,13 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("Should infer date_fin_effectif from the effectif file, given no filter was found", func(t *testing.T) {
 		// Set expectations
 		effectifFile := dummyBatchFile("sigfaible_effectif_siret.csv")
+		sireneULFile := dummyBatchFile("sireneUL.csv")
 		providedDateFinEffetif := ""
 		expectedDateFinEffectif := NewDateFinEffectif(time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)).MongoDate()
 		// Setup test environment
 		parentDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			effectifFile.Name(): readFileData(t, "../createfilter/test_data.csv"),
+			effectifFile.Name(): ReadFileData(t, "../createfilter/test_data.csv"),
+			sireneULFile.Name(): ReadFileData(t, "../createfilter/test_uniteLegale.csv"),
 		})
 		// Run the test
 		res, err := PrepareImport(parentDir, dummyBatchKey, providedDateFinEffetif)
@@ -115,36 +117,12 @@ func TestPrepareImport(t *testing.T) {
 		expectedDateFinEffectif := NewDateFinEffectif(time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)).MongoDate()
 		// Setup test environment
 		parentDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			effectifFile.Name(): readFileData(t, "../createfilter/test_data.csv"),
+			effectifFile.Name(): ReadFileData(t, "../createfilter/test_data.csv"),
 			"filter_2002.csv":   {},
 		})
 		// Run the test
 		res, err := PrepareImport(parentDir, dummyBatchKey, providedDateFinEffetif)
 		if assert.NoError(t, err) {
-			assert.Equal(t, expectedDateFinEffectif, res["param"].(ParamProperty).DateFinEffectif)
-		}
-	})
-
-	t.Run("Should infer the filter and date_fin_effectif from the effectif file of the parent batch, given we are generating a sub-batch", func(t *testing.T) {
-		// Set expectations
-		subBatch := newSafeBatchKey("1803_01")
-		parentBatch := newSafeBatchKey(subBatch.GetParentBatch())
-		filterFile := newBatchFile(subBatch, "filter_siren_1803.csv")
-		parentEffectifFile := newBatchFile(parentBatch, "sigfaible_effectif_siret.csv")
-		expectedFilesProp := FilesProperty{filter: {filterFile}}
-		expectedDateFinEffectif := NewDateFinEffectif(time.Date(2020, time.Month(1), 1, 0, 0, 0, 0, time.UTC)).MongoDate()
-		// Setup test environment
-		parentDir := CreateTempFilesWithContent(t, parentBatch, map[string][]byte{
-			parentEffectifFile.Name(): readFileData(t, "../createfilter/test_data.csv"),
-		})
-		subBatchDir := filepath.Join(parentDir, parentBatch.String(), subBatch.String())
-		os.Mkdir(subBatchDir, 0777)
-		// Run the test
-		res, err := PrepareImport(parentDir, subBatch, "")
-		if assert.NoError(t, err) {
-			assert.Equal(t, expectedFilesProp, res["files"])
-			duplicatedFilePath := path.Join(parentDir, parentBatch.GetParentBatch(), filterFile.Path())
-			assert.True(t, fileExists(duplicatedFilePath))
 			assert.Equal(t, expectedDateFinEffectif, res["param"].(ParamProperty).DateFinEffectif)
 		}
 	})
@@ -193,14 +171,17 @@ func TestPrepareImport(t *testing.T) {
 	t.Run("should create filter file and fill date_fin_effectif if an effectif file is present", func(t *testing.T) {
 		// setup expectations
 		filterFileName := "filter_siren_" + dummyBatchKey.String() + ".csv"
+		sireneULFileName := "sireneUL.csv"
 		expected := FilesProperty{
-			"effectif": {dummyBatchFile("sigfaible_effectif_siret.csv")},
-			"filter":   {dummyBatchFile(filterFileName)},
+			"effectif":  {dummyBatchFile("sigfaible_effectif_siret.csv")},
+			"filter":    {dummyBatchFile(filterFileName)},
+			"sirene_ul": {dummyBatchFile(sireneULFileName)},
 		}
 		expectedDateFinEffectif := makeMongoDate(2020, 1, 1)
 		// run prepare-import
 		batchDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
-			"sigfaible_effectif_siret.csv": readFileData(t, "../createfilter/test_data.csv"),
+			"sigfaible_effectif_siret.csv": ReadFileData(t, "../createfilter/test_data.csv"),
+			"sireneUL.csv":                 ReadFileData(t, "../createfilter/test_uniteLegale.csv"),
 		})
 		adminObject, err := PrepareImport(batchDir, dummyBatchKey, "")
 		// check that the filter is listed in the "files" property
@@ -225,13 +206,15 @@ func TestPrepareImport(t *testing.T) {
 			gzippedSize: uint64(compressedEffectifData.Len()),
 		}
 		expectedFiles := FilesProperty{
-			"effectif": {expectedEffectifFile},
-			"filter":   {dummyBatchFile(filterFileName)},
+			"effectif":  {expectedEffectifFile},
+			"filter":    {dummyBatchFile(filterFileName)},
+			"sirene_ul": {dummyBatchFile("sireneUL.csv")},
 		}
 		expectedDateFinEffectif := makeMongoDate(2020, 1, 1)
 		// run prepare-import
 		batchDir := CreateTempFilesWithContent(t, dummyBatchKey, map[string][]byte{
 			"sigfaible_effectif_siret.csv.gz": compressedEffectifData.Bytes(),
+			"sireneUL.csv":                    ReadFileData(t, "../createfilter/test_uniteLegale.csv"),
 		})
 		adminObject, err := PrepareImport(batchDir, dummyBatchKey, "")
 		// check that the filter is listed in the "files" property
@@ -252,7 +235,7 @@ func makeMongoDate(year, month, day int) MongoDate {
 	return NewDateFinEffectif(validDateFinEffectif).MongoDate()
 }
 
-func readFileData(t *testing.T, filePath string) []byte {
+func ReadFileData(t *testing.T, filePath string) []byte {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatal(err)

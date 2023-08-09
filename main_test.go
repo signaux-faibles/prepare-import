@@ -53,10 +53,19 @@ func Test_prepare(t *testing.T) {
 				"unsupported.csv":                          prepareimport.SomeTextAsBytes(254788761489),
 				"E_202011095813_Retro-Paydex_20201207.csv": prepareimport.SomeTextAsBytes(25477681489),
 				"sigfaible_pcoll.csv.gz":                   gzipString,
+				"sireneUL.csv":                             ReadFileData(t, "createfilter/test_uniteLegale.csv"),
 			})
 			object, err2 := prepare(parentDir, tt.args.batch, tt.args.finEffectif)
 			assert.ErrorContains(t, err2, tt.want.error)
 			assert.Equal(t, tt.want.adminObject, object.ToJSON())
 		})
 	}
+}
+
+func ReadFileData(t *testing.T, filePath string) []byte {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data
 }

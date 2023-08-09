@@ -2,6 +2,7 @@ package createfilter
 
 import (
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
 
@@ -9,7 +10,7 @@ func TestExclusionList(t *testing.T) {
 	ass := assert.New(t)
 
 	// GIVEN
-	sireneULPath := "./test_uniteLegale.csv.zip"
+	sireneULPath := "./test_uniteLegale.csv"
 
 	// WHEN
 	excludedSirens := readExcludedSirens(sireneULPath)
@@ -29,7 +30,7 @@ func TestCategorieJuridiqueFilter(t *testing.T) {
 	ass := assert.New(t)
 
 	// GIVEN
-	sireneULPath := "./test_uniteLegale.csv.zip"
+	sireneULPath := "./test_uniteLegale.csv"
 	testFilter := CategorieJuridiqueFilter(sireneULPath)
 	initialPerimeter := map[string]struct{}{
 		"111111111": {},
@@ -46,5 +47,6 @@ func TestCategorieJuridiqueFilter(t *testing.T) {
 	actualPerimeter := applyFilter(initialPerimeter, testFilter)
 
 	// THEN
-	ass.Equal(expectedPerimeter, actualPerimeter)
+	eq := reflect.DeepEqual(actualPerimeter, expectedPerimeter)
+	ass.True(eq)
 }
