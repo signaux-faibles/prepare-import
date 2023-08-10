@@ -1,0 +1,59 @@
+{
+  "_id": {
+    "key": "2307",
+    "type": "batch"
+  },
+  "complete_types": [
+    "effectif",
+    "effectif_ent",
+    "sirene",
+    "sirene_ul",
+    "cotisation",
+    "delai",
+    "procol",
+    "debit"
+  ],
+  "files": {
+    "admin_urssaf": [
+      "gzip:/2307/sigfaible_etablissement_utf8.csv.gz"
+    ],
+    "cotisation": [
+      "gzip:/2307/sigfaible_cotisdues.csv.gz"
+    ],
+    "debit": [
+      "gzip:/2307/sigfaible_debits.csv.gz"
+    ],
+    "delai": [
+      "gzip:/2307/sigfaible_delais.csv.gz"
+    ],
+    "effectif": [
+      "gzip:/2307/sigfaible_effectif_siret.csv.gz"
+    ],
+    "effectif_ent": [
+      "gzip:/2307/sigfaible_effectif_siren.csv.gz"
+    ],
+    "filter": [
+      "/2307/filter_siren_2307.csv"
+    ],
+    "procol": [
+      "gzip:/2307/sigfaible_pcoll.csv.gz"
+    ],
+    "sirene": [
+      "/2307/StockEtablissement_utf8_geo.csv"
+    ],
+    "sirene_ul": [
+      "/2307/sireneUL.csv"
+    ]
+  },
+  "param": {
+    "date_debut": {
+      "$date": "2016-01-01T00:00:00.000+0000"
+    },
+    "date_fin": {
+      "$date": "2023-07-01T00:00:00.000+0000"
+    },
+    "date_fin_effectif": {
+      "$date": "2023-05-01T00:00:00.000+0000"
+    }
+  }
+}
