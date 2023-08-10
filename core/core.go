@@ -2,6 +2,7 @@
 package core
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
 )
@@ -16,6 +17,15 @@ func (current *AdminObject) ToJSON() string {
 		log.Fatal(err)
 	}
 	return string(jsonText)
+}
+
+// ToCompactJSON retourne le json caractérisant l'objet passé en paramètre
+func (current *AdminObject) ToCompactJSON() string {
+	compact := &bytes.Buffer{}
+	if err := json.Compact(compact, []byte(current.ToJSON())); err != nil {
+		panic(err)
+	}
+	return compact.String()
 }
 
 func FromJSON(input string) AdminObject {
