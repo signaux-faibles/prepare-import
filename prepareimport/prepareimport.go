@@ -18,7 +18,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	batchPath := getBatchPath(pathname, batchKey)
 	println("Listing data files in " + batchPath + "/ ...")
 	if _, err := os.ReadDir(path.Join(pathname, batchPath)); err != nil {
-		return nil, fmt.Errorf("could not find directory %s in provided path", batchPath)
+		return core.AdminObject{}, fmt.Errorf("could not find directory %s in provided path", batchPath)
 	}
 
 	var err error
@@ -58,7 +58,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	// if needed, create a filter file from the effectif file
 	if filterFile == nil {
 		if effectifFile == nil {
-			return nil, errors.New("filter is missing: batch should include a filter or one effectif file")
+			return core.AdminObject{}, errors.New("filter is missing: batch should include a filter or one effectif file")
 		}
 		effectifFilePath := effectifFile.AbsolutePath(pathname)
 		sireneULFilePath := sireneULFile.AbsolutePath(pathname)
@@ -66,7 +66,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
 		println("Generating filter file: " + filterFile.Path() + " ...")
 		if err = createFilterFromEffectifAndSirene(path.Join(pathname, filterFile.Path()), effectifFilePath, sireneULFilePath); err != nil {
-			return nil, err
+			return core.AdminObject{}, err
 		}
 	}
 
@@ -79,7 +79,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 			dest := path.Join(pathname, batchKey.GetParentBatch(), batchKey.Path(), filterFile.Name())
 			err = copy(src, dest)
 			if err != nil {
-				return nil, err
+				return core.AdminObject{}, err
 			}
 			filterFile = newBatchFile(batchKey, filterFile.Name())
 		}
@@ -92,7 +92,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		effectifFilePath := effectifFile.AbsolutePath(pathname)
 		dateFinEffectif, err = createfilter.DetectDateFinEffectif(effectifFilePath, createfilter.DefaultNbIgnoredCols) // TODO: éviter de lire le fichier Effectif deux fois
 		if err != nil {
-			return nil, err
+			return core.AdminObject{}, err
 		}
 	}
 
@@ -101,7 +101,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		println("Still missing date_fin_effectif => parsing CLI parameter ...")
 		dateFinEffectif, err = time.Parse("2006-01-02", providedDateFinEffectif)
 		if err != nil {
-			return nil, errors.New("date_fin_effectif is missing or invalid: " + providedDateFinEffectif)
+			return core.AdminObject{}, errors.New("date_fin_effectif is missing or invalid: " + providedDateFinEffectif)
 		}
 	}
 
@@ -109,12 +109,53 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		err = UnsupportedFilesError{unsupportedFiles}
 	}
 
+	property := populateParamProperty(batchKey, NewDateFinEffectif(dateFinEffectif))
 	return core.AdminObject{
-		"_id":            IDProperty{batchKey, "batch"},
-		"files":          filesProperty,
-		"complete_types": populateCompleteTypesProperty(filesProperty),
-		"param":          populateParamProperty(batchKey, NewDateFinEffectif(dateFinEffectif)),
+		ID:            IDProperty{batchKey, "batch"},
+		Files:         toAdminObjectFiles(filesProperty),
+		CompleteTypes: toAdminObjectCompleteTypes(filesProperty),
+		Params:        toAdminObjectParams(property),
 	}, err
+}
+
+func toAdminObjectFiles(input FilesProperty) map[string][]string {
+	if input == nil {
+		return nil
+	}
+	r := make(map[string][]string)
+	for t, f := range input {
+		r[string(t)] = core.Apply(f, func(file BatchFile) string { return file.Path() })
+	}
+	return r
+}
+
+func toAdminObjectCompleteTypes(input FilesProperty) []string {
+	if input == nil {
+		return nil
+	}
+	property := populateCompleteTypesProperty(input)
+	return core.Apply(property, func(vft ValidFileType) string { return string(vft) })
+}
+
+func toAdminObjectParams(input ParamProperty) map[string]time.Time {
+	r := make(map[string]time.Time)
+
+	date, err := input.DateFinEffectif.ToTime()
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "erreur pendant la récupération de la date de fin d'effectif : ", err)
+	}
+	r["date_fin_effectif"] = date
+	date, err = input.DateFin.ToTime()
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "erreur pendant la récupération de la date de fin : ", err)
+	}
+	r["date_fin"] = date
+	date, err = input.DateDebut.ToTime()
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "erreur pendant la récupération de la date de début : ", err)
+	}
+	r["date_debut"] = date
+	return r
 }
 
 func createFilterFromEffectifAndSirene(filterFilePath string, effectifFilePath string, sireneULFilePath string) error {
