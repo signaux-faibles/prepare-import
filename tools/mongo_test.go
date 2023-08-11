@@ -24,8 +24,8 @@ import (
 //go:embed adminObject.json
 var adminObjectJson string
 
-//go:embed file.txt
-var adminObjectBson []byte
+////go:embed file.txt
+//var adminObjectBson []byte
 
 var mongoURL string
 var databaseName string
