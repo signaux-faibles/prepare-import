@@ -3,9 +3,12 @@ package tools
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -15,19 +18,19 @@ import (
 var db *mongo.Database
 
 // SaveInMongo sauve l'objet `toSave` dans une base mongo
-func SaveInMongo(ctx context.Context, toSave core.AdminObject, mongoURL, databaseName string) error {
+func SaveInMongo(ctx context.Context, toSave core.AdminObject, mongoURL, databaseName string) (interface{}, error) {
 	if db == nil {
 		err := connectDB(ctx, mongoURL, databaseName)
 		if err != nil {
-			return errors.Wrap(err, "Erreur pendant la connexion à Mongo")
+			return nil, errors.Wrap(err, "Erreur pendant la connexion à Mongo")
 		}
 	}
 	saved, err := db.Collection("Admin").InsertOne(ctx, toSave)
 	if err != nil {
-		return errors.Wrap(err, "Erreur pendant l'insertion du document")
+		return nil, errors.Wrap(err, "Erreur pendant l'insertion du document")
 	}
 	log.Printf("import sauvé dans la collection `Admin` avec l'id : %s", saved)
-	return nil
+	return saved.InsertedID, nil
 }
 
 func pingDB() error {
@@ -42,4 +45,20 @@ func connectDB(ctx context.Context, uri string, databaseName string) error {
 	}
 	db = client.Database(databaseName)
 	return nil
+}
+
+func findKey(current interface{}) (string, error) {
+	insertedID, ok := current.(primitive.D)
+	if !ok {
+		return "", errors.New("erreur pendant la recherche de la clé : mauvais type")
+	}
+	marshal, _ := bson.Marshal(insertedID)
+	var result = primitive.M{}
+	_ = bson.Unmarshal(marshal, &result)
+	value, found := result["key"]
+	if !found {
+		return "", errors.New("erreur pendant la recherche de la clé: mauvais id")
+	}
+	key := fmt.Sprint(value)
+	return key, nil
 }

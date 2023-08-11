@@ -13,7 +13,10 @@ import (
 	"github.com/jaswdr/faker"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"prepare-import/core"
 )
@@ -48,9 +51,49 @@ func TestMain(m *testing.M) {
 func Test_SaveInMongo_existingExample(t *testing.T) {
 	ass := assert.New(t)
 	toSave := core.FromJSON(adminObjectExample)
-	err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+	id, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 	ass.NoError(err)
+	key, err := findKey(id)
+	ass.NoError(err)
+	object, err := fetchMongoAdminObject(key)
+	ass.NoError(err)
+	// complete types
+	completeTypes, good := object["complete_types"].(primitive.A)
+	ass.True(good)
+	ass.Len(completeTypes, 8)
+	ass.Contains(completeTypes, "effectif")
+	ass.ElementsMatch(completeTypes, []string{"effectif", "effectif_ent", "sirene", "sirene_ul", "cotisation", "delai", "procol", "debit"})
 
+	// files
+	ass.IsType(primitive.M{}, object["files"])
+	files := object["files"].(primitive.M)
+	ass.NotNil(files)
+	ass.Len(files, 10)
+	//on en teste 1 seul
+	ass.ElementsMatch(files["effectif_ent"], []string{"gzip:/2307/sigfaible_effectif_siren.csv.gz"})
+
+	// param
+	param, good := object["param"].(primitive.M)
+	ass.True(good)
+	ass.NotNil(param)
+	ass.Len(param, 3)
+	ass.NotNil(param["date_fin_effectif"])
+	// TODO asserter sur le type date
+	//spew.Dump(object)
+}
+
+func fetchMongoAdminObject(batchkey string) (core.AdminObject, error) {
+	key := bson.M{"_id.key": batchkey}
+	found := db.Collection("Admin").FindOne(context.Background(), key)
+	var result interface{}
+	err := found.Decode(&result)
+	if err != nil {
+		return nil, errors.WithMessage(err, "erreur lors du décodage")
+	}
+	data, _ := bson.Marshal(result)
+	mappe := bson.M{}
+	_ = bson.Unmarshal(data, mappe)
+	return core.AdminObject(mappe), nil
 }
 
 func Test_SaveInMongo(t *testing.T) {
@@ -59,17 +102,17 @@ func Test_SaveInMongo(t *testing.T) {
 	secondID := fake.Lorem().Word()
 	t.Run("on sauve un object avec le premier `_id`", func(t *testing.T) {
 		toSave := core.AdminObject{"_id": firstID, fake.Beer().Name(): fake.Beer().Hop()}
-		err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+		_, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 		ass.NoError(err)
 	})
 	t.Run("on sauve un objet avec un autre `_id`", func(t *testing.T) {
 		toSave := core.AdminObject{"_id": secondID, fake.App().Name(): fake.App().Version()}
-		err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+		_, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 		ass.NoError(err)
 	})
 	t.Run("on sauve un autre objet avec le premier `_id` une seconde fois", func(t *testing.T) {
 		toSave := core.AdminObject{"_id": firstID, fake.Internet().TLD(): fake.Internet().Domain()}
-		err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+		_, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 		ass.Error(err)
 		ass.ErrorContains(err, "E11000 duplicate key error collection")
 	})

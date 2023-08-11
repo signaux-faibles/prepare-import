@@ -59,7 +59,7 @@ func saveAdminObject(toSave core.AdminObject, mongoURL string, databaseName stri
 		println(toSave.ToJSON())
 		return
 	}
-	err := tools.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+	_, err := tools.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 	if err != nil {
 		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
 	}
