@@ -22,7 +22,10 @@ import (
 )
 
 //go:embed adminObject.json
-var adminObjectExample string
+var adminObjectJson string
+
+//go:embed file.txt
+var adminObjectBson []byte
 
 var mongoURL string
 var databaseName string
@@ -48,9 +51,9 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func Test_SaveInMongo_existingExample(t *testing.T) {
+func Test_SaveInMongo_fromJSON(t *testing.T) {
 	ass := assert.New(t)
-	toSave := core.FromJSON(adminObjectExample)
+	toSave := core.FromJSON(adminObjectJson)
 	id, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 	ass.NoError(err)
 	key, err := findKey(id)
@@ -80,6 +83,52 @@ func Test_SaveInMongo_existingExample(t *testing.T) {
 	ass.NotNil(param["date_fin_effectif"])
 	// TODO asserter sur le type date
 	//spew.Dump(object)
+}
+
+func Test_SaveInMongo_loadAndWriteFile(t *testing.T) {
+	key := bson.M{"_id.key": "2307"}
+	found := db.Collection("Admin").FindOne(context.Background(), key)
+	var result interface{}
+	_ = found.Decode(&result)
+	data, _ := bson.Marshal(result)
+	if err := os.WriteFile("file.txt", data, 0666); err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func Test_SaveInMongo_fromBSON(t *testing.T) {
+	//ass := assert.New(t)
+	//toSave := core.FromBSON(adminObjectBson)
+	//id, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+	//ass.NoError(err)
+	//key, err := findKey(id)
+	//ass.NoError(err)
+	//object, err := fetchMongoAdminObject(key)
+	//ass.NoError(err)
+	//// complete types
+	//completeTypes, good := object["complete_types"].(primitive.A)
+	//ass.True(good)
+	//ass.Len(completeTypes, 8)
+	//ass.Contains(completeTypes, "effectif")
+	//ass.ElementsMatch(completeTypes, []string{"effectif", "effectif_ent", "sirene", "sirene_ul", "cotisation", "delai", "procol", "debit"})
+	//
+	//// files
+	//ass.IsType(primitive.M{}, object["files"])
+	//files := object["files"].(primitive.M)
+	//ass.NotNil(files)
+	//ass.Len(files, 10)
+	////on en teste 1 seul
+	//ass.ElementsMatch(files["effectif_ent"], []string{"gzip:/2307/sigfaible_effectif_siren.csv.gz"})
+	//
+	//// param
+	//param, good := object["param"].(primitive.M)
+	//ass.True(good)
+	//ass.NotNil(param)
+	//ass.Len(param, 3)
+	//ass.NotNil(param["date_fin_effectif"])
+	//// TODO asserter sur le type date
+	////spew.Dump(object)
 }
 
 func fetchMongoAdminObject(batchkey string) (core.AdminObject, error) {

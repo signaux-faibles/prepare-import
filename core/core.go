@@ -35,3 +35,13 @@ func FromJSON(input string) AdminObject {
 	}
 	return r
 }
+
+func FromBSON(input []byte) AdminObject {
+	var r AdminObject
+	//var temp interface{}
+	err := bson.Unmarshal(input, &r)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}

@@ -50,7 +50,7 @@ func TestPopulateCompleteTypesProperty(t *testing.T) {
 func TestPopulateParamProperty(t *testing.T) {
 	t.Run("Should return a date_fin consistent with batch key", func(t *testing.T) {
 		res := populateParamProperty(newSafeBatchKey("1912"), validDateFinEffectif)
-		expected := MongoDate{"2019-12-01T00:00:00.000+0000"}
+		expected := makeDayDate(2019, 12, 01)
 		assert.Equal(t, expected, res.DateFin)
 	})
 }

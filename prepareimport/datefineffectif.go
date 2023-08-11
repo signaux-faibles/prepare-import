@@ -1,13 +1,12 @@
 package prepareimport
 
 import (
-	"strings"
 	"time"
 )
 
 // DateFinEffectif is a date that can be serialized for MongoDB.
 type DateFinEffectif interface {
-	MongoDate() MongoDate
+	Date() time.Time
 }
 
 // NewDateFinEffectif creates a valid DateFinEffectif.
@@ -20,6 +19,7 @@ type dateFinEffectifType struct {
 	time.Time
 }
 
-func (dateFinEffectif dateFinEffectifType) MongoDate() MongoDate {
-	return MongoDate{strings.Replace(dateFinEffectif.Format(time.RFC3339), "Z", ".000+0000", 1)}
+// Deprecated: now use time.Time
+func (dateFinEffectif dateFinEffectifType) Date() time.Time {
+	return dateFinEffectif.Time
 }
