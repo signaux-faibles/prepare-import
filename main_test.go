@@ -11,7 +11,7 @@ import (
 	"prepare-import/prepareimport"
 )
 
-var goldenAdminObject = createfilter.ReadGoldenFile("end_to_end_golden.json")
+var goldenAdminObject = createfilter.ReadGoldenFile("end_to_end_golden.txt")
 var emptyAsString, _ = json.MarshalIndent(prepareimport.AdminObject{}, "", "  ")
 
 func Test_prepare(t *testing.T) {
