@@ -1,4 +1,4 @@
-package tools
+package prepareimport
 
 import (
 	"context"
@@ -11,10 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jaswdr/faker"
-
-	"prepare-import/prepareimport"
-
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/pkg/errors"
@@ -25,18 +21,12 @@ import (
 var mongoURL string
 var databaseName string
 
-var fake faker.Faker
-
-func init() {
-	fake = faker.New()
-}
-
 func Test_SaveInMongo(t *testing.T) {
 	ass := assert.New(t)
 	batchkeyValue := strconv.Itoa(fake.IntBetween(1000, 9999))
-	expectedKey, _ := prepareimport.NewBatchKey(batchkeyValue)
-	expectedTypes := []prepareimport.ValidFileType{"effectif", "effectif_ent", "sirene", "sirene_ul", "delai", "procol", "debit", "cotisation"}
-	expectedFiles := map[prepareimport.ValidFileType][]string{
+	expectedKey, _ := NewBatchKey(batchkeyValue)
+	expectedTypes := []ValidFileType{"effectif", "effectif_ent", "sirene", "sirene_ul", "delai", "procol", "debit", "cotisation"}
+	expectedFiles := map[ValidFileType][]string{
 		"delai":        {"gzip:/2307/sigfaible_delais.csv.gz"},
 		"admin_urssaf": {"gzip:/2307/sigfaible_etablissement_utf8.csv.gz"},
 		"procol":       {"gzip:/2307/sigfaible_pcoll.csv.gz"},
@@ -50,14 +40,14 @@ func Test_SaveInMongo(t *testing.T) {
 	}
 	now := time.Now()
 	expectedDateFinEffectif := time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC)
-	toSave := prepareimport.AdminObject{
-		ID: prepareimport.IDProperty{
+	toSave := AdminObject{
+		ID: IDProperty{
 			Key:  expectedKey,
 			Type: "batch",
 		},
 		CompleteTypes: expectedTypes,
 		Files:         expectedFiles,
-		Param: prepareimport.ParamProperty{
+		Param: ParamProperty{
 			DateDebut:       now.AddDate(-4, 0, 0),
 			DateFin:         now,
 			DateFinEffectif: expectedDateFinEffectif,
@@ -103,13 +93,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func fetchMongoAdminObject(batchkey string) (prepareimport.AdminObject, error) {
+func fetchMongoAdminObject(batchkey string) (AdminObject, error) {
 	key := bson.M{"_id.key": batchkey}
 	found := db.Collection("Admin").FindOne(context.Background(), key)
-	var result prepareimport.AdminObject
+	var result AdminObject
 	err := found.Decode(&result)
 	if err != nil {
-		return prepareimport.AdminObject{}, errors.WithMessage(err, "erreur lors du décodage")
+		return AdminObject{}, errors.WithMessage(err, "erreur lors du décodage")
 	}
 	return result, nil
 }

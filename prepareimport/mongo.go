@@ -1,5 +1,4 @@
-// Package tools contient du code utilitaire
-package tools
+package prepareimport
 
 import (
 	"context"
@@ -11,14 +10,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"prepare-import/prepareimport"
 )
 
 var db *mongo.Database
 
 // SaveInMongo sauve l'objet `toSave` dans une base mongo
-func SaveInMongo(ctx context.Context, toSave prepareimport.AdminObject, mongoURL, databaseName string) (interface{}, error) {
+func SaveInMongo(ctx context.Context, toSave AdminObject, mongoURL, databaseName string) (interface{}, error) {
 	if db == nil {
 		err := connectDB(ctx, mongoURL, databaseName)
 		if err != nil {

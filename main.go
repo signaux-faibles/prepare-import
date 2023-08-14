@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 
 	"prepare-import/prepareimport"
-	"prepare-import/tools"
 )
 
 // Implementation of the prepare-import command.
@@ -57,7 +56,7 @@ func saveAdminObject(toSave prepareimport.AdminObject, mongoURL string, database
 		_, _ = fmt.Fprintln(os.Stderr, "ATTENTION : le résultat ne sera pas sauvegardé en base car au moins un des paramètres nécessaires n'a pas été spécifié")
 		return
 	}
-	_, err := tools.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+	_, err := prepareimport.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 	if err != nil {
 		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
 	}
