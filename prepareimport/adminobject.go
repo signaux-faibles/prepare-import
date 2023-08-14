@@ -2,20 +2,32 @@ package prepareimport
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
+
+	"prepare-import/core"
 )
+
+// AdminObject represents a document going to be stored in the Admin db collection.
+type AdminObject struct {
+	ID            IDProperty                 `bson:"_id,omitempty"`
+	CompleteTypes []ValidFileType            `bson:"complete_types,omitempty"`
+	Files         map[ValidFileType][]string `bson:"files,omitempty"`
+	Param         ParamProperty              `bson:"param,omitempty"`
+}
 
 // IDProperty represents the "_id" property of an Admin object.
 type IDProperty struct {
-	Key  BatchKey `json:"key"`
-	Type string   `json:"type"`
+	Key  BatchKey `bson:"key,omitempty"`
+	Type string   `bson:"type,omitempty"`
 }
 
 // ParamProperty represents the "param" property of an Admin object.
 type ParamProperty struct {
-	DateDebut       MongoDate `json:"date_debut"`
-	DateFin         MongoDate `json:"date_fin"`
-	DateFinEffectif MongoDate `json:"date_fin_effectif"`
+	DateDebut       time.Time `bson:"date_debut"`
+	DateFin         time.Time `bson:"date_fin"`
+	DateFinEffectif time.Time `bson:"date_fin_effectif"`
 }
 
 // UnsupportedFilesError is an Error object that lists files that were not supported.
@@ -28,10 +40,12 @@ func (err UnsupportedFilesError) Error() string {
 }
 
 func populateParamProperty(batchKey BatchKey, dateFinEffectif DateFinEffectif) ParamProperty {
+	year, _ := strconv.Atoi("20" + batchKey.String()[0:2])
+	month, _ := strconv.Atoi(batchKey.String()[2:4])
 	return ParamProperty{
-		DateDebut:       MongoDate{"2016-01-01T00:00:00.000+0000"},
-		DateFin:         MongoDate{"20" + batchKey.String()[0:2] + "-" + batchKey.String()[2:4] + "-01T00:00:00.000+0000"},
-		DateFinEffectif: dateFinEffectif.MongoDate(),
+		DateDebut:       time.Date(2016, 1, 1, 0, 0, 0, 0, time.UTC),
+		DateFin:         time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC),
+		DateFinEffectif: dateFinEffectif.Date(),
 	}
 }
 
@@ -55,6 +69,14 @@ func populateCompleteTypesProperty(filesProperty FilesProperty) []ValidFileType 
 		}
 	}
 	return completeTypes
+}
+
+func populateFilesPaths(filesProperty FilesProperty) map[ValidFileType][]string {
+	r := make(map[ValidFileType][]string)
+	for k, v := range filesProperty {
+		r[k] = core.Apply(v, func(bf BatchFile) string { return bf.Path() })
+	}
+	return r
 }
 
 // types of files that are always provided as "complete"

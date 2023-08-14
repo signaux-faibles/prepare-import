@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 
@@ -10,7 +11,8 @@ import (
 	"prepare-import/prepareimport"
 )
 
-var outGoldenFile = "end_to_end_golden.txt"
+var goldenAdminObject = createfilter.ReadGoldenFile("end_to_end_golden.txt")
+var emptyAsString, _ = json.MarshalIndent(prepareimport.AdminObject{}, "", "  ")
 
 func Test_prepare(t *testing.T) {
 	effectifData, err := os.ReadFile("./createfilter/test_data.csv")
@@ -34,12 +36,12 @@ func Test_prepare(t *testing.T) {
 		{
 			"test avec tous les bons paramètres",
 			args{"1802", "2018-01-01"},
-			want{createfilter.ReadGoldenFile(outGoldenFile), prepareimport.UnsupportedFilesError{}.Error()},
+			want{adminObject: goldenAdminObject, error: prepareimport.UnsupportedFilesError{}.Error()},
 		},
 		{
 			"test avec un mauvais paramètre batch",
 			args{"180", "2018-01-01"},
-			want{adminObject: "{}", error: "la clé du batch doit respecter le format requis AAMM"},
+			want{adminObject: string(emptyAsString), error: "la clé du batch doit respecter le format requis AAMM"},
 		},
 	}
 	for _, tt := range tests {
@@ -53,10 +55,21 @@ func Test_prepare(t *testing.T) {
 				"unsupported.csv":                          prepareimport.SomeTextAsBytes(254788761489),
 				"E_202011095813_Retro-Paydex_20201207.csv": prepareimport.SomeTextAsBytes(25477681489),
 				"sigfaible_pcoll.csv.gz":                   gzipString,
+				"sireneUL.csv":                             ReadFileData(t, "createfilter/test_uniteLegale.csv"),
 			})
-			object, err2 := prepare(parentDir, tt.args.batch, tt.args.finEffectif)
+			actual, err2 := prepare(parentDir, tt.args.batch, tt.args.finEffectif)
 			assert.ErrorContains(t, err2, tt.want.error)
-			assert.Equal(t, tt.want.adminObject, object.ToJSON())
+			objectBytes, err := json.MarshalIndent(actual, "", "  ")
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want.adminObject, string(objectBytes))
 		})
 	}
+}
+
+func ReadFileData(t *testing.T, filePath string) []byte {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data
 }
