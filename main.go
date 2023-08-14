@@ -55,7 +55,6 @@ func prepare(path, batchKey, dateFinEffectif string) (prepareimport.AdminObject,
 func saveAdminObject(toSave prepareimport.AdminObject, mongoURL string, databaseName string) {
 	if len(mongoURL) <= 0 || len(databaseName) <= 0 {
 		_, _ = fmt.Fprintln(os.Stderr, "ATTENTION : le résultat ne sera pas sauvegardé en base car au moins un des paramètres nécessaires n'a pas été spécifié")
-		println(toSave.ToJSON())
 		return
 	}
 	_, err := tools.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)

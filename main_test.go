@@ -11,7 +11,8 @@ import (
 	"prepare-import/prepareimport"
 )
 
-var outGoldenFile = "end_to_end_golden.txt"
+var goldenAdminObject = createfilter.ReadGoldenFile("end_to_end_golden.json")
+var emptyAsString, _ = json.MarshalIndent(prepareimport.AdminObject{}, "", "  ")
 
 func Test_prepare(t *testing.T) {
 	effectifData, err := os.ReadFile("./createfilter/test_data.csv")
@@ -35,12 +36,12 @@ func Test_prepare(t *testing.T) {
 		{
 			"test avec tous les bons paramètres",
 			args{"1802", "2018-01-01"},
-			want{createfilter.ReadGoldenFile(outGoldenFile), prepareimport.UnsupportedFilesError{}.Error()},
+			want{adminObject: goldenAdminObject, error: prepareimport.UnsupportedFilesError{}.Error()},
 		},
 		{
 			"test avec un mauvais paramètre batch",
 			args{"180", "2018-01-01"},
-			want{adminObject: "{\n  \"_id\": {},\n  \"param\": {\n    \"date_debut\": \"0001-01-01T00:00:00Z\",\n    \"date_fin\": \"0001-01-01T00:00:00Z\",\n    \"date_fin_effectif\": \"0001-01-01T00:00:00Z\"\n  }\n}", error: "la clé du batch doit respecter le format requis AAMM"},
+			want{adminObject: string(emptyAsString), error: "la clé du batch doit respecter le format requis AAMM"},
 		},
 	}
 	for _, tt := range tests {
@@ -56,9 +57,9 @@ func Test_prepare(t *testing.T) {
 				"sigfaible_pcoll.csv.gz":                   gzipString,
 				"sireneUL.csv":                             ReadFileData(t, "createfilter/test_uniteLegale.csv"),
 			})
-			object, err2 := prepare(parentDir, tt.args.batch, tt.args.finEffectif)
+			actual, err2 := prepare(parentDir, tt.args.batch, tt.args.finEffectif)
 			assert.ErrorContains(t, err2, tt.want.error)
-			objectBytes, err := json.MarshalIndent(object, "", "  ")
+			objectBytes, err := json.MarshalIndent(actual, "", "  ")
 			assert.NoError(t, err)
 			assert.Equal(t, tt.want.adminObject, string(objectBytes))
 		})

@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"prepare-import/prepareimport"
+
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/jaswdr/faker"
+
+	"prepare-import/prepareimport"
+
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/pkg/errors"
@@ -19,20 +22,71 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-//go:embed adminObject.json
-var adminObjectJson string
-
-////go:embed file.txt
-//var adminObjectBson []byte
-
 var mongoURL string
 var databaseName string
+
 var fake faker.Faker
 
 func init() {
 	fake = faker.New()
 }
+
+func Test_SaveInMongo(t *testing.T) {
+	ass := assert.New(t)
+	batchkeyValue := strconv.Itoa(fake.IntBetween(1000, 9999))
+	expectedKey, _ := prepareimport.NewBatchKey(batchkeyValue)
+	expectedTypes := []prepareimport.ValidFileType{"effectif", "effectif_ent", "sirene", "sirene_ul", "delai", "procol", "debit", "cotisation"}
+	expectedFiles := map[prepareimport.ValidFileType][]string{
+		"delai":        {"gzip:/2307/sigfaible_delais.csv.gz"},
+		"admin_urssaf": {"gzip:/2307/sigfaible_etablissement_utf8.csv.gz"},
+		"procol":       {"gzip:/2307/sigfaible_pcoll.csv.gz"},
+		"effectif_ent": {"gzip:/2307/sigfaible_effectif_siren.csv.gz"},
+		"effectif":     {"gzip:/2307/sigfaible_effectif_siret.csv.gz"},
+		"filter":       {"/2307/filter_siren_2307.csv"},
+		"sirene":       {"/2307/StockEtablissement_utf8_geo.csv"},
+		"debit":        {"gzip:/2307/sigfaible_debits.csv.gz"},
+		"sirene_ul":    {"/2307/sireneUL.csv"},
+		"cotisation":   {"gzip:/2307/sigfaible_cotisdues.csv.gz"},
+	}
+	now := time.Now()
+	expectedDateFinEffectif := time.Date(2020, 3, 1, 0, 0, 0, 0, time.UTC)
+	toSave := prepareimport.AdminObject{
+		ID: prepareimport.IDProperty{
+			Key:  expectedKey,
+			Type: "batch",
+		},
+		CompleteTypes: expectedTypes,
+		Files:         expectedFiles,
+		Param: prepareimport.ParamProperty{
+			DateDebut:       now.AddDate(-4, 0, 0),
+			DateFin:         now,
+			DateFinEffectif: expectedDateFinEffectif,
+		},
+	}
+
+	id, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+	ass.NoError(err)
+	key, err := findKey(id)
+	ass.NoError(err)
+
+	object, err := fetchMongoAdminObject(key)
+	ass.NoError(err)
+	// complete types
+
+	ass.ElementsMatch(object.CompleteTypes, expectedTypes)
+
+	// expectedFiles
+	ass.NotNil(object.Files)
+	ass.Exactly(object.Files, expectedFiles)
+
+	// param
+	ass.NotNil(object.Param)
+	ass.NotNil(object.Param.DateFinEffectif)
+	ass.Equal(expectedDateFinEffectif, object.Param.DateFinEffectif)
+}
+
 func TestMain(m *testing.M) {
+
 	// uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
@@ -47,82 +101,6 @@ func TestMain(m *testing.M) {
 	// You can't defer this because os.Exit doesn't care for defer
 
 	os.Exit(code)
-}
-
-func Test_SaveInMongo_fromJSON(t *testing.T) {
-	ass := assert.New(t)
-	toSave := prepareimport.FromJSON(adminObjectJson)
-	id, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
-	ass.NoError(err)
-	key, err := findKey(id)
-	ass.NoError(err)
-	object, err := fetchMongoAdminObject(key)
-	ass.NoError(err)
-	// complete types
-
-	ass.Len(object.CompleteTypes, 8)
-	ass.Contains(object.CompleteTypes, "effectif")
-	ass.ElementsMatch(object.CompleteTypes, []string{"effectif", "effectif_ent", "sirene", "sirene_ul", "cotisation", "delai", "procol", "debit"})
-
-	// files
-	ass.NotNil(object.Files)
-	ass.Len(object.Files, 10)
-	//on en teste 1 seul
-	ass.ElementsMatch(object.Files["effectif_ent"], []string{"gzip:/2307/sigfaible_effectif_siren.csv.gz"})
-
-	// param
-
-	ass.NotNil(object.Param)
-	ass.Len(object.Param, 3)
-	ass.NotNil(object.Param.DateFinEffectif)
-	// TODO asserter sur le type date
-	//spew.Dump(object)
-}
-
-func Test_SaveInMongo_loadAndWriteFile(t *testing.T) {
-	key := bson.M{"_id.key": "2307"}
-	found := db.Collection("Admin").FindOne(context.Background(), key)
-	var result interface{}
-	_ = found.Decode(&result)
-	data, _ := bson.Marshal(result)
-	if err := os.WriteFile("file.txt", data, 0666); err != nil {
-		log.Fatal(err)
-	}
-
-}
-
-func Test_SaveInMongo_fromBSON(t *testing.T) {
-	//ass := assert.New(t)
-	//toSave := core.FromBSON(adminObjectBson)
-	//id, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
-	//ass.NoError(err)
-	//key, err := findKey(id)
-	//ass.NoError(err)
-	//object, err := fetchMongoAdminObject(key)
-	//ass.NoError(err)
-	//// complete types
-	//completeTypes, good := object["complete_types"].(primitive.A)
-	//ass.True(good)
-	//ass.Len(completeTypes, 8)
-	//ass.Contains(completeTypes, "effectif")
-	//ass.ElementsMatch(completeTypes, []string{"effectif", "effectif_ent", "sirene", "sirene_ul", "cotisation", "delai", "procol", "debit"})
-	//
-	//// files
-	//ass.IsType(primitive.M{}, object["files"])
-	//files := object["files"].(primitive.M)
-	//ass.NotNil(files)
-	//ass.Len(files, 10)
-	////on en teste 1 seul
-	//ass.ElementsMatch(files["effectif_ent"], []string{"gzip:/2307/sigfaible_effectif_siren.csv.gz"})
-	//
-	//// param
-	//param, good := object["param"].(primitive.M)
-	//ass.True(good)
-	//ass.NotNil(param)
-	//ass.Len(param, 3)
-	//ass.NotNil(param["date_fin_effectif"])
-	//// TODO asserter sur le type date
-	////spew.Dump(object)
 }
 
 func fetchMongoAdminObject(batchkey string) (prepareimport.AdminObject, error) {

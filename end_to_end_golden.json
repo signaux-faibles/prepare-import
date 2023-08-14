@@ -1,13 +1,13 @@
 {
-  "_id": {
-    "key": "1802",
-    "type": "batch"
+  "ID": {
+    "Key": "1802",
+    "Type": "batch"
   },
-  "complete_types": [
+  "CompleteTypes": [
     "effectif",
     "sirene_ul"
   ],
-  "files": {
+  "Files": {
     "debit": [
       "/1802/sigfaibles_debits.csv"
     ],
@@ -27,9 +27,9 @@
       "/1802/sireneUL.csv"
     ]
   },
-  "param": {
-    "date_debut": "2016-01-01T00:00:00Z",
-    "date_fin": "2018-02-01T00:00:00Z",
-    "date_fin_effectif": "2020-01-01T00:00:00Z"
+  "Param": {
+    "DateDebut": "2016-01-01T00:00:00Z",
+    "DateFin": "2018-02-01T00:00:00Z",
+    "DateFinEffectif": "2020-01-01T00:00:00Z"
   }
 }
