@@ -5,13 +5,7 @@ import (
 	"regexp"
 )
 
-//// BatchKey represents a valid batch key.
-//type BatchKey interface {
-//	String() string
-//	Path() string
-//	IsSubBatch() bool
-//	GetParentBatch() string
-//}
+type BatchKey string
 
 // NewBatchKey constructs a valid batch key.
 func NewBatchKey(key string) (BatchKey, error) {
@@ -22,9 +16,8 @@ func NewBatchKey(key string) (BatchKey, error) {
 }
 
 var validBatchKey = regexp.MustCompile(`^[0-9]{4}`)
-var validSubBatchKey = regexp.MustCompile(`^([0-9]{4})_([0-9]{2})$`)
 
-type BatchKey string
+var validSubBatchKey = regexp.MustCompile(`^([0-9]{4})_([0-9]{2})$`)
 
 func (b BatchKey) String() string {
 	return string(b)
