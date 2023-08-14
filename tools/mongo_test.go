@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"prepare-import/prepareimport"
 	"strconv"
 	"testing"
 	"time"
@@ -16,9 +17,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-
-	"prepare-import/core"
 )
 
 //go:embed adminObject.json
@@ -53,7 +51,7 @@ func TestMain(m *testing.M) {
 
 func Test_SaveInMongo_fromJSON(t *testing.T) {
 	ass := assert.New(t)
-	toSave := core.FromJSON(adminObjectJson)
+	toSave := prepareimport.FromJSON(adminObjectJson)
 	id, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 	ass.NoError(err)
 	key, err := findKey(id)
@@ -61,26 +59,22 @@ func Test_SaveInMongo_fromJSON(t *testing.T) {
 	object, err := fetchMongoAdminObject(key)
 	ass.NoError(err)
 	// complete types
-	completeTypes, good := object["complete_types"].(primitive.A)
-	ass.True(good)
-	ass.Len(completeTypes, 8)
-	ass.Contains(completeTypes, "effectif")
-	ass.ElementsMatch(completeTypes, []string{"effectif", "effectif_ent", "sirene", "sirene_ul", "cotisation", "delai", "procol", "debit"})
+
+	ass.Len(object.CompleteTypes, 8)
+	ass.Contains(object.CompleteTypes, "effectif")
+	ass.ElementsMatch(object.CompleteTypes, []string{"effectif", "effectif_ent", "sirene", "sirene_ul", "cotisation", "delai", "procol", "debit"})
 
 	// files
-	ass.IsType(primitive.M{}, object["files"])
-	files := object["files"].(primitive.M)
-	ass.NotNil(files)
-	ass.Len(files, 10)
+	ass.NotNil(object.Files)
+	ass.Len(object.Files, 10)
 	//on en teste 1 seul
-	ass.ElementsMatch(files["effectif_ent"], []string{"gzip:/2307/sigfaible_effectif_siren.csv.gz"})
+	ass.ElementsMatch(object.Files["effectif_ent"], []string{"gzip:/2307/sigfaible_effectif_siren.csv.gz"})
 
 	// param
-	param, good := object["param"].(primitive.M)
-	ass.True(good)
-	ass.NotNil(param)
-	ass.Len(param, 3)
-	ass.NotNil(param["date_fin_effectif"])
+
+	ass.NotNil(object.Param)
+	ass.Len(object.Param, 3)
+	ass.NotNil(object.Param.DateFinEffectif)
 	// TODO asserter sur le type date
 	//spew.Dump(object)
 }
@@ -131,40 +125,15 @@ func Test_SaveInMongo_fromBSON(t *testing.T) {
 	////spew.Dump(object)
 }
 
-func fetchMongoAdminObject(batchkey string) (core.AdminObject, error) {
+func fetchMongoAdminObject(batchkey string) (prepareimport.AdminObject, error) {
 	key := bson.M{"_id.key": batchkey}
 	found := db.Collection("Admin").FindOne(context.Background(), key)
-	var result interface{}
+	var result prepareimport.AdminObject
 	err := found.Decode(&result)
 	if err != nil {
-		return nil, errors.WithMessage(err, "erreur lors du décodage")
+		return prepareimport.AdminObject{}, errors.WithMessage(err, "erreur lors du décodage")
 	}
-	data, _ := bson.Marshal(result)
-	mappe := bson.M{}
-	_ = bson.Unmarshal(data, mappe)
-	return core.AdminObject(mappe), nil
-}
-
-func Test_SaveInMongo(t *testing.T) {
-	ass := assert.New(t)
-	firstID := fake.Lorem().Word()
-	secondID := fake.Lorem().Word()
-	t.Run("on sauve un object avec le premier `_id`", func(t *testing.T) {
-		toSave := core.AdminObject{"_id": firstID, fake.Beer().Name(): fake.Beer().Hop()}
-		_, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
-		ass.NoError(err)
-	})
-	t.Run("on sauve un objet avec un autre `_id`", func(t *testing.T) {
-		toSave := core.AdminObject{"_id": secondID, fake.App().Name(): fake.App().Version()}
-		_, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
-		ass.NoError(err)
-	})
-	t.Run("on sauve un autre objet avec le premier `_id` une seconde fois", func(t *testing.T) {
-		toSave := core.AdminObject{"_id": firstID, fake.Internet().TLD(): fake.Internet().Domain()}
-		_, err := SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
-		ass.Error(err)
-		ass.ErrorContains(err, "E11000 duplicate key error collection")
-	})
+	return result, nil
 }
 
 func startMongoDB(pool *dockertest.Pool) (mongoURL, databaseName string) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 
@@ -39,7 +40,7 @@ func Test_prepare(t *testing.T) {
 		{
 			"test avec un mauvais paramètre batch",
 			args{"180", "2018-01-01"},
-			want{adminObject: "{}", error: "la clé du batch doit respecter le format requis AAMM"},
+			want{adminObject: "{\n  \"_id\": {},\n  \"param\": {\n    \"date_debut\": \"0001-01-01T00:00:00Z\",\n    \"date_fin\": \"0001-01-01T00:00:00Z\",\n    \"date_fin_effectif\": \"0001-01-01T00:00:00Z\"\n  }\n}", error: "la clé du batch doit respecter le format requis AAMM"},
 		},
 	}
 	for _, tt := range tests {
@@ -57,7 +58,9 @@ func Test_prepare(t *testing.T) {
 			})
 			object, err2 := prepare(parentDir, tt.args.batch, tt.args.finEffectif)
 			assert.ErrorContains(t, err2, tt.want.error)
-			assert.Equal(t, tt.want.adminObject, object.ToJSON())
+			objectBytes, err := json.MarshalIndent(object, "", "  ")
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want.adminObject, string(objectBytes))
 		})
 	}
 }

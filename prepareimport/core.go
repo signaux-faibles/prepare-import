@@ -1,16 +1,19 @@
-// Package core contient le code commun à tous les packages. Il doit contenir le code métier de l'application
-package core
+package prepareimport
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 // AdminObject represents a document going to be stored in the Admin db collection.
-type AdminObject bson.M
+type AdminObject struct {
+	ID            IDProperty                 `bson:"_id,omitempty" json:"_id,omitempty"`
+	CompleteTypes []ValidFileType            `bson:"complete_types,omitempty" json:"complete_types,omitempty"`
+	Files         map[ValidFileType][]string `bson:"files,omitempty" json:"files,omitempty"`
+	Param         ParamProperty              `bson:"param,omitempty" json:"param,omitempty"`
+}
 
 // ToJSON retourne le json caractérisant l'objet passé en paramètre
 func (current *AdminObject) ToJSON() string {
@@ -19,12 +22,6 @@ func (current *AdminObject) ToJSON() string {
 		log.Fatal(err)
 	}
 	return string(jsonText)
-}
-
-func (current AdminObject) GetKey() string {
-	id := current["_id"].(map[string]interface{})
-	key := fmt.Sprint(id["key"])
-	return key
 }
 
 func FromJSON(input string) AdminObject {

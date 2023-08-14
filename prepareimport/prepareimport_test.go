@@ -70,7 +70,7 @@ func TestPrepareImport(t *testing.T) {
 		//expected := make(map[string][]string)
 		expected := map[ValidFileType][]string{filter: {"/1802/filter_2002.csv"}}
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected, res["files"])
+			assert.Equal(t, expected, res.Files)
 		}
 	})
 
@@ -89,7 +89,7 @@ func TestPrepareImport(t *testing.T) {
 		// Run the test
 		res, err := PrepareImport(parentDir, subBatch, "2018-03-01")
 		if assert.NoError(t, err) {
-			assert.Equal(t, expectedFilesProp, res["files"])
+			assert.Equal(t, expectedFilesProp, res.Files)
 			duplicatedFilePath := path.Join(parentDir, parentBatch.GetParentBatch(), filterFile.Path())
 			assert.True(t, fileExists(duplicatedFilePath))
 		}
@@ -109,7 +109,7 @@ func TestPrepareImport(t *testing.T) {
 		// Run the test
 		res, err := PrepareImport(parentDir, dummyBatchKey, providedDateFinEffetif)
 		if assert.NoError(t, err) {
-			assert.Equal(t, expectedDateFinEffectif, res["param"].(ParamProperty).DateFinEffectif)
+			assert.Equal(t, expectedDateFinEffectif, res.Param.DateFinEffectif)
 		}
 	})
 
@@ -126,7 +126,7 @@ func TestPrepareImport(t *testing.T) {
 		// Run the test
 		res, err := PrepareImport(parentDir, dummyBatchKey, providedDateFinEffetif)
 		if assert.NoError(t, err) {
-			assert.Equal(t, expectedDateFinEffectif, res["param"].(ParamProperty).DateFinEffectif)
+			assert.Equal(t, expectedDateFinEffectif, res.Param.DateFinEffectif)
 		}
 	})
 
@@ -135,7 +135,7 @@ func TestPrepareImport(t *testing.T) {
 		dir := CreateTempFiles(t, batch, []string{"filter_2002.csv"})
 		res, err := PrepareImport(dir, batch, dummyDateFinEffectif)
 		if assert.NoError(t, err) {
-			assert.Equal(t, IDProperty{batch, "batch"}, res["_id"])
+			assert.Equal(t, IDProperty{batch, "batch"}, res.ID)
 		}
 	})
 
@@ -157,7 +157,7 @@ func TestPrepareImport(t *testing.T) {
 			res, err := PrepareImport(dir, dummyBatchKey, dummyDateFinEffectif)
 			expected := []string{dummyBatchFile(testCase.filename).Path()}
 			if assert.NoError(t, err) {
-				assert.Equal(t, expected, res["files"].(map[ValidFileType][]string)[testCase.filetype])
+				assert.Equal(t, expected, res.Files[testCase.filetype])
 			}
 		})
 	}
@@ -189,13 +189,13 @@ func TestPrepareImport(t *testing.T) {
 		adminObject, err := PrepareImport(batchDir, dummyBatchKey, "")
 		// check that the filter is listed in the "files" property
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected, adminObject["files"])
+			assert.Equal(t, expected, adminObject.Files)
 		}
 		// check that the filter file exists
 		filterFilePath := path.Join(batchDir, dummyBatchKey.Path(), filterFileName)
 		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 		// check that date_fin_effectif was detected from the effectif file
-		actualDateFinEffectif := adminObject["param"].(ParamProperty).DateFinEffectif
+		actualDateFinEffectif := adminObject.Param.DateFinEffectif
 		assert.Equal(t, expectedDateFinEffectif, actualDateFinEffectif)
 	})
 
@@ -222,13 +222,13 @@ func TestPrepareImport(t *testing.T) {
 		adminObject, err := PrepareImport(batchDir, dummyBatchKey, "")
 		// check that the filter is listed in the "files" property
 		if assert.NoError(t, err) {
-			assert.Equal(t, expectedFiles, adminObject["files"])
+			assert.Equal(t, expectedFiles, adminObject.Files)
 		}
 		// check that the filter file exists
 		filterFilePath := path.Join(batchDir, dummyBatchKey.Path(), filterFileName)
 		assert.True(t, fileExists(filterFilePath), "the filter file was not found: "+filterFilePath)
 		// check that date_fin_effectif was detected from the effectif file
-		actualDateFinEffectif := adminObject["param"].(ParamProperty).DateFinEffectif
+		actualDateFinEffectif := adminObject.Param.DateFinEffectif
 		assert.Equal(t, expectedDateFinEffectif, actualDateFinEffectif)
 	})
 }

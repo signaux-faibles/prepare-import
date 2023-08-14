@@ -5,20 +5,19 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"prepare-import/prepareimport"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"prepare-import/core"
 )
 
 var db *mongo.Database
 
 // SaveInMongo sauve l'objet `toSave` dans une base mongo
-func SaveInMongo(ctx context.Context, toSave core.AdminObject, mongoURL, databaseName string) (interface{}, error) {
+func SaveInMongo(ctx context.Context, toSave prepareimport.AdminObject, mongoURL, databaseName string) (interface{}, error) {
 	if db == nil {
 		err := connectDB(ctx, mongoURL, databaseName)
 		if err != nil {
