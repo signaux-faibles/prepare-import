@@ -3,6 +3,7 @@ package createfilter
 import (
 	"context"
 	"github.com/signaux-faibles/goSirene"
+	"strings"
 )
 
 func isExcludedCategorieJuridique(categorieJuridique string) bool {
@@ -33,11 +34,27 @@ func isExcludedCategorieJuridique(categorieJuridique string) bool {
 	return false
 }
 
+func isExcludedActivity(activity string) bool {
+	var excludedActivityPrefix = []string{
+		"84",
+		"85",
+	}
+	for _, excluded := range excludedActivityPrefix {
+		if strings.HasPrefix(activity, excluded) {
+			return true
+		}
+	}
+	return false
+}
+
 func readExcludedSirens(path string) map[string]struct{} {
 	sireneUL := goSirene.SireneULParser(context.Background(), path)
 	var excludedSirens = make(map[string]struct{})
 	for s := range sireneUL {
 		if isExcludedCategorieJuridique(s.CategorieJuridiqueUniteLegale) {
+			excludedSirens[s.Siren] = struct{}{}
+		}
+		if isExcludedActivity(s.ActivitePrincipaleUniteLegale) {
 			excludedSirens[s.Siren] = struct{}{}
 		}
 	}
