@@ -3,7 +3,7 @@ module prepare-import
 go 1.20
 
 require (
-	github.com/jaswdr/faker v1.18.1
+	github.com/jaswdr/faker v1.19.0
 	github.com/ory/dockertest/v3 v3.10.0
 	github.com/pkg/errors v0.9.1
 	github.com/signaux-faibles/goSirene v0.3.0
