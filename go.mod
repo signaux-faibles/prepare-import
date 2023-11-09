@@ -1,6 +1,6 @@
 module prepare-import
 
-go 1.20
+go 1.21
 
 require (
 	github.com/jaswdr/faker v1.19.1
