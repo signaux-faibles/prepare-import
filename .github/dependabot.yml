@@ -14,4 +14,3 @@ updates:
     directory: /build-container
     schedule:
       interval: daily
-
