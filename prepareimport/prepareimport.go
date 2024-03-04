@@ -122,6 +122,9 @@ func createFilterFromEffectifAndSirene(filterFilePath string, effectifFilePath s
 		return errors.New("about to overwrite existing filter file: " + filterFilePath)
 	}
 	filterWriter, err := os.Create(filterFilePath)
+	// ce header est nécessaire pour la ds
+	fmt.Fprintln(filterWriter, "siren")
+
 	if err != nil {
 		return err
 	}
