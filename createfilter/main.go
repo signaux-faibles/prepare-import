@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"regexp"
 	"strconv"
@@ -180,6 +181,7 @@ func isInsidePerimeter(record []string, nbMois, minEffectif int) bool {
 
 // DetectDateFinEffectif determines DateFinEffectif by parsing the effectif file.
 func DetectDateFinEffectif(path string, nIgnoredCols int) (dateFinEffectif time.Time, err error) {
+	slog.Debug("détecte la date de fin d'effectif depuis le fichier d'effectif", slog.String("filename", path), slog.Int("nIgnoredCols", nIgnoredCols))
 	r, f, err := makeEffectifReaderFromFile(path)
 	if err != nil {
 		return time.Time{}, err
