@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path"
 	"time"
@@ -15,7 +16,7 @@ import (
 func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif string) (AdminObject, error) {
 
 	batchPath := getBatchPath(pathname, batchKey)
-	println("Listing data files in " + batchPath + "/ ...")
+	slog.Info("Liste les fichiers de données ", slog.Any("path", batchPath))
 	if _, err := os.ReadDir(path.Join(pathname, batchPath)); err != nil {
 		return AdminObject{}, fmt.Errorf("could not find directory %s in provided path", batchPath)
 	}
@@ -32,7 +33,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	filterFile, _ := filesProperty.GetFilterFile()
 	sireneULFile, _ := filesProperty.GetSireneULFile()
 	if (effectifFile == nil || filterFile == nil) && batchKey.IsSubBatch() {
-		println("Looking for effectif and/or filter file in " + batchKey.GetParentBatch() + " ...")
+		slog.Info("Looking for effectif and/or filter file", slog.String("batch", batchKey.GetParentBatch()))
 		parentFilesProperty, _ := PopulateFilesProperty(pathname, newSafeBatchKey(batchKey.GetParentBatch()))
 		if effectifFile == nil {
 			effectifFile, _ = parentFilesProperty.GetEffectifFile()
@@ -43,15 +44,15 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	}
 
 	if effectifFile != nil {
-		println("Found effectif file: " + effectifFile.Name())
+		slog.Info("Found effectif file ", slog.String("filename", effectifFile.Name()))
 	}
 
 	if filterFile != nil {
-		println("Found filter file: " + filterFile.Name())
+		slog.Info("Found filter file ", slog.String("filename", filterFile.Name()))
 	}
 
 	if sireneULFile != nil {
-		println("Found sireneUL file: " + sireneULFile.Name())
+		slog.Info("Found sireneUL file", slog.String("filename", sireneULFile.Name()))
 	}
 
 	// if needed, create a filter file from the effectif file
@@ -63,7 +64,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 		sireneULFilePath := sireneULFile.AbsolutePath(pathname)
 		effectifBatch := effectifFile.BatchKey()
 		filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
-		println("Generating filter file: " + filterFile.Path() + " ...")
+		slog.Info("Generating filter file", slog.String("filename", filterFile.Path()))
 		if err = createFilterFromEffectifAndSirene(path.Join(pathname, filterFile.Path()), effectifFilePath, sireneULFilePath); err != nil {
 			return AdminObject{}, err
 		}
@@ -73,7 +74,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	if filesProperty["filter"] == nil && filterFile != nil {
 		if batchKey.IsSubBatch() {
 			// copy the filter into the sub-batch's directory
-			println("Copying filter file to " + filterFile.Path() + " ...")
+			slog.Info("Copying filter file", slog.String("filename", filterFile.Path()))
 			src := path.Join(pathname, filterFile.Path())
 			dest := path.Join(pathname, batchKey.GetParentBatch(), batchKey.Path(), filterFile.Name())
 			err = copy(src, dest)
@@ -82,7 +83,7 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 			}
 			filterFile = newBatchFile(batchKey, filterFile.Name())
 		}
-		println("Adding filter file to batch ...")
+		slog.Info("Adding filter file to batch", slog.String("filename", filterFile.Path()))
 		filesProperty["filter"] = append(filesProperty["filter"], filterFile)
 	}
 

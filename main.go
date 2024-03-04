@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 
@@ -39,7 +38,7 @@ func main() {
 	adminObject, err := prepare(*path, *batchKey, *dateFinEffectif)
 	if err != nil {
 		slog.Error("erreur pendant la génération de l'objet", slog.Any("error", err))
-		log.Fatal(err)
+		panic(err)
 	}
 	slog.Info("objet généré", slog.Any("adminObject", adminObject))
 	saveAdminObject(adminObject, *mongoURL, *databaseName)
@@ -67,7 +66,8 @@ func saveAdminObject(toSave prepareimport.AdminObject, mongoURL string, database
 	}
 	_, err := prepareimport.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 	if err != nil {
-		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
+		slog.Error("Erreur inattendue pendant la sauvegarde de l'import : ", slog.Any("error", err))
+		panic(err)
 	}
 }
 
