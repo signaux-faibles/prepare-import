@@ -73,6 +73,7 @@ func CreateFilter(writer io.Writer, effectifFileName string, nbMois, minEffectif
 		perimeter = applyFilter(perimeter, f)
 	}
 
+	fmt.Fprintln(writer, "siren")
 	for siren, _ := range perimeter {
 		fmt.Fprintln(writer, siren)
 	}

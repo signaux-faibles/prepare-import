@@ -34,7 +34,7 @@ func TestCreateFilter(t *testing.T) {
 		expectedOutput := DiffWithGoldenFile(outGoldenFile, *updateGoldenFile, cmdOutput)
 		expectedError := DiffWithGoldenFile(errGoldenFile, *updateGoldenFile, cmdError)
 
-		assert.Equal(t, string(expectedOutput), sortOutput(cmdOutput.String()))
+		assert.Equal(t, string(expectedOutput), cmdOutput.String())
 		assert.Equal(t, string(expectedError), cmdError.String())
 	})
 }
