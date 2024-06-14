@@ -55,19 +55,19 @@ func PrepareImport(pathname string, batchKey BatchKey, providedDateFinEffectif s
 	}
 
 	// if needed, create a filter file from the effectif file
-	if filterFile == nil {
-		if effectifFile == nil {
-			return AdminObject{}, errors.New("filter is missing: batch should include a filter or one effectif file")
-		}
-		effectifFilePath := effectifFile.AbsolutePath(pathname)
-		sireneULFilePath := sireneULFile.AbsolutePath(pathname)
-		effectifBatch := effectifFile.BatchKey()
-		filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
-		println("Generating filter file: " + filterFile.Path() + " ...")
-		if err = createFilterFromEffectifAndSirene(path.Join(pathname, filterFile.Path()), effectifFilePath, sireneULFilePath); err != nil {
-			return AdminObject{}, err
-		}
-	}
+	//if filterFile == nil {
+	//	if effectifFile == nil {
+	//		return AdminObject{}, errors.New("filter is missing: batch should include a filter or one effectif file")
+	//	}
+	//effectifFilePath := effectifFile.AbsolutePath(pathname)
+	//sireneULFilePath := sireneULFile.AbsolutePath(pathname)
+	//effectifBatch := effectifFile.BatchKey()
+	//filterFile = newBatchFile(effectifBatch, "filter_siren_"+effectifBatch.String()+".csv")
+	//println("Generating filter file: " + filterFile.Path() + " ...")
+	//if err = createFilterFromEffectifAndSirene(path.Join(pathname, filterFile.Path()), effectifFilePath, sireneULFilePath); err != nil {
+	//	return AdminObject{}, err
+	//}
+	//}
 
 	// add the filter to filesProperty
 	if filesProperty["filter"] == nil && filterFile != nil {
