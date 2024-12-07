@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/pkg/errors"
@@ -12,8 +12,11 @@ import (
 	"prepare-import/prepareimport"
 )
 
+var loglevel *slog.LevelVar
+
 // Implementation of the prepare-import command.
 func main() {
+	InitLogger(slog.LevelInfo)
 	var path = flag.String("path", ".", "Chemin d'accès au répertoire des batches")
 	var batchKey = flag.String(
 		"batch",
@@ -32,7 +35,12 @@ func main() {
 	var databaseName = flag.String("databaseName", "", "Nom de la base de données Mongo")
 
 	flag.Parse()
-	adminObject, _ := prepare(*path, *batchKey, *dateFinEffectif)
+	adminObject, err := prepare(*path, *batchKey, *dateFinEffectif)
+	if err != nil {
+		slog.Error("erreur pendant la génération de l'objet", slog.Any("error", err))
+		panic(err)
+	}
+	slog.Info("objet généré", slog.Any("adminObject", adminObject))
 	saveAdminObject(adminObject, *mongoURL, *databaseName)
 	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
 }
@@ -46,7 +54,7 @@ func prepare(path, batchKey, dateFinEffectif string) (prepareimport.AdminObject,
 	if _, ok := err.(prepareimport.UnsupportedFilesError); ok {
 		return adminObject, err
 	} else if err != nil {
-		return prepareimport.AdminObject{}, errors.Wrap(err, "erreur inattendue pendant la préparation de l'import : ")
+		return prepareimport.AdminObject{}, errors.Wrap(err, "erreur inattendue pendant la préparation de l'import")
 	}
 	return adminObject, nil
 }
@@ -58,6 +66,18 @@ func saveAdminObject(toSave prepareimport.AdminObject, mongoURL string, database
 	}
 	_, err := prepareimport.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
 	if err != nil {
-		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
+		slog.Error("Erreur inattendue pendant la sauvegarde de l'import : ", slog.Any("error", err))
+		panic(err)
 	}
+}
+
+func InitLogger(level slog.Level) {
+	loglevel = new(slog.LevelVar)
+	loglevel.Set(level)
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: loglevel,
+	})
+
+	appLogger := slog.New(handler)
+	slog.SetDefault(appLogger)
 }

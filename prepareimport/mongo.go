@@ -3,7 +3,7 @@ package prepareimport
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -26,7 +26,7 @@ func SaveInMongo(ctx context.Context, toSave AdminObject, mongoURL, databaseName
 	if err != nil {
 		return nil, errors.Wrap(err, "Erreur pendant l'insertion du document")
 	}
-	log.Printf("import sauvé dans la collection `Admin` avec l'id : %s", saved)
+	slog.Info("import sauvé dans la collection `Admin`", slog.Any("id", saved))
 	return saved.InsertedID, nil
 }
 
