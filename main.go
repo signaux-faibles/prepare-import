@@ -33,7 +33,7 @@ func main() {
 
 	flag.Parse()
 	adminObject, err := prepare(*path, *batchKey, *dateFinEffectif)
-  if err != nil { 
+  if err != nil {
     panic(err)
   }
 	saveAdminObject(adminObject, *mongoURL, *databaseName)
