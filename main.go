@@ -32,7 +32,10 @@ func main() {
 	var databaseName = flag.String("databaseName", "", "Nom de la base de données Mongo")
 
 	flag.Parse()
-	adminObject, _ := prepare(*path, *batchKey, *dateFinEffectif)
+	adminObject, err := prepare(*path, *batchKey, *dateFinEffectif)
+  if err != nil { 
+    panic(err)
+  }
 	saveAdminObject(adminObject, *mongoURL, *databaseName)
 	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
 }
