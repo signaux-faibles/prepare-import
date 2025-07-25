@@ -33,9 +33,9 @@ func main() {
 
 	flag.Parse()
 	adminObject, err := prepare(*path, *batchKey, *dateFinEffectif)
-  if err != nil { 
-    panic(err)
-  }
+	if err != nil { 
+		panic(err)
+	}
 	saveAdminObject(adminObject, *mongoURL, *databaseName)
 	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
 }
