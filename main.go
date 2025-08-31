@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log"
-	"path"
 
 	"github.com/pkg/errors"
 
@@ -25,16 +24,15 @@ func main() {
 		"Date de fin des données \"effectif\" fournies, au format AAAA-MM-JJ (année + mois + jour)\n"+
 			"Exemple: 2014-01-01",
 	)
-	var configFile = flag.String("configFile", "./config.toml", "Chemin du fichier où est écrit la configuration,"+
-		" relatif au chemin d'accès au répertoire des batches \n"+
-		"Exemple: ./config.toml")
+	var configFile = flag.String("configFile", "./batch.toml", "Chemin du fichier où est écrit la configuration\n"+
+		"Exemple: ./batch.toml")
 
 	flag.Parse()
 	adminObject, err := prepare(*path, *batchKey, *dateFinEffectif)
 	if err != nil {
 		panic(err)
 	}
-	saveAdminObject(adminObject, *path, *configFile)
+	saveAdminObject(adminObject, *configFile)
 	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
 }
 
@@ -52,9 +50,8 @@ func prepare(path, batchKey, dateFinEffectif string) (prepareimport.AdminObject,
 	return adminObject, nil
 }
 
-func saveAdminObject(toSave prepareimport.AdminObject, dirPath, configFile string) {
-	filePath := path.Join(dirPath, configFile)
-	err := prepareimport.SaveToFile(toSave, filePath)
+func saveAdminObject(toSave prepareimport.AdminObject, configFile string) {
+	err := prepareimport.SaveToFile(toSave, configFile)
 
 	if err != nil {
 		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
