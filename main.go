@@ -1,11 +1,8 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/pkg/errors"
 
@@ -27,16 +24,15 @@ func main() {
 		"Date de fin des données \"effectif\" fournies, au format AAAA-MM-JJ (année + mois + jour)\n"+
 			"Exemple: 2014-01-01",
 	)
-	var mongoURL = flag.String("mongoURL", "", "Url de connexion à la base Mongo\n"+
-		"Exemple: mongodb://username:password@ip:port")
-	var databaseName = flag.String("databaseName", "", "Nom de la base de données Mongo")
+	var configFile = flag.String("configFile", "./batch.toml", "Chemin du fichier où est écrit la configuration\n"+
+		"Exemple: ./batch.toml")
 
 	flag.Parse()
 	adminObject, err := prepare(*path, *batchKey, *dateFinEffectif)
 	if err != nil {
 		panic(err)
 	}
-	saveAdminObject(adminObject, *mongoURL, *databaseName)
+	saveAdminObject(adminObject, *configFile)
 	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
 }
 
@@ -54,12 +50,9 @@ func prepare(path, batchKey, dateFinEffectif string) (prepareimport.AdminObject,
 	return adminObject, nil
 }
 
-func saveAdminObject(toSave prepareimport.AdminObject, mongoURL string, databaseName string) {
-	if len(mongoURL) <= 0 || len(databaseName) <= 0 {
-		_, _ = fmt.Fprintln(os.Stderr, "ATTENTION : le résultat ne sera pas sauvegardé en base car au moins un des paramètres nécessaires n'a pas été spécifié")
-		return
-	}
-	_, err := prepareimport.SaveInMongo(context.Background(), toSave, mongoURL, databaseName)
+func saveAdminObject(toSave prepareimport.AdminObject, configFile string) {
+	err := prepareimport.SaveToFile(toSave, configFile)
+
 	if err != nil {
 		log.Fatal("Erreur inattendue pendant la sauvegarde de l'import : ", err)
 	}

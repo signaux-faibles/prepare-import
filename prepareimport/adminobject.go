@@ -11,23 +11,23 @@ import (
 
 // AdminObject represents a document going to be stored in the Admin db collection.
 type AdminObject struct {
-	ID            IDProperty                 `bson:"_id,omitempty"`
-	CompleteTypes []ValidFileType            `bson:"complete_types,omitempty"`
-	Files         map[ValidFileType][]string `bson:"files,omitempty"`
-	Param         ParamProperty              `bson:"param,omitempty"`
+	ID            IDProperty                 `json:"_id,omitempty"`
+	CompleteTypes []ValidFileType            `json:"complete_types,omitempty"`
+	Files         map[ValidFileType][]string `json:"files,omitempty"`
+	Param         ParamProperty              `json:"param,omitempty"`
 }
 
 // IDProperty represents the "_id" property of an Admin object.
 type IDProperty struct {
-	Key  BatchKey `bson:"key,omitempty"`
-	Type string   `bson:"type,omitempty"`
+	Key  BatchKey `json:"key,omitempty"`
+	Type string   `json:"type,omitempty"`
 }
 
 // ParamProperty represents the "param" property of an Admin object.
 type ParamProperty struct {
-	DateDebut       time.Time `bson:"date_debut"`
-	DateFin         time.Time `bson:"date_fin"`
-	DateFinEffectif time.Time `bson:"date_fin_effectif"`
+	DateDebut       time.Time `json:"date_debut"`
+	DateFin         time.Time `json:"date_fin"`
+	DateFinEffectif time.Time `json:"date_fin_effectif"`
 }
 
 // UnsupportedFilesError is an Error object that lists files that were not supported.
