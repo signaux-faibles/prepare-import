@@ -30,7 +30,7 @@ func main() {
 	flag.Parse()
 	adminObject, err := prepare(*path, *batchKey, *dateFinEffectif)
 	if err != nil {
-		panic(err)
+		log.Printf("An error occurred while preparing import: %v\n", err)
 	}
 	saveAdminObject(adminObject, *configFile)
 	println("Caution: please make sure that files listed in complete_types were correctly recognized as complete.")
